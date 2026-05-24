@@ -18,6 +18,7 @@ fi
 rsync -a --delete \
   --exclude '.git' \
   --exclude '.DS_Store' \
+  --exclude '__pycache__' \
   "$SOURCE_DIR/" "$DEPLOY_DIR/"
 
 git -C "$DEPLOY_DIR" status --short
