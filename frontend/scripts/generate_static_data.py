@@ -13,6 +13,7 @@ def rows(connection, table):
 
 def annotate_atlas(record):
     annotated = dict(record)
+    # Existing Atlas IDs encode whether the site is ambiguous.
     annotated["ambiguous"] = "ambiguous" if annotated["id"] < 10000000 else "unambiguous"
     return annotated
 
@@ -29,23 +30,23 @@ def main():
     parser = argparse.ArgumentParser(description="Generate static Atlas and OGT-PIN data bundles.")
     parser.add_argument(
         "--database",
-        default="/home/bach/O-GlcNAcDB1/db.sqlite3",
+        required=True,
         help="Path to the source SQLite database.",
     )
     parser.add_argument(
         "--output-dir",
-        default="/home/bach/oglcnac-static-site/static/data",
+        default=Path(__file__).resolve().parents[1] / "static" / "data",
+        type=Path,
         help="Directory where static JSON bundles should be written.",
     )
     args = parser.parse_args()
 
-    output_dir = Path(args.output_dir)
     with sqlite3.connect(args.database) as connection:
         atlas = [annotate_atlas(record) for record in rows(connection, "atlas_records")]
         ogt_pin = rows(connection, "interactome_records")
 
-    write_json(output_dir / "atlas-records.json", atlas)
-    write_json(output_dir / "ogt-pin-records.json", ogt_pin)
+    write_json(args.output_dir / "atlas-records.json", atlas)
+    write_json(args.output_dir / "ogt-pin-records.json", ogt_pin)
     print(f"atlas_records={len(atlas)}")
     print(f"ogt_pin_records={len(ogt_pin)}")
 

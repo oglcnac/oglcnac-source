@@ -99,6 +99,8 @@ def load_models():
     if models:
         return models
 
+    # The published model is an ensemble of five human and five mouse models.
+    # Keep these filenames aligned with prediction_model/model/.
     hm1 = createModel3((28, 29))
     hm1.load_weights(os.path.join(MODEL_DIR, "HM", "hm_M1.h5"))
     hm2 = createModel3((28, 29))
@@ -219,6 +221,7 @@ def cut_sequences(input_path, cut_path):
             sequence = seq_record.seq
             for i in range(len(str(sequence))):
                 if sequence[i] in {"S", "T"}:
+                    # The model scores a 29-residue window centered on each S/T site.
                     if i >= 14 and i + 14 < len(sequence):
                         new_record = SeqRecord(sequence[i - 14 : i + 15], id=name + f"|position={i}")
                     elif i < 14:

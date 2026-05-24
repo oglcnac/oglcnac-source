@@ -1,11 +1,12 @@
 # O-GlcNAcPRED-DL Prediction Service
 
-Standalone FastAPI service for O-GlcNAcPRED-DL prediction. This project is decoupled from the main Django site and contains its own model weights, AAindex files, word2vec models, model architecture code, Dockerfile, and dependencies.
+Standalone FastAPI service for O-GlcNAcPRED-DL prediction.
+It contains the model weights, AAindex files, word2vec models, model architecture code, Dockerfile, and Python dependencies.
 
 ## Run Locally
 
 ```bash
-cd /home/bach/oglcnac-prediction-service
+cd /home/bach/oglcnac-source/prediction-service
 cp .env.example .env
 docker compose up -d --build
 curl http://127.0.0.1:8010/health
@@ -48,15 +49,16 @@ Interactive OpenAPI docs are available at:
 http://127.0.0.1:8010/docs
 ```
 
-## Public Deployment Notes
+## Deployment Notes
 
-The container binds to `127.0.0.1:8010` by default. For the GitHub Pages frontend, expose it through Cloudflare at:
+The container binds to `127.0.0.1:8010` by default. Public traffic reaches it through the API proxy at:
 
 ```text
 https://api.oglcnac.org/api/v1/predict
 ```
 
-The live API proxy routes requests with `Host: api.oglcnac.org` to this service. Do not bind the container directly to `0.0.0.0` on a public server unless another firewall or gateway protects it.
+The live API proxy routes requests with `Host: api.oglcnac.org` to this service.
+Do not bind the container directly to `0.0.0.0` on a public server unless another firewall or gateway protects it.
 
 Recommended controls already included:
 

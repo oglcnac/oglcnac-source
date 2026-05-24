@@ -1,6 +1,7 @@
-# O-GlcNAc Static Public Site
+# O-GlcNAc Static Frontend
 
-Static frontend generated from the Django public pages. This repository is prepared for GitHub Pages at `oglcnac.org`.
+This directory is the editable source for the public static website at `https://oglcnac.org/`.
+It is deployed by copying this directory to `/home/bach/oglcnac-static-site` and pushing that deploy checkout to GitHub Pages.
 
 Dynamic behavior is browser-side:
 
@@ -17,8 +18,13 @@ This repository is prepared for GitHub Pages:
 - `.nojekyll` disables Jekyll processing.
 - `404.html` redirects legacy detail paths like `/atlas/detail/P18583` to query-style pages that work on GitHub Pages.
 
-Regenerate static data bundles from the source SQLite database:
+## Static Data
+
+The generated JSON bundles live in `static/data/` and are tracked in git.
+Regenerate them only when the source SQLite database changes:
 
 ```bash
-python3 scripts/generate_static_data.py
+python3 scripts/generate_static_data.py --database /path/to/db.sqlite3
 ```
+
+The script writes to `frontend/static/data/` by default.

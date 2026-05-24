@@ -1,13 +1,17 @@
 # O-GlcNAc Source
 
 This is the source monorepo for the public O-GlcNAc website and prediction backend.
+Use this repository for new development.
 
-Production is split into two repositories:
+Production is intentionally simple:
 
-- Source repository: `github.com/oglcnac/oglcnac-source`
-- GitHub Pages deployment repository: `github.com/oglcnac/oglcnac`
+- `frontend/` is the editable static website source.
+- `prediction-service/` is the only backend.
+- `ops/api-proxy/` forwards `api.oglcnac.org` traffic to the backend.
+- `/home/bach/oglcnac-static-site` is the generated GitHub Pages deploy checkout.
 
-The deployment repository contains the generated/static public site for `https://oglcnac.org/`. This source repository contains the editable source layout and backend service code.
+The generated deploy checkout is pushed to `github.com/oglcnac/oglcnac`.
+This source repository is pushed to `github.com/oglcnac/oglcnac-source`.
 
 ## Layout
 
@@ -27,6 +31,18 @@ https://api.oglcnac.org/health    Prediction API proxy on Linode
 ```
 
 Atlas and OGT-PIN run fully from static frontend data in `frontend/static/data/`. The only backend is the prediction service.
+
+## Daily Checks
+
+From this repository:
+
+```bash
+git status --short --branch
+npm run smoke:static
+npm run smoke:static:browser
+```
+
+The smoke tests check the public site and public API.
 
 ## Deploy Frontend
 
@@ -61,3 +77,14 @@ sudo systemctl restart oglcnac-api-proxy
 curl -L -s https://oglcnac.org/ -o /tmp/oglcnac-home.html -w '%{http_code}\n'
 curl -L -s https://api.oglcnac.org/health -o /tmp/oglcnac-api.json -w '%{http_code}\n'
 ```
+
+## Static Data
+
+Atlas and OGT-PIN data bundles are checked into `frontend/static/data/`.
+Regenerate them only when the source database changes:
+
+```bash
+python3 frontend/scripts/generate_static_data.py --database /path/to/db.sqlite3
+```
+
+Do not use the archived legacy folders for normal development.
