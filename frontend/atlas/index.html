@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>O-GlcNAcAtlas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260522-premium5">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    
+</head>
+<body class="site-body section-body atlas-section">
+    
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar section-navbar" role="navigation">
+    <a class="navbar-brand" href="/">oglcnac.org</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="/atlas/">O-GlcNAcAtlas</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/statistics/">Statistics</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/search/">Search</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/browse/">Browse</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/tutorial/">Tutorial</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/download/">Download</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/contact/">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    
+
+    <main class="site-main">
+        
+  <div class="home">
+    <div class="landing-section hero">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-8">
+            <p class="hero-tagline"> </p>
+            <h1 class="hero-title">Search O-GlcNAc sites of proteins, quickly and reliably</h1>
+              <img width="120%"  class="img-responsive center-block"  src="/static/img/atlas-header.png">
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="landing-section features">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12">
+            <p>Protein O-GlcNAcylation has been documented in all metazoans (including animals, insects, and plants), some bacteria, fungi, and viruses. O-GlcNAcylation occurs on many proteins in nuclear, cytosolic, and mitochondria. As a critical modification, O-GlcNAc functions in a species-, tissue-/cell-, protein-, and site-specific manner.
+
+            </p>
+              <p> If you find this resource helpful, please cite our papers:</p>
+              
+            <p>
+                Ma J, et al., O-GlcNAcAtlas:
+                A database of experimentally identified O-GlcNAc sites and proteins.
+                <i>Glycobiology</i>. 2021, 31, 7, 719-723, DOI: <a href="https://doi.org/10.1093/glycob/cwab003">10.1093/glycob/cwab003</a>.
+            </p>
+            <p>
+                Hou C. et al., O-GlcNAcAtlas 4.0: An Updated Protein O-GlcNAcylation Database with Site-specific Quantification. <i>Journal of Molecular Biology</i>, 2025:169033. DOI: <a href="https://doi.org/10.1016/j.jmb.2025.169033">10.1016/j.jmb.2025.169033</a>
+            </p>
+              
+              <p><b>The current version: <i>O</i>-GlcNAcAtlas 5.0</b></p>
+            <br><br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    </main>
+
+    
+        <footer class="footer site-footer">
+  <div class="container footer-inner">
+    <div>
+      <strong>oglcnac.org</strong>
+      <span>Integrated O-GlcNAc resources from Ma Lab</span>
+    </div>
+    <div class="footer-links">
+      <a href="/atlas/">Atlas</a>
+      <a href="/ogt-pin">OGT-PIN</a>
+      <a href="/pred_dl/">PRED-DL</a>
+      <a href="https://junfengmalab.org/">Ma Lab</a>
+    </div>
+  </div>
+</footer>
+
+    
+
+    
+</body>
+</html>

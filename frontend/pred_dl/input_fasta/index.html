@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>O-GlcNAcPRED-DL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260522-premium5">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    
+</head>
+<body class="site-body section-body prediction-section">
+    
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar section-navbar" role="navigation">
+    <a class="navbar-brand" href="/">oglcnac.org</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item ">
+                <a class="nav-link" href="/pred_dl/">O-GlcNAcPRED-DL</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="/pred_dl/input_fasta">Prediction</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/pred_dl/tutorial">Tutorial</a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="/pred_dl/download">Download</a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="/pred_dl/contact">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    
+
+    <main class="site-main">
+        
+<section class="prediction-input">
+  <div class="container">
+    <div class="page-heading">
+      <p class="section-label">O-GlcNAcPRED-DL</p>
+      <h1>Deep-learning <span class="nowrap">O-GlcNAc</span> site prediction</h1>
+      <p>Submit human or mouse protein sequences in FASTA format. Use pasted input for a single sequence, or upload a FASTA file for multiple proteins.</p>
+    </div>
+
+    
+
+    <div class="prediction-grid">
+      <form class="prediction-card" action="#" method="post" id="prediction-text-form">
+        
+        <div class="prediction-card-header">
+          <span>Option 1</span>
+          <h2>Paste FASTA sequence</h2>
+        </div>
+
+        <fieldset class="species-control">
+          <legend>Select species</legend>
+          <label><input type="radio" name="drone" value="human" checked> Human</label>
+          <label><input type="radio" name="drone" value="mouse"> Mouse</label>
+        </fieldset>
+
+        <label for="message">Protein sequence in FASTA format</label>
+        <textarea required id="message" name="short_fasta" rows="14" class="form-control md-textarea" spellcheck="false"></textarea>
+
+        <div class="example-links">
+          <a href="/static/fasta/individual_protein_human.fasta" target="_blank" rel="noopener">Human example</a>
+          <a href="/static/fasta/individual_protein_mouse.fasta" target="_blank" rel="noopener">Mouse example</a>
+          <a href="/pred_dl/tutorial">Tutorial</a>
+        </div>
+
+        <button type="submit">Submit for prediction</button>
+      </form>
+
+      <form class="prediction-card" method="post" action="#" enctype="multipart/form-data" id="prediction-file-form">
+        
+        <div class="prediction-card-header">
+          <span>Option 2</span>
+          <h2>Upload FASTA file</h2>
+        </div>
+
+        <fieldset class="species-control">
+          <legend>Select species</legend>
+          <label><input type="radio" name="drone" value="human" checked> Human</label>
+          <label><input type="radio" name="drone" value="mouse"> Mouse</label>
+        </fieldset>
+
+        <label for="fasta-file">FASTA file with one or more protein sequences</label>
+        <input id="fasta-file" class="form-control-file" type="file" required name="inp_sequence.fasta" accept=".fasta,.fa,.faa,.txt">
+
+        <div class="example-links">
+          <a href="/static/fasta/multiple_proteins_human.fasta" target="_blank" rel="noopener">Human examples</a>
+          <a href="/static/fasta/multiple_proteins_mouse.fasta" target="_blank" rel="noopener">Mouse examples</a>
+          <a href="/pred_dl/tutorial">Tutorial</a>
+        </div>
+
+        <button type="submit">Submit for prediction</button>
+      </form>
+    </div>
+    <div class="results-card" id="prediction-results-card" style="display:none; margin-top: 28px;">
+      <table class="table hover compact" id="prediction-results-table">
+        <thead class="thead-inverse"><tr><th>ID</th><th>Position</th><th>Residue</th><th>O-GlcNAc prediction score</th><th>Confidence level</th></tr></thead>
+        <tbody id="prediction-results-body"></tbody>
+      </table>
+    </div>
+    <div class="alert alert-danger" id="prediction-error" role="alert" style="display:none; margin-top: 20px;"></div>
+  </div>
+</section>
+
+    </main>
+
+    
+        <footer class="footer site-footer">
+  <div class="container footer-inner">
+    <div>
+      <strong>oglcnac.org</strong>
+      <span>Integrated O-GlcNAc resources from Ma Lab</span>
+    </div>
+    <div class="footer-links">
+      <a href="/atlas/">Atlas</a>
+      <a href="/ogt-pin">OGT-PIN</a>
+      <a href="/pred_dl/">PRED-DL</a>
+      <a href="https://junfengmalab.org/">Ma Lab</a>
+    </div>
+  </div>
+</footer>
+
+    
+
+    
+
+<script>
+const PREDICTION_API_BASES = window.OGLCNAC_PREDICTION_API_BASES || ["https://api.oglcnac.org/api/v1"];
+function selectedSpecies(form) { const selected = form.querySelector('input[name="drone"]:checked'); return selected && selected.value === "mouse" ? "mouse" : "human"; }
+function showPredictionError(message) { const box = document.getElementById("prediction-error"); box.textContent = message; box.style.display = "block"; }
+function renderPredictionResults(results) { document.getElementById("prediction-error").style.display = "none"; if ($.fn.DataTable.isDataTable('#prediction-results-table')) { $('#prediction-results-table').DataTable().destroy(); } const body = document.getElementById("prediction-results-body"); body.innerHTML = ""; results.forEach((record) => { const row = body.insertRow(); [record.id, record.position, record.residue, record.score, record.confidence].forEach((value) => { const cell = row.insertCell(); cell.className = "align-middle"; cell.textContent = value ?? ""; }); }); document.getElementById("prediction-results-card").style.display = "block"; $('#prediction-results-table').DataTable({ dom: 'Bfrtip', buttons: { name: 'primary', buttons: ['copy', 'csv', 'excel', 'pdf'] } }); }
+async function submitPrediction(species, fasta) { let lastMessage = "Prediction service is unavailable. Please try again later."; for (const base of PREDICTION_API_BASES) { try { const response = await fetch(`${base}/predict`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ species, fasta }) }); if (response.ok) { return response.json(); } try { lastMessage = (await response.json()).detail || lastMessage; } catch (error) {} } catch (error) { lastMessage = "Prediction service is unavailable. Please try again later."; } } throw new Error(lastMessage); }
+$(document).ready(function () { document.getElementById("prediction-text-form").addEventListener("submit", async (event) => { event.preventDefault(); try { const payload = await submitPrediction(selectedSpecies(event.currentTarget), event.currentTarget.short_fasta.value); renderPredictionResults(payload.results || []); } catch (error) { showPredictionError(error.message); } }); document.getElementById("prediction-file-form").addEventListener("submit", async (event) => { event.preventDefault(); const file = event.currentTarget.querySelector('input[type="file"]').files[0]; if (!file) { showPredictionError("FASTA file is required"); return; } try { const payload = await submitPrediction(selectedSpecies(event.currentTarget), await file.text()); renderPredictionResults(payload.results || []); } catch (error) { showPredictionError(error.message); } }); });
+</script>
+</body>
+</html>

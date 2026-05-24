@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OGT-PIN</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260522-premium5">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    
+</head>
+<body class="site-body section-body interactome-section">
+    
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar section-navbar" role="navigation">
+    <a class="navbar-brand" href="/">oglcnac.org</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item ">
+                <a class="nav-link" href="/ogt-pin">OGT-PIN</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/ogt-pin/statistics">Statistics</a>
+            </li>
+            <li class="nav-item inactive">
+                <a class="nav-link" href="/ogt-pin/search/">Search</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/ogt-pin/tutorial/">Tutorial</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/ogt-pin/contact/">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    
+
+    <main class="site-main">
+        
+  <section class="search-page-heading">
+    <div class="container">
+      <div class="row justify-content-md-center">
+        <div class="col-md-auto">
+          <p class="section-label text-center">OGT-PIN</p>
+          <h1 class="text-center">Search OGT interactors</h1>
+          <p class="text-center search-subtitle">Database of OGT-interacting proteins</p>
+        </div>
+      </div>
+      <div class="row justify-content-md-center">
+        <form action="/ogt-pin/search/" method="get" class="form-inline" role="form" id="interactome-search-form">
+          <div class="form-group mx-sm-3 mb-2">
+          
+            <input type="text" required="required" class="form-control" placeholder="Search Term" name="q">
+          
+          </div>
+          <div class="form-group mx-sm-3 mb-2">
+            <select class="form-control" name="field">
+
+              <option value="gene_name_b">Gene name for interactor B</option>
+              <option value="uuid_b">Unique identifier for interactor B</option>
+              <option value="gene_name_a">Gene name for interactor A</option>
+              <option value="uuid_a">Unique identifier for interactor A</option>
+              <option value="species">Species</option>
+
+            </select>
+          </div>
+          <div class="form-group mx-sm-3 mb-2">
+            <button type="submit" class="btn btn-primary mb-2">Search</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+    <hr>
+
+  <section class="table-results-section">
+    <div class="container">
+      <div class="table-card-header">
+        <span>Results</span>
+        <h2>Search results</h2>
+      </div>
+      <div class="table-scroll">
+      <table class="table hover compact results-table" id="search_result">
+        <thead class="thead-inverse">
+          <tr>
+            <th>Unique identifier for interactor A</th>
+            <th>Gene name for interactor A</th>
+            <th>NCBI Taxonomy identifier for interactor B</th>
+            <th>Unique identifier for interactor B</th>
+            <th>Gene name for interactor B</th>
+            <th>Protein name for interactor B</th>
+          </tr>
+        </thead>
+        <tbody id="interactome-search-results"></tbody>
+      </table>
+      </div>
+
+    <div class="citation-note">
+    <p>If you find this resource helpful, please cite our paper:<br>
+      <i>
+        Ma J., et al., 
+        OGT Protein Interaction Network (OGT-PIN): A Curated Database of Experimentally 
+        Identified Interaction Proteins of OGT. Int. J. Mol. Sci. 2021, 22(17), 9620. DOI: <a href="https://doi.org/10.3390/ijms22179620">10.3390/ijms22179620</a>.
+      </i>
+    </p>
+    </div>
+
+
+</div>
+</section>
+
+
+
+
+
+    </main>
+
+    
+        <footer class="footer site-footer">
+  <div class="container footer-inner">
+    <div>
+      <strong>oglcnac.org</strong>
+      <span>Integrated O-GlcNAc resources from Ma Lab</span>
+    </div>
+    <div class="footer-links">
+      <a href="/atlas/">Atlas</a>
+      <a href="/ogt-pin">OGT-PIN</a>
+      <a href="/pred_dl/">PRED-DL</a>
+      <a href="https://junfengmalab.org/">Ma Lab</a>
+    </div>
+  </div>
+</footer>
+
+    
+
+    
+  <script src="/static/js/static-data.js"></script>
+  <script>
+
+    function textCell(row, value) {
+      const cell = row.insertCell();
+      cell.className = "align-middle";
+      cell.textContent = value || "";
+      return cell;
+    }
+
+    function linkCell(row, href, label, strong) {
+      const cell = row.insertCell();
+      cell.className = "align-middle";
+      if (!label) {
+        cell.textContent = "";
+        return cell;
+      }
+      const link = document.createElement("a");
+      link.href = href;
+      const content = strong ? document.createElement("strong") : document.createElement("span");
+      content.textContent = label;
+      link.appendChild(content);
+      cell.appendChild(link);
+      return cell;
+    }
+
+    function resetInteractomeTable() {
+      if ($.fn.DataTable.isDataTable('#search_result')) {
+        $('#search_result').DataTable().destroy();
+      }
+      document.getElementById("interactome-search-results").innerHTML = "";
+    }
+
+    function startInteractomeTable() {
+      $('#search_result').DataTable({
+        scrollX: true,
+        dom: 'Bfrtip',
+          buttons: {
+            name: 'primary',
+            buttons: ['copy', 'csv', 'excel', 'pdf']
+          }
+      });
+    }
+
+    async function runInteractomeSearch(event) {
+      if (event) {
+        event.preventDefault();
+      }
+      const form = document.getElementById("interactome-search-form");
+      const term = form.q.value.trim();
+      const field = form.field.value;
+      resetInteractomeTable();
+      if (!term) {
+        startInteractomeTable();
+        return;
+      }
+      const results = await window.OglcnacStaticData.searchOgtPin(term, field);
+      const body = document.getElementById("interactome-search-results");
+      results.forEach((record) => {
+        const row = body.insertRow();
+        textCell(row, record.uuid_a);
+        textCell(row, record.gene_name_a);
+        textCell(row, record.ncbi_id_b);
+        const idCell = row.insertCell();
+        idCell.className = "align-middle";
+        const uniprot = document.createElement("a");
+        uniprot.href = `https://www.uniprot.org/uniprot/${encodeURIComponent(record.uuid_b)}`;
+        uniprot.textContent = "UniProt ";
+        idCell.appendChild(uniprot);
+        const detail = document.createElement("a");
+        detail.href = `/ogt-pin/detail/?id=${encodeURIComponent(record.uuid_b)}`;
+        const strong = document.createElement("strong");
+        strong.textContent = record.uuid_b || "";
+        detail.appendChild(strong);
+        idCell.appendChild(detail);
+        textCell(row, record.gene_name_b);
+        textCell(row, record.protein_name_b);
+      });
+      startInteractomeTable();
+      window.history.replaceState({}, "", `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`);
+    }
+
+    $(document).ready(function () {
+      startInteractomeTable();
+      const form = document.getElementById("interactome-search-form");
+      form.addEventListener("submit", runInteractomeSearch);
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("q")) {
+        form.q.value = params.get("q");
+        if (params.get("field")) {
+          form.field.value = params.get("field");
+        }
+        runInteractomeSearch();
+      }
+    });
+  </script>
+
+</body>
+</html>

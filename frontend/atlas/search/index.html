@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>O-GlcNAcAtlas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260522-premium5">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    
+</head>
+<body class="site-body section-body atlas-section">
+    
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar section-navbar" role="navigation">
+    <a class="navbar-brand" href="/">oglcnac.org</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/">O-GlcNAcAtlas</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/statistics/">Statistics</a>
+            </li>
+            <li class="nav-item inactive">
+                <a class="nav-link" href="/atlas/search/">Search</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/browse/">Browse</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/tutorial/">Tutorial</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/download/">Download</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/contact/">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    
+
+    <main class="site-main">
+        
+  <section class="search-page-heading">
+    <div class="container">
+      <div class="row justify-content-md-center">
+        <div class="col-md-auto">
+          <p class="section-label text-center">O-GlcNAcAtlas</p>
+          <h1 class="text-center">Search O-GlcNAc sites</h1>
+          <p class="text-center search-subtitle">Database of O-GlcNAcylated proteins and sites</p>
+          <table class="table table-borderless table-sm search-stat-table">
+            <thead class="thead-inverse">
+              <tr class="metric-row">
+                <th class="metric-name">Total:</th>
+                <th class="metric-count">60,278 entries</th>
+                <th class="metric-protein">8,926 unique proteins</th>
+                <th class="metric-row-empty"></th>
+                <th class="metric-row-empty"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="metric-row">
+                <th class="metric-name">Dataset-I:</th>
+                <th class="metric-count">45,759 entries</th>
+                <th class="metric-site">23,072 unambiguous sites</th>
+                <th class="metric-protein">7,748 unique proteins</th>
+              </tr>
+              <tr class="metric-row">
+                <th class="metric-name">Dataset-II:</th>
+                <th class="metric-count">14,518 entries</th>
+                <th class="metric-site">13,076 ambiguous sites</th>
+                <th class="metric-protein">3,143 unique proteins</th>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="row justify-content-md-center">
+        <form action="/atlas/search/" method="get" class="form-inline" role="form" id="atlas-search-form">
+          <div class="form-group mx-sm-3 mb-2">
+          
+            <input type="text" required="required" class="form-control" placeholder="Search Term" name="q">
+          
+          </div>
+          <div class="form-group mx-sm-3 mb-2">
+            <select class="form-control" name="field">
+
+              <option value="accession">Accession</option>
+              <option value="protein_name">Protein Name</option>
+              <option value="gene_name">Gene Name</option>
+              <option value="peptide_seq">Peptide Sequence</option>
+              <option value="species">Species</option>
+
+            </select>
+          </div>
+          <div class="form-group mx-sm-3 mb-2">
+            <button type="submit" class="btn btn-primary mb-2">Search</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+    <hr>
+
+  <section class="table-results-section">
+    <div class="container">
+      <div class="table-card-header">
+        <span>Results</span>
+        <h2>Search results</h2>
+      </div>
+      <div class="table-scroll">
+      <table class="table hover compact results-table" id="search_result">
+        <thead class="thead-inverse">
+          <tr>
+
+
+            <th>Accession</th>
+            <th>Entry Name</th>
+            <th>Protein Name</th>
+            <th>Gene Name</th>
+
+
+            <th>Position in Protein</th>
+
+            <th>UniProt Link</th>
+          </tr>
+        </thead>
+        <tbody id="atlas-search-results"></tbody>
+      </table>
+      </div>
+
+</div>
+</section>
+
+
+
+
+
+    </main>
+
+    
+        <footer class="footer site-footer">
+  <div class="container footer-inner">
+    <div>
+      <strong>oglcnac.org</strong>
+      <span>Integrated O-GlcNAc resources from Ma Lab</span>
+    </div>
+    <div class="footer-links">
+      <a href="/atlas/">Atlas</a>
+      <a href="/ogt-pin">OGT-PIN</a>
+      <a href="/pred_dl/">PRED-DL</a>
+      <a href="https://junfengmalab.org/">Ma Lab</a>
+    </div>
+  </div>
+</footer>
+
+    
+
+    
+  <script src="/static/js/static-data.js"></script>
+  <script>
+
+    function textCell(row, value) {
+      const cell = row.insertCell();
+      cell.className = "align-middle";
+      cell.textContent = value || "";
+      return cell;
+    }
+
+    function linkCell(row, href, label, strong) {
+      const cell = row.insertCell();
+      cell.className = "align-middle";
+      if (!label) {
+        cell.textContent = "";
+        return cell;
+      }
+      const link = document.createElement("a");
+      link.href = href;
+      const content = strong ? document.createElement("strong") : document.createElement("span");
+      content.textContent = label;
+      link.appendChild(content);
+      cell.appendChild(link);
+      return cell;
+    }
+
+    function resetAtlasTable() {
+      if ($.fn.DataTable.isDataTable('#search_result')) {
+        $('#search_result').DataTable().destroy();
+      }
+      document.getElementById("atlas-search-results").innerHTML = "";
+    }
+
+    function startAtlasTable() {
+      $('#search_result').DataTable({
+        scrollX: true,
+        dom: 'Bfrtip',
+          buttons: {
+            name: 'primary',
+            buttons: ['copy', 'csv', 'excel', 'pdf']
+          }
+      });
+    }
+
+    async function runAtlasSearch(event) {
+      if (event) {
+        event.preventDefault();
+      }
+      const form = document.getElementById("atlas-search-form");
+      const term = form.q.value.trim();
+      const field = form.field.value;
+      resetAtlasTable();
+      if (!term) {
+        startAtlasTable();
+        return;
+      }
+      const results = await window.OglcnacStaticData.searchAtlas(term, field);
+      const body = document.getElementById("atlas-search-results");
+      results.forEach((record) => {
+        const row = body.insertRow();
+        linkCell(row, `/atlas/detail/?id=${encodeURIComponent(record.accession)}`, record.accession, true);
+        textCell(row, record.entry_name);
+        textCell(row, record.protein_name);
+        textCell(row, record.gene_name);
+        textCell(row, record.position_in_protein);
+        linkCell(row, `https://www.uniprot.org/uniprot/${encodeURIComponent(record.accession)}`, "UniProt", false);
+      });
+      startAtlasTable();
+      window.history.replaceState({}, "", `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`);
+    }
+
+    $(document).ready(function () {
+      startAtlasTable();
+      const form = document.getElementById("atlas-search-form");
+      form.addEventListener("submit", runAtlasSearch);
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("q")) {
+        form.q.value = params.get("q");
+        if (params.get("field")) {
+          form.field.value = params.get("field");
+        }
+        runAtlasSearch();
+      }
+    });
+  </script>
+
+</body>
+</html>

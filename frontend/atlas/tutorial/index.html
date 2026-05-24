@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>O-GlcNAcAtlas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260522-premium5">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    
+</head>
+<body class="site-body section-body atlas-section">
+    
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar section-navbar" role="navigation">
+    <a class="navbar-brand" href="/">oglcnac.org</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/">O-GlcNAcAtlas</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/statistics/">Statistics</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/search/">Search</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/browse/">Browse</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="/atlas/tutorial/">Tutorial</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/download/">Download</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/contact/">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    
+
+    <main class="site-main">
+        
+    <div class="container">
+ <h2 id="what-is-O-GlcNAcAtlas">What is O-GlcNAcAtlas?</h2>
+
+<p>O-GlcNAcAtlas is a comprehensive and curated database encapsulating experimentally identified O-GlcNAc sites and proteins in the past several decades (since its discovery in the early 1980s).</p>
+
+<h2 id="why-should-i-use-O-GlcNAcAtlas">Description to terms used in O-GlcNAcAtlas</h2>
+
+<p>O-GlcNAcAtlas offers the following useful information:</p>
+
+<ul>
+  <li>
+    <p><strong>Species.</strong> Samples the original authors used to identify O-GlcNAc sites (including human, mouse, rat and other species).</p>
+  </li>
+  <li>
+    <p><strong>Sample type.</strong> Samples the original authors used to identify O-GlcNAc sites (e.g., from different tissue/cell types).</p>
+  </li>
+  <li>
+    <p><strong>Accession.</strong> Accession ID# for proteins in UniProt or other databases.</p>
+  </li>
+  <li>
+    <p><strong>Entry name.</strong> Entry name for proteins in UniProt or other databases.</p>
+  </li>
+  <li>
+    <p><strong>Protein name.</strong> Protein name shown in Uniprot or other databases.</p>
+  </li>
+  <li>
+    <p><strong>Gene name.</strong> Gene name for proteins in Uniprot or other databases.</p>
+  </li>
+  <li>
+    <p><strong>Peptide sequence.</strong> Modified peptide sequence experimentally identified from samples used.</p>
+  </li>
+
+
+
+
+  <li>
+    <p><strong>Position in peptide.</strong> Modification position in the peptide sequence identified.</p>
+  </li>
+
+  <li>
+    <p><strong>Position in protein.</strong> Modification position in the protein sequence.</p>
+  </li>
+  <li>
+      <p><strong>Analytical throughput.</strong> LTP, low throughput; HTP, high throughput.</p>
+  </li>
+  <li>
+      <p><strong>Condition.</strong> Experimental comparisons performed.</p>
+  </li>
+  <li>
+      <p><strong>log2Ratio.</strong> Log2 of fold-change values.</p>
+  </li>
+  <li>
+      <p><strong>P_values.</strong> Statistic values for comparisons.</p>
+  </li>
+  <li>
+    <p><strong>PMID.</strong> PubMed IDs which showed the identification of O-GlcNAc sites and proteins by original authors. </p>
+  </li>
+  <li>
+    <p><strong>Comments.</strong> Comments from curators for specific proteins/peptides/sites.</p>
+  </li>
+</ul>
+
+<h2 id="how-do-i-use-O-GlcNAcAtlas">How do I use O-GlcNAcAtlas?</h2>
+
+<p>To start with O-GlcNAcAtlas, you typically do the following:</p>
+
+<ol>
+  <li>
+    <p><strong>Obtain the information of the protein(s)</strong> of your interest (e.g., <code class="highlighter-rouge">protein name</code>, <code class="highlighter-rouge">gene symbol</code>, <code class="highlighter-rouge">accession</code>). Peptide sequences of your interest can also be used for search directly.</p>
+  </li>
+  <li>
+    <p><strong>Search with specific parameters</strong>. Even though there are multiple parameters for searching, <strong>more specific items</strong> (e.g.
+        , <code class="highlighter-rouge">gene symbol</code> or <code class="highlighter-rouge">accession</code>) of proteins are preferred. E.g., regarding the microtubule-associated protein tau,
+        rather than then searching the protein name 'Tau', using its <code class="highlighter-rouge">gene symbol</code> (i.e., 'mapt') will give more specific
+        research results. If the <code class="highlighter-rouge">accession number</code> of a protein is known (e.g., P10636 for the Tau protein from human, as
+        can be found in UniProt), searching with the <code class="highlighter-rouge">accession number</code> (e.g., P10636) will give more specific results. </p>
+  </li>
+  <li>
+    <p><strong>Depending on what you're looking for</strong>, it is recommended to narrow down the resulting list for items of your
+        specific needs (e.g., the specific sites on certain proteins in a specific species). To that end, the search
+        results can be further filtered (by adding description in the 'Search' tab in the results list), enabling you
+        to hide all unnecessary data and display only the specific information you need.</p>
+  </li>
+  <li>
+    <p><strong>The results can be easily exported</strong> (as different formats) for your usage.</p>
+  </li>
+</ol>
+
+
+
+
+
+<h2 id="how-does-O-GlcNAcAtlas-work">Tips to help you easily find information on
+O-GlcNAcAtlas</h2>
+        <ul>
+            <li>
+                <p>Pay attention to details. There is no spell checker, so make sure to spell your search terms correctly. </p>
+            </li>
+            <li>
+                <p>Don't worry about capitalization. A search for 'MAPT' is the same as a search for 'mapt'. </p>
+            </li>
+        </ul>
+        <p></p>
+        <p></p>
+        <p></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+    </main>
+
+    
+        <footer class="footer site-footer">
+  <div class="container footer-inner">
+    <div>
+      <strong>oglcnac.org</strong>
+      <span>Integrated O-GlcNAc resources from Ma Lab</span>
+    </div>
+    <div class="footer-links">
+      <a href="/atlas/">Atlas</a>
+      <a href="/ogt-pin">OGT-PIN</a>
+      <a href="/pred_dl/">PRED-DL</a>
+      <a href="https://junfengmalab.org/">Ma Lab</a>
+    </div>
+  </div>
+</footer>
+
+    
+
+    
+</body>
+</html>

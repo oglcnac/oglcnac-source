@@ -1,0 +1,17 @@
+services:
+  oglcnac-prediction:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: oglcnac-prediction-service:latest
+    container_name: oglcnac-prediction
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8010:8010"
+    environment:
+      PREDICTION_MODEL_DIR: /app/prediction_model/model
+      PREDICTION_WORD2VEC_DIR: /app/prediction_model/word2vec
+      PREDICTION_API_KEYS: ${PREDICTION_API_KEYS:-}
+      PREDICTION_MAX_FASTA_CHARS: ${PREDICTION_MAX_FASTA_CHARS:-200000}
+      PREDICTION_RATE_LIMIT_PER_MINUTE: ${PREDICTION_RATE_LIMIT_PER_MINUTE:-12}
+      PREDICTION_CORS_ORIGINS: ${PREDICTION_CORS_ORIGINS:-https://oglcnac.org,https://www.oglcnac.org}

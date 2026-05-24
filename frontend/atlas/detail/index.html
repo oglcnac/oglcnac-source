@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>O-GlcNAcAtlas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260522-premium5">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    
+</head>
+<body class="site-body section-body atlas-section">
+    
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar section-navbar" role="navigation">
+    <a class="navbar-brand" href="/">oglcnac.org</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/">O-GlcNAcAtlas</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/statistics/">Statistics</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/search/">Search</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/browse/">Browse</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/tutorial/">Tutorial</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/download/">Download</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/atlas/contact/">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    
+
+    <main class="site-main">
+        
+
+  <section class="detail-search-strip">
+    <div class="container">
+      <div class="row justify-content-md-center">
+        <form action="/atlas/search/" method="get" class="form-inline" role="form">
+          <div class="form-group mx-sm-3 mb-2">
+          
+            <input type="text" required="required" class="form-control" placeholder="Search Term" name="q">
+          
+          </div>
+          <div class="form-group mx-sm-3 mb-2">
+            <select class="form-control" name="field">
+
+              <option value="accession">Accession</option>
+              <option value="protein_name">Protein Name</option>
+              <option value="gene_name">Gene Name</option>
+              <option value="peptide_seq">Peptide Sequence</option>
+            </select>
+          </div>
+          <div class="form-group mx-sm-3 mb-2">
+            <button type="submit" class="btn btn-primary mb-2">Search</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+<section class="detail-page atlas-detail-page">
+  <div class="container">
+    <div class="detail-hero">
+      <p class="section-label">O-GlcNAcAtlas record</p>
+      <h1 id="atlas-accession-title">P18583</h1>
+      <p>Protein sequence and curated O-GlcNAcylation evidence for this accession.</p>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-heading">
+        <span>Sequence</span>
+        <h2>Protein sequence</h2>
+      </div>
+      <pre id="protein-sequence" class="sequence-viewer"></pre>
+    </div>
+
+<script src="/static/js/static-data.js"></script>
+<script>
+  const detailParams = new URLSearchParams(window.location.search);
+  const ATLAS_ACCESSION = detailParams.get("id") || decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "P18583");
+  document.getElementById("atlas-accession-title").textContent = ATLAS_ACCESSION;
+
+  function formatSequence(seq, positions) {
+      const lines = seq.split("\n");
+      let formatted = "";
+      if (lines.length > 0) {
+          formatted += `${escapeHtml(lines[0])}<br>`;
+      }
+      const sequenceBody = lines.slice(1).join("").replace(/\s/g, "");
+      let count = 0;
+      for (let i = 0; i < sequenceBody.length; i++) {
+          let char = escapeHtml(sequenceBody[i]);
+          if (positions.includes(i + 1)) {
+              char = `<span style="color: #ee4b2b;">${char}</span>`;
+          }
+          formatted += char;
+          count++;
+          if (count % 10 === 0) {
+              formatted += " ";
+          }
+          if (count % 100 === 0) {
+              formatted += "<br>";
+          }
+      }
+      return formatted.trim();
+  }
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[char]));
+  }
+</script>
+
+
+
+
+
+    <div class="detail-section">
+      <div class="detail-section-heading">
+        <span>Peptides</span>
+        <h2>Peptide information</h2>
+      </div>
+      <div class="table-scroll">
+      <table class="table detail-table" id="detail1">
+        <thead class="thead-inverse">
+          <tr>
+            <th>ID</th>
+            <th>Peptide Seq</th>
+            <th>Site Residue</th>
+            <th>Position in Peptide</th>
+            <th>Position in Protein</th>
+          </tr>
+        </thead>
+        <tbody id="atlas-peptide-rows"></tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-heading">
+        <span>Evidence</span>
+        <h2>O-GlcNAcylation information</h2>
+      </div>
+      <div class="table-scroll">
+      <table class="table detail-table" id="detail2">
+        <thead class="thead-inverse">
+          <tr>
+            <th>ID</th>
+            <th>Method</th>
+            <th>Analytical Throughput</th>
+            <th>Ambiguity</th>
+            <th>Species</th>
+            <th>Sample Type</th>
+            <th>Condition</th>
+            <th>log2Ratio</th>
+            <th>P Value</th>
+            <th>Data Source PMID</th>
+            <th>Comments</th>
+          </tr>
+        </thead>
+        <tbody id="atlas-evidence-rows"></tbody>
+      </table>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="detail-section detail-export-section">
+      <div class="detail-section-heading">
+        <span>Export</span>
+        <h2>All curated fields</h2>
+      </div>
+      <p class="detail-help">Use the export buttons below to download the complete record fields.</p>
+      <div class="table-scroll">
+      <table class="table detail-table" id="detail3">
+        <thead class="thead-inverse">
+          <tr>
+            <th>ID</th>
+            <th>Peptide Seq</th>
+            <th>Site Residue</th>
+            <th>Position in Peptide</th>
+            <th>Position in Protein</th>
+            <th>Method</th>
+            <th>Analytical Throughput</th>
+            <th>Ambiguity</th>
+            <th>Species</th>
+            <th>Sample Type</th>
+            <th>Data Source PMID</th>
+            <th>Comments</th>
+          </tr>
+        </thead>
+        <tbody id="atlas-export-rows"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+    </main>
+
+    
+        <footer class="footer site-footer">
+  <div class="container footer-inner">
+    <div>
+      <strong>oglcnac.org</strong>
+      <span>Integrated O-GlcNAc resources from Ma Lab</span>
+    </div>
+    <div class="footer-links">
+      <a href="/atlas/">Atlas</a>
+      <a href="/ogt-pin">OGT-PIN</a>
+      <a href="/pred_dl/">PRED-DL</a>
+      <a href="https://junfengmalab.org/">Ma Lab</a>
+    </div>
+  </div>
+</footer>
+
+    
+
+    
+<script>
+  function textCell(row, value) {
+    const cell = row.insertCell();
+    cell.className = "align-middle";
+    cell.textContent = value || "";
+    return cell;
+  }
+
+  function pmidCell(row, pmid) {
+    const cell = row.insertCell();
+    cell.className = "align-middle";
+    if (!pmid) {
+      return cell;
+    }
+    const link = document.createElement("a");
+    link.href = `https://www.ncbi.nlm.nih.gov/pubmed/?term=${encodeURIComponent(pmid)}`;
+    link.textContent = pmid;
+    cell.appendChild(link);
+    return cell;
+  }
+
+  function peptideCell(row, record) {
+    const cell = row.insertCell();
+    cell.className = "align-middle";
+    const peptide = record.peptide_seq || "";
+    const position = Number.parseInt(record.position_in_peptide, 10);
+    if (!peptide || !position || position < 1 || position > peptide.length) {
+      cell.textContent = peptide;
+      return cell;
+    }
+    cell.appendChild(document.createTextNode(peptide.slice(0, position - 1)));
+    const mark = document.createElement("span");
+    mark.style.color = "#ff0000";
+    const strong = document.createElement("strong");
+    strong.textContent = peptide[position - 1];
+    mark.appendChild(strong);
+    cell.appendChild(mark);
+    cell.appendChild(document.createTextNode(peptide.slice(position)));
+    return cell;
+  }
+
+  function startDetailTable(id) {
+    $(`#${id}`).DataTable({
+      scrollX: true,
+      dom: 'Bfrtip',
+      buttons: {
+        name: 'primary',
+        buttons: ['copy', 'csv', 'excel', 'pdf']
+      }
+    });
+  }
+
+  async function loadAtlasDetail() {
+    const payload = await window.OglcnacStaticData.getAtlasDetail(ATLAS_ACCESSION);
+    if (!payload.records.length) {
+      document.getElementById("protein-sequence").textContent = "Atlas record is not available.";
+      ["detail1", "detail2", "detail3"].forEach(startDetailTable);
+      return;
+    }
+    const fasta = await window.OglcnacStaticData.getCachedUniprotFasta(ATLAS_ACCESSION);
+    if (!fasta || ["NA", "N/A"].includes(fasta.trim().toUpperCase())) {
+      document.getElementById("protein-sequence").textContent = "Protein sequence for this entry is not available in UniProt. Please refer to the original paper for details.";
+    } else {
+      document.getElementById("protein-sequence").innerHTML = formatSequence(fasta, payload.positions || []);
+    }
+
+    payload.records.forEach((record) => {
+      let row = document.getElementById("atlas-peptide-rows").insertRow();
+      textCell(row, record.id);
+      peptideCell(row, record);
+      textCell(row, record.site_residue);
+      textCell(row, record.position_in_peptide);
+      textCell(row, record.position_in_protein);
+
+      row = document.getElementById("atlas-evidence-rows").insertRow();
+      textCell(row, record.id);
+      textCell(row, record.method);
+      textCell(row, record.analytical_throughput);
+      textCell(row, record.ambiguous);
+      textCell(row, record.species);
+      textCell(row, record.sample_type);
+      textCell(row, record.condition);
+      textCell(row, record.log2FC);
+      textCell(row, record.p_value);
+      pmidCell(row, record.pmid);
+      textCell(row, record.comments);
+
+      row = document.getElementById("atlas-export-rows").insertRow();
+      textCell(row, record.id);
+      peptideCell(row, record);
+      textCell(row, record.site_residue);
+      textCell(row, record.position_in_peptide);
+      textCell(row, record.position_in_protein);
+      textCell(row, record.method);
+      textCell(row, record.analytical_throughput);
+      textCell(row, record.ambiguous);
+      textCell(row, record.species);
+      textCell(row, record.sample_type);
+      pmidCell(row, record.pmid);
+      textCell(row, record.comments);
+    });
+    ["detail1", "detail2", "detail3"].forEach(startDetailTable);
+  }
+
+  $(document).ready(loadAtlasDetail);
+</script>
+
+</body>
+</html>

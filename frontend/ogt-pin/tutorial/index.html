@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OGT-PIN</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260522-premium5">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    
+</head>
+<body class="site-body section-body interactome-section">
+    
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar section-navbar" role="navigation">
+    <a class="navbar-brand" href="/">oglcnac.org</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item ">
+                <a class="nav-link" href="/ogt-pin">OGT-PIN</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/ogt-pin/statistics">Statistics</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/ogt-pin/search/">Search</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="/ogt-pin/tutorial/">Tutorial</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/ogt-pin/contact/">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    
+
+    <main class="site-main">
+        
+    <div class="container">
+ <h1>What is OGT-PIN?</h1>
+
+<p>OGT Protein Interaction Network (OGT-PIN) is a comprehensive database of experimentally identified interacting
+    proteins of OGT and its orthologues.</p>
+
+<h1>Description of terms used in OGT-PIN</h1>
+
+<ul>
+  <li>
+    <p><strong>Unique identifier for interactor A.</strong> UniProt accession of OGT and orthologues (e.g., O15294 for human OGT).</p>
+  </li>
+  <li>
+    <p><strong>Gene name for interactor A.</strong> Gene symbol of OGT and orthologues (e.g., SXC and SEC).</p>
+  </li>
+  <li>
+    <p><strong>NCBI Taxonomy identifier for interactor B.</strong> Species of OGT and orthologues (e.g., SXC and SEC) used by authors in the original studies (e.g., Homo sapiens, Mus musculus, Rattus norvegicus, Drosophila melanogaster, Arabidopsis thaliana, and others).</p>
+  </li>
+  <li>
+    <p><strong>Unique identifier for interactor B.</strong> UniProt accession of the interacting protein (e.g., O60502) of OGT and orthologues.</p>
+  </li>
+  <li>
+    <p><strong>Gene name for interactor B.</strong> Gene symbol of the interacting protein (e.g., OGA) of OGT and orthologues.</p>
+  </li>
+  <li>
+    <p><strong>Protein name for interactor B.</strong> Primary protein name of the interacting protein (e.g., Protein O-GlcNAcase) of OGT and orthologues.</p>
+  </li>
+  <li>
+    <p><strong>Interaction detection method.</strong> Method(s) used for determining the interacting protein of OGT and orthologues.</p>
+  </li>
+  <li>
+    <p><strong>PMID.</strong> The original publication # that identified the interacting protein of OGT and orthologues.</p>
+  </li>
+
+  <li>
+    <p><strong>Analytical throughput.</strong> Low throughput; high throughput.</p>
+  </li>
+  <li>
+      <p><strong>Source.</strong> Data source that compiled the interacting protein of OGT and orthologues. ('GUMC' denotes the dataset curated and compiled by the GUMC curation team after surveying O-GlcNAc-focused studies.)</p>
+  </li>
+  <li>
+    <p><strong>Curator comments.</strong> Comments from curators for specific interacting proteins identified (e.g., 'Caution' denotes that validity of an entry might be lacking, as judged from description of methods used in the original study; according to the IMEx consortium curation manual_version 01/05/2015).</p>
+  </li>
+  <li>
+    <p><strong>Meeting IMEx criteria. </strong>Proteins meeting the requirements recommended by the IMEx curation manual are labeled with 'Yes'.</p>
+  </li>
+  <li>
+    <p><strong>High-stringency interactor. </strong> Proteins meeting more stringent rules are labeled with 'Yes', others are labeled with 'No'.</p>
+  </li>
+</ul>
+
+<h1 id="how-do-i-use-O-GlcNAcAtlas">How do I use OGT-PIN?</h1>
+
+<p>To start with OGT-PIN, you typically do the following:</p>
+
+<ol>
+  <li>
+    <p><strong>Obtain the information of the protein(s)</strong> of your interest (i.e., UniProt accession and gene symbol). </p>
+  </li>
+  <li>
+    <p><strong>Search with specific parameters</strong> (i.e., accession and gene symbol). </p>
+  </li>
+  <li>
+    <p><strong>Depending on what you're looking for</strong>, it is recommended to narrow down the resulting list for
+        items of your specific needs (e.g., interacting proteins in a specific species). To that end, the search results
+        can be further filtered (by adding description in the ‘Search’ tab in the results list), enabling you to hide all
+        unnecessary data and display only the specific information you need.</p>
+  </li>
+  <li>
+    <p><strong>The results can be easily exported</strong> (as different formats) for your usage.</p>
+  </li>
+</ol>
+
+<h2 id="how-does-O-GlcNAcAtlas-work">Tips to help you easily find information on OGT-PIN</h2>
+        <ul>
+            <li>
+                <p>Pay attention to details. There is no spell checker, so please make sure the search terms are correct.</p>
+            </li>
+            <li>
+                <p>Don't worry about capitalization. A search for 'OGA' is the same as a search for 'oga'.</p>
+            </li>
+        </ul>
+
+
+</div>
+
+    </main>
+
+    
+        <footer class="footer site-footer">
+  <div class="container footer-inner">
+    <div>
+      <strong>oglcnac.org</strong>
+      <span>Integrated O-GlcNAc resources from Ma Lab</span>
+    </div>
+    <div class="footer-links">
+      <a href="/atlas/">Atlas</a>
+      <a href="/ogt-pin">OGT-PIN</a>
+      <a href="/pred_dl/">PRED-DL</a>
+      <a href="https://junfengmalab.org/">Ma Lab</a>
+    </div>
+  </div>
+</footer>
+
+    
+
+    
+</body>
+</html>

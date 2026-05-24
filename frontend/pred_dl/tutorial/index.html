@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>O-GlcNAcPRED-DL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
+    <link rel="stylesheet" href="/static/css/app.css?v=20260522-premium5">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+    
+</head>
+<body class="site-body section-body prediction-section">
+    
+        <nav class="navbar navbar-expand-lg navbar-dark site-navbar section-navbar" role="navigation">
+    <a class="navbar-brand" href="/">oglcnac.org</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item ">
+                <a class="nav-link" href="/pred_dl/">O-GlcNAcPRED-DL</a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="/pred_dl/input_fasta">Prediction</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="/pred_dl/tutorial">Tutorial</a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="/pred_dl/download">Download</a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="/pred_dl/contact">Contact</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    
+
+    <main class="site-main">
+        
+<div class="container">
+            <h1 align="center">Tutorial</h1>
+            <div>
+                <br>
+            <h3> Please select species: 'human' or 'mouse' </h3>
+                <ul>
+                <li>
+                    For better results, it is recommended to choose appropriate species from which the proteins are, since different models were developed for each species. 
+                </li>
+                <li>
+                    Prediction for proteins from other species is technically possible, but the results should be used with extra caution!
+                </li>
+
+              </ul>      
+            </div>
+            <div>
+                <br>
+            <h3> Paste the protein sequence(s) in fasta format </h3>
+            <ul>
+                <li>
+                    Either a single sequence 
+                    (<a href="/static/fasta/individual_protein_human.fasta" download>example for human</a> / <a href="/static/fasta/individual_protein_mouse.fasta" download>example for mouse</a>)
+or a file containing multiple proteins sequences (<a href="/static/fasta/multiple_proteins_human.fasta" download>example for human</a> / <a href="/static/fasta/multiple_proteins_mouse.fasta" download>example for mouse</a>) is acceptable.   
+                </li>
+                <li>
+                    There is no limit in the length of a protein sequence (can be up to 8000 A.A.) 
+                </li>
+                <li>
+                    Besides the protein sequence, the header must be included into the fasta file. 
+                </li>
+            </ul>
+                </div>
+            <div>
+
+                <br>
+            <h3> Click the 'submit for prediction' button for prediction </h3>
+            <ul>
+            <li>
+                For individual proteins, it usually takes several seconds to get the results. 
+            </li>
+            <li>
+                For a fasta file containing multiple protein sequences, it may take longer. 
+            </li>
+        </ul>
+        </div>
+        <div>
+            <br>
+            <h3>
+                View the prediction results
+            </h3>
+            <ul>
+            <li>
+                A prediction score is given for each S/T residue.
+            </li>
+            <li>
+                Sites with scores >0.5, >0.95, > 0.99 can be regarded as low confidence, medium confidence, and high confidence, respectively.
+            </li>
+            <li>
+                Results can be downloaded for further analysis if needed.
+            </li>
+        </ul>
+        </div>
+</div>
+
+    </main>
+
+    
+        <footer class="footer site-footer">
+  <div class="container footer-inner">
+    <div>
+      <strong>oglcnac.org</strong>
+      <span>Integrated O-GlcNAc resources from Ma Lab</span>
+    </div>
+    <div class="footer-links">
+      <a href="/atlas/">Atlas</a>
+      <a href="/ogt-pin">OGT-PIN</a>
+      <a href="/pred_dl/">PRED-DL</a>
+      <a href="https://junfengmalab.org/">Ma Lab</a>
+    </div>
+  </div>
+</footer>
+
+    
+
+    
+</body>
+</html>
