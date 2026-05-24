@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "screenshots": "node scripts/capture_screenshots.js",
+    "smoke:static": "python3 scripts/smoke_static_site.py",
+    "smoke:static:browser": "node scripts/smoke_static_site_browser.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
+}
