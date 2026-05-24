@@ -120,6 +120,7 @@
     
 
 <script src="/static/js/static-data.js"></script>
+<script src="/static/js/table-utils.js"></script>
 <script>
 let selectedBrowseSpecies = "Human";
 let browseTable = null;
@@ -148,18 +149,12 @@ function loadBrowse(species) {
     return;
   }
 
-  browseTable = $('#search_result').DataTable({
+  browseTable = window.OglcnacUi.startExportTable("#search_result", {
     processing: true,
     serverSide: true,
-    scrollX: true,
     searchDelay: 300,
     pageLength: 10,
     lengthMenu: [10, 25, 50, 100],
-    dom: 'Bfrtip',
-    buttons: {
-      name: 'primary',
-      buttons: ['copy', 'csv', 'excel', 'pdf']
-    },
     ajax: async function (request, callback) {
       try {
         const results = await window.OglcnacStaticData.browseAtlas(selectedBrowseSpecies, request.search.value || "");

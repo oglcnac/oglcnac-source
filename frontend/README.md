@@ -21,10 +21,5 @@ This repository is prepared for GitHub Pages:
 ## Static Data
 
 The generated JSON bundles live in `static/data/` and are tracked in git.
-Regenerate them only when the source SQLite database changes:
-
-```bash
-python3 scripts/generate_static_data.py --database /path/to/db.sqlite3
-```
-
-The script writes to `frontend/static/data/` by default.
+Regenerate them only when the source SQLite database changes.
+See `../docs/DATA-UPDATES.md`.

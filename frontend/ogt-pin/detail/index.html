@@ -138,40 +138,14 @@
 
     
     <script src="/static/js/static-data.js"></script>
+    <script src="/static/js/table-utils.js"></script>
     <script>
         const detailParams = new URLSearchParams(window.location.search);
         const INTERACTOME_UUID_B = detailParams.get("id") || decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "Q9H1M0");
         document.getElementById("interactome-title").textContent = INTERACTOME_UUID_B;
 
-        function textCell(row, value) {
-            const cell = row.insertCell();
-            cell.className = "align-middle";
-            cell.textContent = value || "";
-            return cell;
-        }
-
-        function pmidCell(row, pmid) {
-            const cell = row.insertCell();
-            cell.className = "align-middle";
-            if (!pmid) {
-                return cell;
-            }
-            const link = document.createElement("a");
-            link.href = `https://www.ncbi.nlm.nih.gov/pubmed/?term=${encodeURIComponent(pmid)}`;
-            link.textContent = pmid;
-            cell.appendChild(link);
-            return cell;
-        }
-
         function startInteractomeDetailTable() {
-            $('#interactome').DataTable({
-                scrollX: true,
-                dom: 'Bfrtip',
-                buttons: {
-                    name: 'primary',
-                    buttons: ['copy', 'csv', 'excel', 'pdf']
-                }
-            });
+            window.OglcnacUi.startExportTable("#interactome");
         }
 
         async function loadInteractomeDetail() {
@@ -183,15 +157,15 @@
             const body = document.getElementById("interactome-detail-rows");
             payload.records.forEach((record) => {
                 const row = body.insertRow();
-                textCell(row, record.uuid_b);
-                textCell(row, record.alt_id_b);
-                textCell(row, record.detection_method);
-                pmidCell(row, record.pmid);
-                textCell(row, record.analytic_throughput);
-                textCell(row, record.source);
-                textCell(row, record.curater_comments);
-                textCell(row, record.meeting_imex_criteria);
-                textCell(row, record.high_stringency_interactor);
+                window.OglcnacUi.textCell(row, record.uuid_b);
+                window.OglcnacUi.textCell(row, record.alt_id_b);
+                window.OglcnacUi.textCell(row, record.detection_method);
+                window.OglcnacUi.pmidCell(row, record.pmid);
+                window.OglcnacUi.textCell(row, record.analytic_throughput);
+                window.OglcnacUi.textCell(row, record.source);
+                window.OglcnacUi.textCell(row, record.curater_comments);
+                window.OglcnacUi.textCell(row, record.meeting_imex_criteria);
+                window.OglcnacUi.textCell(row, record.high_stringency_interactor);
             });
             startInteractomeDetailTable();
         }

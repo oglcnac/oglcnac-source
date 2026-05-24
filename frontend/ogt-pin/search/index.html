@@ -146,47 +146,14 @@
 
     
   <script src="/static/js/static-data.js"></script>
+  <script src="/static/js/table-utils.js"></script>
   <script>
-
-    function textCell(row, value) {
-      const cell = row.insertCell();
-      cell.className = "align-middle";
-      cell.textContent = value || "";
-      return cell;
-    }
-
-    function linkCell(row, href, label, strong) {
-      const cell = row.insertCell();
-      cell.className = "align-middle";
-      if (!label) {
-        cell.textContent = "";
-        return cell;
-      }
-      const link = document.createElement("a");
-      link.href = href;
-      const content = strong ? document.createElement("strong") : document.createElement("span");
-      content.textContent = label;
-      link.appendChild(content);
-      cell.appendChild(link);
-      return cell;
-    }
-
     function resetInteractomeTable() {
-      if ($.fn.DataTable.isDataTable('#search_result')) {
-        $('#search_result').DataTable().destroy();
-      }
-      document.getElementById("interactome-search-results").innerHTML = "";
+      window.OglcnacUi.resetTable("#search_result", "interactome-search-results");
     }
 
     function startInteractomeTable() {
-      $('#search_result').DataTable({
-        scrollX: true,
-        dom: 'Bfrtip',
-          buttons: {
-            name: 'primary',
-            buttons: ['copy', 'csv', 'excel', 'pdf']
-          }
-      });
+      window.OglcnacUi.startExportTable("#search_result");
     }
 
     async function runInteractomeSearch(event) {
@@ -205,9 +172,9 @@
       const body = document.getElementById("interactome-search-results");
       results.forEach((record) => {
         const row = body.insertRow();
-        textCell(row, record.uuid_a);
-        textCell(row, record.gene_name_a);
-        textCell(row, record.ncbi_id_b);
+        window.OglcnacUi.textCell(row, record.uuid_a);
+        window.OglcnacUi.textCell(row, record.gene_name_a);
+        window.OglcnacUi.textCell(row, record.ncbi_id_b);
         const idCell = row.insertCell();
         idCell.className = "align-middle";
         const uniprot = document.createElement("a");
@@ -220,8 +187,8 @@
         strong.textContent = record.uuid_b || "";
         detail.appendChild(strong);
         idCell.appendChild(detail);
-        textCell(row, record.gene_name_b);
-        textCell(row, record.protein_name_b);
+        window.OglcnacUi.textCell(row, record.gene_name_b);
+        window.OglcnacUi.textCell(row, record.protein_name_b);
       });
       startInteractomeTable();
       window.history.replaceState({}, "", `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`);

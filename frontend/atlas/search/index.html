@@ -172,47 +172,14 @@
 
     
   <script src="/static/js/static-data.js"></script>
+  <script src="/static/js/table-utils.js"></script>
   <script>
-
-    function textCell(row, value) {
-      const cell = row.insertCell();
-      cell.className = "align-middle";
-      cell.textContent = value || "";
-      return cell;
-    }
-
-    function linkCell(row, href, label, strong) {
-      const cell = row.insertCell();
-      cell.className = "align-middle";
-      if (!label) {
-        cell.textContent = "";
-        return cell;
-      }
-      const link = document.createElement("a");
-      link.href = href;
-      const content = strong ? document.createElement("strong") : document.createElement("span");
-      content.textContent = label;
-      link.appendChild(content);
-      cell.appendChild(link);
-      return cell;
-    }
-
     function resetAtlasTable() {
-      if ($.fn.DataTable.isDataTable('#search_result')) {
-        $('#search_result').DataTable().destroy();
-      }
-      document.getElementById("atlas-search-results").innerHTML = "";
+      window.OglcnacUi.resetTable("#search_result", "atlas-search-results");
     }
 
     function startAtlasTable() {
-      $('#search_result').DataTable({
-        scrollX: true,
-        dom: 'Bfrtip',
-          buttons: {
-            name: 'primary',
-            buttons: ['copy', 'csv', 'excel', 'pdf']
-          }
-      });
+      window.OglcnacUi.startExportTable("#search_result");
     }
 
     async function runAtlasSearch(event) {
@@ -231,12 +198,12 @@
       const body = document.getElementById("atlas-search-results");
       results.forEach((record) => {
         const row = body.insertRow();
-        linkCell(row, `/atlas/detail/?id=${encodeURIComponent(record.accession)}`, record.accession, true);
-        textCell(row, record.entry_name);
-        textCell(row, record.protein_name);
-        textCell(row, record.gene_name);
-        textCell(row, record.position_in_protein);
-        linkCell(row, `https://www.uniprot.org/uniprot/${encodeURIComponent(record.accession)}`, "UniProt", false);
+        window.OglcnacUi.linkCell(row, `/atlas/detail/?id=${encodeURIComponent(record.accession)}`, record.accession, true);
+        window.OglcnacUi.textCell(row, record.entry_name);
+        window.OglcnacUi.textCell(row, record.protein_name);
+        window.OglcnacUi.textCell(row, record.gene_name);
+        window.OglcnacUi.textCell(row, record.position_in_protein);
+        window.OglcnacUi.linkCell(row, `https://www.uniprot.org/uniprot/${encodeURIComponent(record.accession)}`, "UniProt", false);
       });
       startAtlasTable();
       window.history.replaceState({}, "", `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`);

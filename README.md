@@ -44,47 +44,16 @@ npm run smoke:static:browser
 
 The smoke tests check the public site and public API.
 
-## Deploy Frontend
+## Common Workflows
 
-The frontend deployment target is `/home/bach/oglcnac-static-site`, whose git remote is `github.com/oglcnac/oglcnac`.
+- Deployment: see `docs/DEPLOYMENT.md`.
+- Data updates: see `docs/DATA-UPDATES.md`.
+- Frontend source notes: see `frontend/README.md`.
+- Prediction backend notes: see `prediction-service/README.md`.
 
-```bash
-./scripts/deploy-frontend.sh
-```
+## Do Not Commit
 
-## Deploy Prediction Service
-
-```bash
-cd prediction-service
-docker compose up -d --build
-curl http://127.0.0.1:8010/health
-```
-
-Runtime secrets live in `prediction-service/.env` and are intentionally not tracked.
-
-## Deploy API Proxy
-
-```bash
-sudo cp ops/api-proxy/oglcnac-api-proxy.service /etc/systemd/system/oglcnac-api-proxy.service
-sudo systemctl daemon-reload
-sudo systemctl enable oglcnac-api-proxy
-sudo systemctl restart oglcnac-api-proxy
-```
-
-## Verify
-
-```bash
-curl -L -s https://oglcnac.org/ -o /tmp/oglcnac-home.html -w '%{http_code}\n'
-curl -L -s https://api.oglcnac.org/health -o /tmp/oglcnac-api.json -w '%{http_code}\n'
-```
-
-## Static Data
-
-Atlas and OGT-PIN data bundles are checked into `frontend/static/data/`.
-Regenerate them only when the source database changes:
-
-```bash
-python3 frontend/scripts/generate_static_data.py --database /path/to/db.sqlite3
-```
-
-Do not use the archived legacy folders for normal development.
+- Secrets or local runtime files such as `prediction-service/.env`.
+- Generated visual review screenshots.
+- Python caches, logs, or local virtual environments.
+- Files from archived legacy folders unless doing explicit historical recovery.

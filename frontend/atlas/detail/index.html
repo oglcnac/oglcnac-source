@@ -96,6 +96,7 @@
     </div>
 
 <script src="/static/js/static-data.js"></script>
+<script src="/static/js/table-utils.js"></script>
 <script>
   const detailParams = new URLSearchParams(window.location.search);
   const ATLAS_ACCESSION = detailParams.get("id") || decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "P18583");
@@ -258,26 +259,6 @@
 
     
 <script>
-  function textCell(row, value) {
-    const cell = row.insertCell();
-    cell.className = "align-middle";
-    cell.textContent = value || "";
-    return cell;
-  }
-
-  function pmidCell(row, pmid) {
-    const cell = row.insertCell();
-    cell.className = "align-middle";
-    if (!pmid) {
-      return cell;
-    }
-    const link = document.createElement("a");
-    link.href = `https://www.ncbi.nlm.nih.gov/pubmed/?term=${encodeURIComponent(pmid)}`;
-    link.textContent = pmid;
-    cell.appendChild(link);
-    return cell;
-  }
-
   function peptideCell(row, record) {
     const cell = row.insertCell();
     cell.className = "align-middle";
@@ -299,14 +280,7 @@
   }
 
   function startDetailTable(id) {
-    $(`#${id}`).DataTable({
-      scrollX: true,
-      dom: 'Bfrtip',
-      buttons: {
-        name: 'primary',
-        buttons: ['copy', 'csv', 'excel', 'pdf']
-      }
-    });
+    window.OglcnacUi.startExportTable(`#${id}`);
   }
 
   async function loadAtlasDetail() {
@@ -325,38 +299,38 @@
 
     payload.records.forEach((record) => {
       let row = document.getElementById("atlas-peptide-rows").insertRow();
-      textCell(row, record.id);
+      window.OglcnacUi.textCell(row, record.id);
       peptideCell(row, record);
-      textCell(row, record.site_residue);
-      textCell(row, record.position_in_peptide);
-      textCell(row, record.position_in_protein);
+      window.OglcnacUi.textCell(row, record.site_residue);
+      window.OglcnacUi.textCell(row, record.position_in_peptide);
+      window.OglcnacUi.textCell(row, record.position_in_protein);
 
       row = document.getElementById("atlas-evidence-rows").insertRow();
-      textCell(row, record.id);
-      textCell(row, record.method);
-      textCell(row, record.analytical_throughput);
-      textCell(row, record.ambiguous);
-      textCell(row, record.species);
-      textCell(row, record.sample_type);
-      textCell(row, record.condition);
-      textCell(row, record.log2FC);
-      textCell(row, record.p_value);
-      pmidCell(row, record.pmid);
-      textCell(row, record.comments);
+      window.OglcnacUi.textCell(row, record.id);
+      window.OglcnacUi.textCell(row, record.method);
+      window.OglcnacUi.textCell(row, record.analytical_throughput);
+      window.OglcnacUi.textCell(row, record.ambiguous);
+      window.OglcnacUi.textCell(row, record.species);
+      window.OglcnacUi.textCell(row, record.sample_type);
+      window.OglcnacUi.textCell(row, record.condition);
+      window.OglcnacUi.textCell(row, record.log2FC);
+      window.OglcnacUi.textCell(row, record.p_value);
+      window.OglcnacUi.pmidCell(row, record.pmid);
+      window.OglcnacUi.textCell(row, record.comments);
 
       row = document.getElementById("atlas-export-rows").insertRow();
-      textCell(row, record.id);
+      window.OglcnacUi.textCell(row, record.id);
       peptideCell(row, record);
-      textCell(row, record.site_residue);
-      textCell(row, record.position_in_peptide);
-      textCell(row, record.position_in_protein);
-      textCell(row, record.method);
-      textCell(row, record.analytical_throughput);
-      textCell(row, record.ambiguous);
-      textCell(row, record.species);
-      textCell(row, record.sample_type);
-      pmidCell(row, record.pmid);
-      textCell(row, record.comments);
+      window.OglcnacUi.textCell(row, record.site_residue);
+      window.OglcnacUi.textCell(row, record.position_in_peptide);
+      window.OglcnacUi.textCell(row, record.position_in_protein);
+      window.OglcnacUi.textCell(row, record.method);
+      window.OglcnacUi.textCell(row, record.analytical_throughput);
+      window.OglcnacUi.textCell(row, record.ambiguous);
+      window.OglcnacUi.textCell(row, record.species);
+      window.OglcnacUi.textCell(row, record.sample_type);
+      window.OglcnacUi.pmidCell(row, record.pmid);
+      window.OglcnacUi.textCell(row, record.comments);
     });
     ["detail1", "detail2", "detail3"].forEach(startDetailTable);
   }
