@@ -215,6 +215,7 @@
       form.addEventListener("submit", runAtlasSearch);
       const params = new URLSearchParams(window.location.search);
       if (params.get("q")) {
+        document.body.classList.add("has-search-query");
         form.q.value = params.get("q");
         if (params.get("field")) {
           form.field.value = params.get("field");

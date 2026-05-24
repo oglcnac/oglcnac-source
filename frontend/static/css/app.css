@@ -1369,6 +1369,55 @@ a {
   padding: 34px 40px;
 }
 
+.section-body.has-search-query .search-page-heading {
+  padding-bottom: 24px;
+}
+
+.section-body.has-search-query .site-main > .search-page-heading > .container {
+  padding: 24px 30px;
+}
+
+.section-body.has-search-query .search-page-heading h1 {
+  font-size: clamp(1.85rem, 3vw, 2.55rem);
+}
+
+.section-body.has-search-query .search-stat-table {
+  display: none;
+}
+
+.section-body.has-search-query .search-subtitle {
+  margin-bottom: 20px;
+}
+
+.section-body.has-search-query .site-main > .table-results-section > .container {
+  padding: 28px 34px;
+}
+
+.section-body .dataTables_scroll,
+.section-body .dataTables_scrollHead,
+.section-body .dataTables_scrollHeadInner,
+.section-body .dataTables_scrollBody {
+  width: 100% !important;
+}
+
+.section-body .dataTables_scrollHead table,
+.section-body .dataTables_scrollBody table {
+  min-width: 100%;
+}
+
+.section-body .dataTables_scrollBody {
+  border-bottom: 1px solid #111;
+}
+
+.section-body .dataTables_scrollBody::-webkit-scrollbar {
+  height: 10px;
+}
+
+.section-body .dataTables_scrollBody::-webkit-scrollbar-thumb {
+  background: #b9c8d6;
+  border-radius: 999px;
+}
+
 @media (max-width: 575px) {
   .site-navbar {
     min-height: 64px;
@@ -1458,6 +1507,49 @@ a {
 
   .section-body .site-main > .table-results-section > .container {
     padding: 24px 18px;
+  }
+
+  .section-body.has-search-query .site-main > .search-page-heading > .container,
+  .section-body.has-search-query .site-main > .table-results-section > .container {
+    padding: 22px 18px;
+  }
+
+  .section-body.has-search-query .search-page-heading h1 {
+    font-size: 2rem;
+  }
+
+  .atlas-section .results-table th:nth-child(n+4),
+  .atlas-section .results-table td:nth-child(n+4) {
+    display: none;
+  }
+
+  .atlas-section .dataTables_scrollHead table.results-table,
+  .atlas-section .dataTables_scrollBody table.results-table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .atlas-section .results-table th,
+  .atlas-section .results-table td {
+    padding-right: 6px !important;
+    padding-left: 6px !important;
+  }
+
+  .atlas-section .results-table td:nth-child(1),
+  .atlas-section .results-table th:nth-child(1) {
+    width: 30% !important;
+  }
+
+  .atlas-section .results-table td:nth-child(2),
+  .atlas-section .results-table th:nth-child(2) {
+    width: 30% !important;
+  }
+
+  .atlas-section .results-table td:nth-child(3),
+  .atlas-section .results-table th:nth-child(3) {
+    min-width: 0;
+    width: 40% !important;
+    overflow-wrap: anywhere;
   }
 
   .sequence-viewer {
