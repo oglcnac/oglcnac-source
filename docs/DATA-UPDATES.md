@@ -1,14 +1,17 @@
 # Data Updates
 
 Atlas and OGT-PIN run from JSON bundles in `frontend/static/data/`.
-Update those files only when the source SQLite database changes.
+Use curated CSV files for normal updates. SQLite is supported only for legacy recovery.
 
-## Regenerate
+## Regenerate From CSV
 
 From the source repo:
 
 ```bash
-python3 frontend/scripts/generate_static_data.py --database /path/to/db.sqlite3
+python3 frontend/scripts/generate_static_data.py \
+  --atlas-unambiguous-csv /path/to/atlas-records-unambiguous.csv \
+  --atlas-ambiguous-csv /path/to/atlas-records-ambiguous.csv \
+  --ogt-pin-csv /path/to/ogt-pin-records.csv
 ```
 
 The script writes:
@@ -18,6 +21,19 @@ frontend/static/data/atlas-records.json
 frontend/static/data/atlas-records.json.gz
 frontend/static/data/ogt-pin-records.json
 frontend/static/data/ogt-pin-records.json.gz
+```
+
+Keep Atlas dataset labels separate:
+
+- unambiguous sites are dataset-I and are exported with `ambiguous=unambiguous`
+- ambiguous sites are dataset-II and are exported with `ambiguous=ambiguous`
+
+The CSV generator also accepts `--atlas-csv` for a combined Atlas file, but that file must already include a correct `ambiguous` column.
+
+## Legacy SQLite Regeneration
+
+```bash
+python3 frontend/scripts/generate_static_data.py --database /path/to/db.sqlite3
 ```
 
 ## Verify
