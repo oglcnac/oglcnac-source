@@ -49,6 +49,7 @@ The smoke tests check the public site and public API.
 - Deployment: see `docs/DEPLOYMENT.md`.
 - Maintenance checklist: see `docs/MAINTENANCE.md`.
 - Data updates: see `docs/DATA-UPDATES.md`.
+- Curator workflow: see `docs/CURATOR-WORKFLOW.md`.
 - Frontend source notes: see `frontend/README.md`.
 - Prediction backend notes: see `prediction-service/README.md`.
 

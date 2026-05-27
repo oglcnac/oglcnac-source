@@ -2,6 +2,7 @@
 
 Atlas and OGT-PIN run from JSON bundles in `frontend/static/data/`.
 Use curated CSV files for normal updates. SQLite is supported only for legacy recovery.
+For the complete curator workflow, see `docs/CURATOR-WORKFLOW.md`.
 
 ## Regenerate From CSV
 

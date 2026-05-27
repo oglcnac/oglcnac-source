@@ -19,28 +19,29 @@ def annotate_atlas(record):
     return annotated
 
 
-def scalar(value):
+def scalar(value, key=None):
     if value is None:
         return None
     value = value.strip()
     if value == "":
-        return None
-    try:
-        number = int(value)
-        if str(number) == value:
-            return number
-    except ValueError:
-        pass
-    try:
-        return float(value)
-    except ValueError:
-        return value
+        return ""
+    if key == "id":
+        try:
+            return int(value)
+        except ValueError:
+            return value
+    return value
 
 
 def csv_rows(path):
-    with path.open(newline="", encoding="utf-8-sig") as handle:
-        reader = csv.DictReader(handle)
-        return [{key: scalar(value) for key, value in row.items()} for row in reader]
+    for encoding in ("utf-8-sig", "latin-1"):
+        try:
+            with path.open(newline="", encoding=encoding) as handle:
+                reader = csv.DictReader(handle)
+                return [{key: scalar(value, key) for key, value in row.items()} for row in reader]
+        except UnicodeDecodeError:
+            continue
+    raise UnicodeDecodeError("csv", b"", 0, 1, f"Could not decode {path}")
 
 
 def normalize_atlas_csv_row(row, dataset=None):
