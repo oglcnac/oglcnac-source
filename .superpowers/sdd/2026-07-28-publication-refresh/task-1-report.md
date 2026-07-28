@@ -170,3 +170,132 @@ transitional vendor copies were added.
    the Task 2 native table/runtime migration.
 3. The parent publication plan document remains an unrelated untracked file
    and was deliberately excluded from the Task 1 implementation commit.
+
+## Review Fix Round 1
+
+Two Important review findings were addressed independently with RED/GREEN
+cycles.
+
+### Case-Insensitive Stylesheet `rel` Tokens
+
+The controlled fixture uses only an external stylesheet with
+`rel="alternate StyleSheet"`. Before the fix:
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_site_build.SiteBuildTests.test_runtime_dependency_audit_treats_stylesheet_rel_case_insensitively \
+  -v
+```
+
+RED output:
+
+```text
+test_runtime_dependency_audit_treats_stylesheet_rel_case_insensitively (scripts.tests.test_site_build.SiteBuildTests) ... FAIL
+
+======================================================================
+FAIL: test_runtime_dependency_audit_treats_stylesheet_rel_case_insensitively (scripts.tests.test_site_build.SiteBuildTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "scripts/tests/test_site_build.py", line 325, in test_runtime_dependency_audit_treats_stylesheet_rel_case_insensitively
+    self.assertNotEqual(result.returncode, 0)
+AssertionError: 0 == 0
+
+----------------------------------------------------------------------
+Ran 1 test in 0.043s
+
+FAILED (failures=1)
+```
+
+The parser now case-folds every whitespace-separated `rel` token before
+matching `stylesheet`. The same command then produced:
+
+```text
+test_runtime_dependency_audit_treats_stylesheet_rel_case_insensitively (scripts.tests.test_site_build.SiteBuildTests) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.039s
+
+OK
+```
+
+### Obsolete Owned Generated Outputs
+
+The controlled output roots contain a copied generated page at
+`retired/index.html` plus unmarked `manual.html`, curator CSS, and static JSON.
+Before ownership/set checking:
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_site_build.SiteBuildTests.test_check_reports_obsolete_owned_output_and_ignores_unrelated_files \
+  scripts.tests.test_site_build.SiteBuildTests.test_build_removes_only_obsolete_owned_outputs \
+  scripts.tests.test_site_build.SiteBuildTests.test_deploy_rejects_obsolete_owned_output_before_copying \
+  -v
+```
+
+RED output:
+
+```text
+test_check_reports_obsolete_owned_output_and_ignores_unrelated_files (scripts.tests.test_site_build.SiteBuildTests) ... FAIL
+test_build_removes_only_obsolete_owned_outputs (scripts.tests.test_site_build.SiteBuildTests) ... FAIL
+test_deploy_rejects_obsolete_owned_output_before_copying (scripts.tests.test_site_build.SiteBuildTests) ... FAIL
+
+======================================================================
+FAIL: test_check_reports_obsolete_owned_output_and_ignores_unrelated_files (scripts.tests.test_site_build.SiteBuildTests)
+----------------------------------------------------------------------
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_build_removes_only_obsolete_owned_outputs (scripts.tests.test_site_build.SiteBuildTests)
+----------------------------------------------------------------------
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_deploy_rejects_obsolete_owned_output_before_copying (scripts.tests.test_site_build.SiteBuildTests)
+----------------------------------------------------------------------
+AssertionError: 'Generated output is stale' not found in 'Deployment directory is not a git repository: .../missing-deploy\n'
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.314s
+
+FAILED (failures=3)
+```
+
+Generated HTML and CSS now carry exact type-specific ownership markers.
+`--check` compares the marker-owned observed set to the manifest-derived
+expected set, and a normal build removes only marker-owned obsolete outputs.
+Unmarked HTML/CSS and all other public file types remain outside generator
+ownership. The same focused command then produced:
+
+```text
+test_check_reports_obsolete_owned_output_and_ignores_unrelated_files (scripts.tests.test_site_build.SiteBuildTests) ... ok
+test_build_removes_only_obsolete_owned_outputs (scripts.tests.test_site_build.SiteBuildTests) ... ok
+test_deploy_rejects_obsolete_owned_output_before_copying (scripts.tests.test_site_build.SiteBuildTests) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.343s
+
+OK
+```
+
+### Review-Round Focused Verification
+
+```bash
+npm run check:site
+npm run test:site
+git diff --check
+python3 -m py_compile \
+  scripts/build_site.py scripts/check_site.py scripts/tests/test_site_build.py
+bash -n scripts/deploy-frontend.sh
+```
+
+Output:
+
+```text
+Generated site is current (26 files).
+Ran 13 tests in 0.925s
+OK
+```
+
+`git diff --check`, Python compilation, and Bash syntax validation all exited
+0. The strict production runtime gate remains intentionally red for the
+already-ledgered Task 2 legacy runtime migration.

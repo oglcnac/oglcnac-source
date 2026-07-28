@@ -24,7 +24,7 @@ class RuntimeAssetParser(HTMLParser):
             self.runtime_assets.append(("script", str(attributes["src"])))
         if (
             tag == "link"
-            and "stylesheet" in str(attributes.get("rel", "")).split()
+            and "stylesheet" in str(attributes.get("rel", "")).casefold().split()
             and attributes.get("href")
         ):
             self.runtime_assets.append(("stylesheet", str(attributes["href"])))

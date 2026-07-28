@@ -151,6 +151,60 @@ class SiteBuildTests(unittest.TestCase):
             self.assertIn("Generated output is stale", check_result.stderr)
             self.assertIn("index.html", check_result.stderr)
 
+    def test_check_reports_obsolete_owned_output_and_ignores_unrelated_files(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as output_directory:
+            build_result = run_build("--output-root", output_directory)
+            self.assertEqual(build_result.returncode, 0, build_result.stderr)
+            output_root = Path(output_directory)
+            obsolete = output_root / "retired" / "index.html"
+            obsolete.parent.mkdir()
+            obsolete.write_bytes((output_root / "index.html").read_bytes())
+            unrelated_paths = (
+                output_root / "manual.html",
+                output_root / "static" / "css" / "curator.css",
+                output_root / "static" / "data" / "release.json",
+            )
+            for path in unrelated_paths:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("unrelated public file\n")
+
+            check_result = run_build("--check", "--output-root", output_directory)
+
+            self.assertNotEqual(check_result.returncode, 0)
+            self.assertIn("Generated output is stale", check_result.stderr)
+            self.assertIn("retired/index.html", check_result.stderr)
+            for path in unrelated_paths:
+                self.assertNotIn(
+                    path.relative_to(output_root).as_posix(),
+                    check_result.stderr,
+                )
+
+    def test_build_removes_only_obsolete_owned_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as output_directory:
+            build_result = run_build("--output-root", output_directory)
+            self.assertEqual(build_result.returncode, 0, build_result.stderr)
+            output_root = Path(output_directory)
+            obsolete = output_root / "retired" / "index.html"
+            obsolete.parent.mkdir()
+            obsolete.write_bytes((output_root / "index.html").read_bytes())
+            unrelated_paths = (
+                output_root / "manual.html",
+                output_root / "static" / "css" / "curator.css",
+                output_root / "static" / "data" / "release.json",
+            )
+            for path in unrelated_paths:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("unrelated public file\n")
+
+            rebuild_result = run_build("--output-root", output_directory)
+
+            self.assertEqual(rebuild_result.returncode, 0, rebuild_result.stderr)
+            self.assertFalse(obsolete.exists())
+            for path in unrelated_paths:
+                self.assertTrue(path.is_file(), path)
+
     def test_tracked_generated_outputs_are_current(self) -> None:
         check_result = run_build("--check")
         self.assertEqual(check_result.returncode, 0, check_result.stderr)
@@ -296,6 +350,38 @@ class SiteBuildTests(unittest.TestCase):
             )
             self.assertEqual(accepted.returncode, 0, accepted.stderr)
 
+    def test_runtime_dependency_audit_treats_stylesheet_rel_case_insensitively(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as fixture_directory:
+            Path(fixture_directory, "index.html").write_text(
+                """<!doctype html>
+<html><head>
+<link rel="alternate StyleSheet" href="https://cdn.example.test/theme.css">
+</head><body></body></html>
+"""
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-S",
+                    str(QA_SCRIPT),
+                    "--forbid-external-runtime",
+                    fixture_directory,
+                ],
+                cwd=REPOSITORY_ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(
+                "index.html: external stylesheet https://cdn.example.test/theme.css",
+                result.stderr,
+            )
+
     def test_page_specific_main_content_is_unchanged(self) -> None:
         for relative_path, expected_hash in MAIN_CONTENT_SHA256.items():
             html = (FRONTEND_ROOT / relative_path).read_text()
@@ -330,6 +416,32 @@ class SiteBuildTests(unittest.TestCase):
 
             self.assertNotEqual(deploy_result.returncode, 0)
             self.assertIn("Generated output is stale", deploy_result.stderr)
+            self.assertNotIn("not a git repository", deploy_result.stderr)
+
+    def test_deploy_rejects_obsolete_owned_output_before_copying(self) -> None:
+        with tempfile.TemporaryDirectory() as source_directory:
+            source_root = Path(source_directory)
+            build_result = run_build("--output-root", source_directory)
+            self.assertEqual(build_result.returncode, 0, build_result.stderr)
+            obsolete = source_root / "retired" / "index.html"
+            obsolete.parent.mkdir()
+            obsolete.write_bytes((source_root / "index.html").read_bytes())
+            environment = os.environ.copy()
+            environment["SOURCE_DIR"] = source_directory
+            environment["DEPLOY_DIR"] = str(source_root / "missing-deploy")
+
+            deploy_result = subprocess.run(
+                [str(REPOSITORY_ROOT / "scripts" / "deploy-frontend.sh")],
+                cwd=REPOSITORY_ROOT,
+                env=environment,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(deploy_result.returncode, 0)
+            self.assertIn("Generated output is stale", deploy_result.stderr)
+            self.assertIn("retired/index.html", deploy_result.stderr)
             self.assertNotIn("not a git repository", deploy_result.stderr)
 
 
