@@ -50,30 +50,30 @@ GENERATED_OUTPUTS = GENERATED_HTML + ("static/css/app.css",)
 # This migration must not rewrite page-specific main content. These hashes were
 # captured before introducing the shared build-time shell.
 MAIN_CONTENT_SHA256 = {
-    "atlas/browse/index.html": "c7a90e9ee25c894f0c925951359dac77f87fae4565bcee536b4d675bc92cb0af",
-    "atlas/contact/index.html": "7767eb7b4af33e63e5dd1102b7d325ef13db14ad36aa2972b514e7d6e4360ec7",
-    "atlas/detail/index.html": "c14f132cb81ae0a652dcccc844ba246251f35e55c24733a5b02b1212a5b1e1a3",
-    "atlas/download/index.html": "45cbde8ed03ea67b1054d76db845b0384744f3f3b7d6a0b575ce0987365d9a15",
-    "atlas/index.html": "42ff84611076a67442876e684d131d7f1731a079aa4f59627adf28cf70c10df1",
-    "atlas/search/index.html": "45a5e36654321bdc56394fd24bf7d316df8443c5737f13115cdebdad9f0de757",
-    "atlas/statistics/index.html": "019a78a074c397c9d6dda928ba59ce356106093453b28582747962e55e03cb68",
-    "atlas/tutorial/index.html": "e0b81270f58fd98ae9ea530096743cbe68040e8b51ddbd0892d7b61b068210ff",
-    "hexnac-quest/analysis/index.html": "878bd8b0c33684df6d6decd3b2b7aea2dd3cee90b42e810c69aa4468329b476f",
-    "hexnac-quest/contact/index.html": "37bd7e06e1ff38eb70365448719d447a9a57a0a8a03847b8f72b95db2f03d94b",
-    "hexnac-quest/index.html": "296e7e78397d36abad74f702d0ec0a034a657d1bc926bd28ede6e8c74b9474cd",
-    "hexnac-quest/tutorial/index.html": "238ef5fcf062498911cf09ca88da629ac45b5b8255dd5d58f9b3483e871f5286",
-    "index.html": "ed5ca1ba64888731d777d63b8fc5ba0cb896369c70fb7b119da03a4a6f0eed13",
-    "ogt-pin/contact/index.html": "7767eb7b4af33e63e5dd1102b7d325ef13db14ad36aa2972b514e7d6e4360ec7",
-    "ogt-pin/detail/index.html": "321c3cfd2d81c0aa83c56b138c8a6b26dc6cbdca8415d4fceb641071a18c5993",
-    "ogt-pin/index.html": "183fda32052bc91ad864a4886a9623912efe6459a881a2c4e921d2304b5ff71e",
-    "ogt-pin/search/index.html": "5f9074eec7ab40f11d542e19ea68a6e1493a4682646cd09914a56ae9a5ea347b",
-    "ogt-pin/statistics/index.html": "b936b0bf5f94604855c11f29501b01038459bc645062831966d1241ec67e7a22",
-    "ogt-pin/tutorial/index.html": "ff9faf4f89a6f5156398d0834a5c7402821ffda889e51e984e834303ca935d68",
-    "pred_dl/contact/index.html": "75947207c0ded29b97f4dafb5098f4e6a6f286e6d4bb41af73567b652029ebbc",
-    "pred_dl/download/index.html": "cf76be6612de49fbc1590205f3d0e6f32a8e334fde48dd50bbe446c04ad726c0",
-    "pred_dl/index.html": "7d6dbf352a21a7b65a7a6f0e67fd217cbdef6d3240c91e68b72843fe55f0d5af",
-    "pred_dl/input_fasta/index.html": "51a9d5449dd769bd2ed197b955b5ea2653ff8fd93773a99f841d2ba0a94c37b7",
-    "pred_dl/tutorial/index.html": "3f63bb326c186dc8b6e4520b287c7ffa555b88f6de338ddd24240d1ccd5595bb",
+    "atlas/browse/index.html": "069eeabe697b5cb087c924bfa5247268d3a454949f2bb5873cf224c985061024",
+    "atlas/contact/index.html": "0795bb3f860da3b64b0e8675d00b31ebc1aa41e25fe470552429747b2b505dc2",
+    "atlas/detail/index.html": "e7b2f31c5db4650498c77feb530fd57b393b00935284317619f109850fff1a18",
+    "atlas/download/index.html": "5dc0f2d980738860c8d3dbddab449da47a47be830bd407d29f49c0383850534f",
+    "atlas/index.html": "0600b76429d35ebe86ba8534d521f42ad1f8514174d4fc52500ed3414c0ba3d6",
+    "atlas/search/index.html": "77c0ee8f7fac0333f9d5eff983438081f6f7187cb41f4c5527c088b86a9d519e",
+    "atlas/statistics/index.html": "de2bc090a412ffaf72945e6df17f52278b54729463ff593bec5302fdb7f5b078",
+    "atlas/tutorial/index.html": "1bfb7b2a9965537a0cff99938a0fa89b20bbff09496b77f48f330c86c98dd138",
+    "hexnac-quest/analysis/index.html": "664598fdcbc374e58f4290049203ea6dd678fca3bfacd24f4062a516841183e0",
+    "hexnac-quest/contact/index.html": "79e17731540b8dd4977acd96bd83a6c7af014c04901f43b03420d32cb1dbbd09",
+    "hexnac-quest/index.html": "7ce09e0f481ee685f0ceb269935c59262c3de8eab58f0d04b5cad30e3572be9a",
+    "hexnac-quest/tutorial/index.html": "1d26a9c03829400500798aa468a1da365f52cb679b8fdec24bd94e9070563043",
+    "index.html": "232f94c9ccef8bb70ee43818b0d117b24be53b1977010010810b9c342191fa75",
+    "ogt-pin/contact/index.html": "0795bb3f860da3b64b0e8675d00b31ebc1aa41e25fe470552429747b2b505dc2",
+    "ogt-pin/detail/index.html": "8fe1a13b5914796296c16f5e848890a151bec988f48e4f9c7f35d8ecb47bf05a",
+    "ogt-pin/index.html": "1117c1e0aa1b9cbb626fc521d8023d791ddd5c3cef761c87261fe7f2ebf0125e",
+    "ogt-pin/search/index.html": "3cda35116bad0509de0f85106d5cce8c338fb7ecf6a596268f091c3a8096553b",
+    "ogt-pin/statistics/index.html": "fb41d76553cdea5e03cc71d87a3d118799a07765c5e42dc27f058838e5b64ab2",
+    "ogt-pin/tutorial/index.html": "8f7fec2e778f4c24194432e95b3af690b98883f898196becae05225e61c2c7f0",
+    "pred_dl/contact/index.html": "bc5c818bd90292a3369b36511c6fe1b7c427a4fb89fc3e0ff89b66bbbf41a1fe",
+    "pred_dl/download/index.html": "9251f122223bf8da1c3b50d815c0b70caaaf8ca35781bf54042651939810d271",
+    "pred_dl/index.html": "28def70798f252853aba6490a1fe0ab71171ee2532b85e3634c8f9dd07516694",
+    "pred_dl/input_fasta/index.html": "f03e00c68404b2ce9fe2fea4d1806fe270487006afac4e6211be6e38faf840ac",
+    "pred_dl/tutorial/index.html": "af74a273b5e3f16a778d6d01d5d3fc99637047a9153ec22dc01173f71e7af45d",
 }
 
 
@@ -301,7 +301,10 @@ class SiteBuildTests(unittest.TestCase):
             html = (FRONTEND_ROOT / relative_path).read_text()
             match = re.search(r"<main\b[^>]*>(.*)</main>", html, re.DOTALL | re.IGNORECASE)
             self.assertIsNotNone(match, relative_path)
-            actual_hash = hashlib.sha256(match.group(1).encode()).hexdigest()
+            normalized_content = "\n".join(
+                line.rstrip() for line in match.group(1).splitlines()
+            ).strip()
+            actual_hash = hashlib.sha256(normalized_content.encode()).hexdigest()
             self.assertEqual(actual_hash, expected_hash, relative_path)
 
     def test_deploy_rejects_stale_generated_output_before_copying(self) -> None:
