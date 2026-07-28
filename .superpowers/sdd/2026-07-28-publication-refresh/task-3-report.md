@@ -665,3 +665,109 @@ artifact_integrity=PASS records=61035 sequences=7239 missing=311
   coverage remain unchanged by this logic-only fix.
 - Confirmed the ledgered unique-site normalization wording was not expanded
   into unrelated UI or counting changes.
+
+## Review Fix Round 2: Complete Per-Batch Provenance
+
+Status: `DONE_WITH_CONCERNS`
+
+Commit:
+
+- `be08434c67f3893fca3cee2b2750f633cd4df7bd` — Reject incomplete UniProt batch provenance
+
+### Finding: Headerless and Labeled Batches Produced a False Single Claim
+
+Root cause: the fix-round-1 aggregator retained a set of nonempty values for
+each provenance dimension but did not record which contributing batches
+omitted that dimension. One cached FASTA batch with no headers companion plus
+one fully labeled `2026_02` batch therefore yielded a false aggregate
+`uniprot_release: 2026_02`.
+
+#### RED
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_partial_uniprot_batch_provenance_is_rejected \
+  -v
+```
+
+Before the fix, the controlled headerless/labeled pair completed without
+raising:
+
+```text
+test_partial_uniprot_batch_provenance_is_rejected ... FAIL
+AssertionError: RuntimeError not raised
+Ran 1 test
+FAILED (failures=1)
+uniprot_batch=1 requested=100 resolved_total=0 cached=yes
+uniprot_batch=2 requested=1 resolved_total=0 cached=yes
+```
+
+Log: `/tmp/publication-task3-fix2-red-partial-provenance.log`
+
+#### GREEN
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_partial_uniprot_batch_provenance_is_rejected \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_mixed_uniprot_batch_provenance_is_rejected \
+  -v
+```
+
+Result:
+
+```text
+test_partial_uniprot_batch_provenance_is_rejected ... ok
+test_mixed_uniprot_batch_provenance_is_rejected ... ok
+Ran 2 tests in 0.002s
+OK
+```
+
+Log: `/tmp/publication-task3-fix2-green-partial-provenance.log`
+
+Fix: the aggregator now records missing batch numbers independently for
+UniProt release, release date, and API deployment date. For each dimension:
+
+- identical values reported by every batch produce one aggregate claim;
+- different values reject generation as inconsistent;
+- a mixture of missing and present values rejects generation as incomplete;
+- absence from every batch produces no single-value claim.
+
+The incomplete-provenance error names the dimension and missing batch number.
+The curator documentation now states the same per-dimension completeness rule.
+
+### Fix-Round Verification
+
+```bash
+npm run test:data
+```
+
+Result:
+
+```text
+generator tests: 9 passed, 0 failed
+browser-data tests: 5 passed, 0 failed
+```
+
+```bash
+git diff --check
+python3 -m py_compile \
+  frontend/scripts/generate_static_data.py \
+  scripts/tests/test_generate_static_data.py
+```
+
+Both commands exited 0. The tracked artifact check reported:
+
+```text
+artifact_integrity=PASS records=61035 sequences=7239 missing=311
+```
+
+The only fix-round implementation/documentation paths were:
+
+```text
+docs/CURATOR-WORKFLOW.md
+frontend/scripts/generate_static_data.py
+scripts/tests/test_generate_static_data.py
+```
+
+Canonical release and sequence snapshot contents were not altered. The
+ledgered unique-site wording issue was not expanded in scope.
