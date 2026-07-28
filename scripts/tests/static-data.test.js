@@ -161,3 +161,12 @@ test("Atlas sequence lookup never sends excluded non-UniProt identifiers to UniP
   assert.equal(await api.getAtlasProteinFasta("AT1G01030"), "");
   assert.deepEqual(requests, ["/static/data/atlas-sequences-v1.json"]);
 });
+
+test("Atlas sequence lookup fails closed when snapshot membership cannot be loaded", async () => {
+  const { api, requests } = loadApi({
+    "/static/data/atlas-sequences-v1.json": { status: 503 },
+  });
+
+  assert.equal(await api.getAtlasProteinFasta("AT1G01030"), "");
+  assert.deepEqual(requests, ["/static/data/atlas-sequences-v1.json"]);
+});

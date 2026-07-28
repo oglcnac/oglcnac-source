@@ -22,6 +22,21 @@ UNIPROT_ACCESSION = re.compile(
 UNIPROT_STREAM_URL = "https://rest.uniprot.org/uniprotkb/stream"
 
 
+def bounded_integer(minimum, maximum):
+    def parse(value):
+        try:
+            parsed = int(value)
+        except ValueError as error:
+            raise argparse.ArgumentTypeError(f"{value!r} is not an integer") from error
+        if not minimum <= parsed <= maximum:
+            raise argparse.ArgumentTypeError(
+                f"must be between {minimum} and {maximum}"
+            )
+        return parsed
+
+    return parse
+
+
 def rows(connection, table):
     connection.row_factory = sqlite3.Row
     return [dict(row) for row in connection.execute(f"SELECT * FROM {table} ORDER BY id ASC")]
@@ -320,12 +335,24 @@ def fetch_uniprot_sequences(
     delay,
 ):
     missing = sorted(candidates.difference(sequences))
-    provenance = {}
+    provenance_values = {
+        "uniprot_release": set(),
+        "uniprot_release_date": set(),
+        "api_deployment_date": set(),
+    }
     for offset in range(0, len(missing), batch_size):
         batch = missing[offset : offset + batch_size]
         fasta, headers, cached = fetch_uniprot_batch(batch, cache_directory, retries)
         add_fasta_sequences(sequences, fasta, candidates)
-        provenance.update({key: value for key, value in headers.items() if value})
+        for key, values in provenance_values.items():
+            value = headers.get(key)
+            if value:
+                values.add(value)
+            if len(values) > 1:
+                raise RuntimeError(
+                    "Inconsistent UniProt batch provenance for "
+                    f"{key}: {', '.join(sorted(values))}"
+                )
         print(
             f"uniprot_batch={offset // batch_size + 1} "
             f"requested={len(batch)} resolved_total={len(sequences)} "
@@ -333,7 +360,11 @@ def fetch_uniprot_sequences(
         )
         if not cached and offset + batch_size < len(missing):
             time.sleep(delay)
-    return provenance
+    return {
+        key: next(iter(values))
+        for key, values in provenance_values.items()
+        if values
+    }
 
 
 def snapshot_coverage(categories, sequences):
@@ -345,6 +376,30 @@ def snapshot_coverage(categories, sequences):
         "unresolved_identifiers": len(categories["unresolved"]),
         "blank_accession_records": categories["blank_records"],
     }
+
+
+def reconcile_sequence_snapshot(snapshot, categories):
+    eligible_sequences = {
+        accession: sequence
+        for accession, sequence in snapshot.get("sequences", {}).items()
+        if accession in categories["candidates"]
+    }
+    reconciled = dict(snapshot)
+    reconciled.update(
+        {
+            "coverage": snapshot_coverage(categories, eligible_sequences),
+            "missing_accessions": sorted(
+                categories["candidates"].difference(eligible_sequences)
+            ),
+            "excluded_identifiers": {
+                "non_uniprot": sorted(categories["non_uniprot"]),
+                "unresolved": sorted(categories["unresolved"]),
+                "blank_accession_record_ids": categories["blank_record_ids"],
+            },
+            "sequences": dict(sorted(eligible_sequences.items())),
+        }
+    )
+    return reconciled
 
 
 def build_sequence_snapshot(args, categories):
@@ -433,8 +488,16 @@ def main():
         type=Path,
         help="Persistent cache for UniProt batch responses.",
     )
-    parser.add_argument("--uniprot-batch-size", default=100, type=int)
-    parser.add_argument("--uniprot-retries", default=3, type=int)
+    parser.add_argument(
+        "--uniprot-batch-size",
+        default=100,
+        type=bounded_integer(1, 100),
+    )
+    parser.add_argument(
+        "--uniprot-retries",
+        default=3,
+        type=bounded_integer(1, 5),
+    )
     parser.add_argument("--uniprot-delay", default=0.25, type=float)
     parser.add_argument(
         "--sequence-retrieved-date",
@@ -478,7 +541,11 @@ def main():
     else:
         snapshot_path = args.output_dir / SEQUENCE_SNAPSHOT_NAME
         if snapshot_path.is_file():
-            sequence_snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            sequence_snapshot = reconcile_sequence_snapshot(
+                json.loads(snapshot_path.read_text(encoding="utf-8")),
+                categories,
+            )
+            write_json(snapshot_path, sequence_snapshot)
 
     release_metadata = build_release_metadata(
         args,

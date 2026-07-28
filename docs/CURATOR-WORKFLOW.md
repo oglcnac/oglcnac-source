@@ -106,7 +106,11 @@ non-UniProt identifiers, and three unresolved identifiers.
 The browser reads the tracked `atlas-sequences-v1.json` bundle first. Ordinary
 site builds, tests, and the normal CSV command above do not require network
 access. If the output directory already contains the snapshot, normal
-regeneration preserves it and records its coverage in release metadata.
+regeneration reconciles it against the current CSV categories before
+publishing: sequences for accessions that are no longer eligible are removed,
+new eligible accessions are listed as missing, and all coverage and exclusion
+lists are recalculated. This prevents an older snapshot from contributing stale
+eligibility metadata to a newer release.
 
 For a controlled local FASTA input:
 
@@ -131,11 +135,14 @@ python3 frontend/scripts/generate_static_data.py \
   --uniprot-cache-dir /path/to/persistent/uniprot-cache
 ```
 
-The update uses bounded 100-accession query batches, three retries with
-backoff, a delay between uncached batches, and response caching. Do not replace
-it with unbounded per-accession requests. FASTA accessions must exactly match
-an eligible Atlas accession; the generator never maps ambiguous, blank,
-non-UniProt, canonical/isoform, or unresolved identifiers by inference.
+The update uses bounded query batches (1–100 accessions, default 100), bounded
+retries (1–5, default three) with backoff, a delay between uncached batches,
+and response caching. Do not replace it with unbounded per-accession requests.
+FASTA accessions must exactly match an eligible Atlas accession; the generator
+never maps ambiguous, blank, non-UniProt, canonical/isoform, or unresolved
+identifiers by inference. Every cached or fresh batch must report consistent
+UniProt release, release-date, and API-deployment provenance; mixed values stop
+generation instead of being mislabeled as one release.
 
 The snapshot retrieved on July 28, 2026 uses UniProt release `2026_02`
 (released June 10, 2026). It resolves 7,239 of 7,550 eligible accessions

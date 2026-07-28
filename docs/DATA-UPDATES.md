@@ -39,7 +39,10 @@ local FASTA files with `--atlas-sequence-fasta`, or updated in bounded,
 cached query batches with `--fetch-uniprot-sequences`. See
 `docs/CURATOR-WORKFLOW.md` for the exact count rules, identifier exclusions,
 coverage, provenance, and update commands. Routine builds and tests consume
-tracked JSON and do not contact UniProt.
+tracked JSON and do not contact UniProt. Normal CSV regeneration reconciles
+the tracked snapshot to the current eligible/excluded accession sets, removing
+obsolete sequences and marking newly eligible accessions missing until a
+controlled FASTA or batch update supplies them.
 
 ## Legacy SQLite Regeneration
 

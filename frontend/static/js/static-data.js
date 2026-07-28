@@ -173,7 +173,9 @@
       ) {
         return "";
       }
-    } catch (error) {}
+    } catch (error) {
+      return "";
+    }
     try {
       return await getCachedUniprotFasta(accession);
     } catch (error) {
