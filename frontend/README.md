@@ -1,7 +1,21 @@
 # O-GlcNAc Static Frontend
 
-This directory is the editable source for the public static website at `https://oglcnac.org/`.
+This directory is the generated public static website at `https://oglcnac.org/`.
 It is deployed by copying this directory to `/home/bach/oglcnac-static-site` and pushing that deploy checkout to GitHub Pages.
+
+Public HTML and `static/css/app.css` are generated and tracked. Edit the
+dependency-free sources in `../site/`, then rebuild and verify drift:
+
+```bash
+npm run build:site
+npm run check:site
+npm run test:site
+```
+
+The deploy helper runs `check:site` before copying files and refuses stale
+generated output. `npm run qa:runtime` is the strict external-runtime gate; it
+will remain red until the legacy table runtime is removed in the native table
+migration.
 
 Dynamic behavior is browser-side:
 

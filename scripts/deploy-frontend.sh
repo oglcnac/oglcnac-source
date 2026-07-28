@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SOURCE_DIR="${SOURCE_DIR:-/home/bach/oglcnac-source/frontend}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPOSITORY_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SOURCE_DIR="${SOURCE_DIR:-$REPOSITORY_ROOT/frontend}"
 DEPLOY_DIR="${DEPLOY_DIR:-/home/bach/oglcnac-static-site}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE:-Deploy frontend from oglcnac-source}"
 
@@ -9,6 +11,10 @@ if [ ! -d "$SOURCE_DIR" ]; then
   echo "Missing source directory: $SOURCE_DIR" >&2
   exit 1
 fi
+
+python3 "$REPOSITORY_ROOT/scripts/build_site.py" \
+  --check \
+  --output-root "$SOURCE_DIR"
 
 if [ ! -d "$DEPLOY_DIR/.git" ]; then
   echo "Deployment directory is not a git repository: $DEPLOY_DIR" >&2

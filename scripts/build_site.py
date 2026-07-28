@@ -1,0 +1,283 @@
+#!/usr/bin/env python3
+"""Build the tracked public HTML and CSS from dependency-free site sources."""
+
+from __future__ import annotations
+
+import argparse
+import html
+import json
+import sys
+from pathlib import Path
+from typing import Dict, Iterable, List, Mapping
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_SOURCE_ROOT = REPOSITORY_ROOT / "site"
+DEFAULT_OUTPUT_ROOT = REPOSITORY_ROOT / "frontend"
+CANONICAL_ORIGIN = "https://oglcnac.org"
+
+
+class BuildError(Exception):
+    """A source configuration or rendering error."""
+
+
+def read_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError as error:
+        raise BuildError(f"Cannot read {path}: {error}") from error
+
+
+def replace_tokens(template: str, values: Mapping[str, str], name: str) -> str:
+    rendered = template
+    for token, value in values.items():
+        rendered = rendered.replace("{{" + token + "}}", value)
+    remaining = sorted(set(part.split("}}", 1)[0] for part in rendered.split("{{")[1:]))
+    if remaining:
+        raise BuildError(f"{name} has unresolved template tokens: {', '.join(remaining)}")
+    return rendered
+
+
+def normalized_route(route: str) -> str:
+    if not route.startswith("/"):
+        raise BuildError(f"Public route must start with '/': {route}")
+    if route == "/":
+        return route
+    return route.rstrip("/") + "/"
+
+
+def render_link(
+    label: str,
+    href: str,
+    *,
+    current_page: bool = False,
+    current_section: bool = False,
+) -> str:
+    attributes: List[str] = [f'href="{html.escape(href, quote=True)}"']
+    if current_page:
+        attributes.append('aria-current="page"')
+    if current_section:
+        attributes.append('data-section-current="true"')
+    return (
+        f"<li><a {' '.join(attributes)}>"
+        f"{html.escape(label, quote=False)}</a></li>"
+    )
+
+
+def render_header(
+    page: Mapping[str, object],
+    configuration: Mapping[str, object],
+    header_template: str,
+) -> str:
+    route = normalized_route(str(page["route"]))
+    section = str(page["section"])
+    primary_links = []
+    for entry in configuration["primary_navigation"]:
+        label, href, link_section = entry
+        primary_links.append(
+            render_link(
+                str(label),
+                str(href),
+                current_page=route == normalized_route(str(href)),
+                current_section=section == str(link_section),
+            )
+        )
+
+    section_entries = configuration["sections"][section]
+    section_navigation = ""
+    if section_entries:
+        links = [
+            render_link(
+                str(label),
+                str(href),
+                current_page=route == normalized_route(str(href)),
+            )
+            for label, href in section_entries
+        ]
+        section_navigation = (
+            '        <nav class="site-section-nav" aria-label="Section navigation">\n'
+            f"          <ul>{''.join(links)}</ul>\n"
+            "        </nav>"
+        )
+
+    return replace_tokens(
+        header_template,
+        {
+            "HOME_CURRENT": ' aria-current="page"' if route == "/" else "",
+            "PRIMARY_LINKS": "".join(primary_links),
+            "SECTION_NAV": section_navigation,
+        },
+        "header.html",
+    )
+
+
+def load_configuration(source_root: Path) -> Dict[str, object]:
+    config_path = source_root / "site.json"
+    try:
+        configuration = json.loads(read_text(config_path))
+    except json.JSONDecodeError as error:
+        raise BuildError(f"Invalid JSON in {config_path}: {error}") from error
+
+    required_keys = {"styles", "primary_navigation", "sections", "pages"}
+    missing = required_keys.difference(configuration)
+    if missing:
+        raise BuildError(f"site.json is missing: {', '.join(sorted(missing))}")
+
+    pages = configuration["pages"]
+    outputs = [str(page["output"]) for page in pages]
+    routes = [normalized_route(str(page["route"])) for page in pages]
+    if len(outputs) != len(set(outputs)):
+        raise BuildError("site.json contains duplicate generated outputs")
+    if len(routes) != len(set(routes)):
+        raise BuildError("site.json contains duplicate public routes")
+    for page in pages:
+        if page["section"] not in configuration["sections"]:
+            raise BuildError(
+                f"{page['output']} uses unknown section {page['section']}"
+            )
+    return configuration
+
+
+def render_page(
+    page: Mapping[str, object],
+    configuration: Mapping[str, object],
+    source_root: Path,
+    templates: Mapping[str, str],
+) -> str:
+    output = str(page["output"])
+    source_stem = output[:-5]
+    content = read_text(source_root / "pages" / f"{source_stem}.content.html")
+    # Source fragments are normal text files with a final line terminator. The
+    # terminator belongs to the source file, not to the preserved <main> bytes.
+    if content.endswith("\n"):
+        content = content[:-1]
+    after_path = source_root / "pages" / f"{source_stem}.after.html"
+    after_content = read_text(after_path) if after_path.exists() else ""
+    legacy_runtime = bool(page.get("legacy_runtime"))
+    head_scripts = "\n".join(
+        f'  <script defer src="{html.escape(str(source), quote=True)}"></script>'
+        for source in page.get("head_scripts", [])
+    )
+    route = normalized_route(str(page["route"]))
+    canonical_url = CANONICAL_ORIGIN + (route if route != "/" else "/")
+
+    return replace_tokens(
+        templates["layout"],
+        {
+            "TITLE": html.escape(str(page["title"]), quote=False),
+            "DESCRIPTION": html.escape(str(page["description"]), quote=True),
+            "CANONICAL_URL": html.escape(canonical_url, quote=True),
+            "LEGACY_STYLES": templates["legacy_styles"] if legacy_runtime else "",
+            "LEGACY_SCRIPTS": templates["legacy_scripts"] if legacy_runtime else "",
+            "HEAD_SCRIPTS": head_scripts,
+            "BODY_CLASS": html.escape(str(page["body_class"]), quote=True),
+            "HEADER": render_header(page, configuration, templates["header"]),
+            "MAIN_CLASS": html.escape(str(page["main_class"]), quote=True),
+            "CONTENT": content,
+            "FOOTER": templates["footer"],
+            "AFTER_CONTENT": after_content,
+        },
+        output,
+    )
+
+
+def generated_files(source_root: Path) -> Dict[str, bytes]:
+    configuration = load_configuration(source_root)
+    template_root = source_root / "templates"
+    templates = {
+        "layout": read_text(template_root / "layout.html"),
+        "header": read_text(template_root / "header.html"),
+        "footer": read_text(template_root / "footer.html"),
+        "legacy_styles": read_text(template_root / "legacy-styles.html").rstrip(),
+        "legacy_scripts": read_text(template_root / "legacy-scripts.html").rstrip(),
+    }
+    rendered: Dict[str, bytes] = {}
+    for page in configuration["pages"]:
+        rendered[str(page["output"])] = render_page(
+            page, configuration, source_root, templates
+        ).encode("utf-8")
+
+    rendered["404.html"] = read_text(template_root / "404.html").encode("utf-8")
+    css_sections = [
+        read_text(source_root / str(relative_path)).rstrip() + "\n"
+        for relative_path in configuration["styles"]
+    ]
+    generated_css = (
+        "/* Generated by scripts/build_site.py; edit site/styles instead. */\n\n"
+        + "\n".join(css_sections)
+    )
+    rendered["static/css/app.css"] = generated_css.encode("utf-8")
+    return rendered
+
+
+def stale_outputs(output_root: Path, generated: Mapping[str, bytes]) -> List[str]:
+    stale = []
+    for relative_path, expected in generated.items():
+        output_path = output_root / relative_path
+        try:
+            actual = output_path.read_bytes()
+        except OSError:
+            actual = None
+        if actual != expected:
+            stale.append(relative_path)
+    return stale
+
+
+def write_outputs(output_root: Path, generated: Mapping[str, bytes]) -> None:
+    for relative_path, content in generated.items():
+        output_path = output_root / relative_path
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(content)
+
+
+def parse_arguments(arguments: Iterable[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Build tracked public HTML and CSS from site sources."
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Exit non-zero instead of writing when generated output is stale.",
+    )
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=DEFAULT_OUTPUT_ROOT,
+        help="Generated frontend root (default: repository frontend/).",
+    )
+    parser.add_argument(
+        "--source-root",
+        type=Path,
+        default=DEFAULT_SOURCE_ROOT,
+        help="Template source root (default: repository site/).",
+    )
+    return parser.parse_args(arguments)
+
+
+def main(arguments: Iterable[str] | None = None) -> int:
+    options = parse_arguments(arguments if arguments is not None else sys.argv[1:])
+    try:
+        generated = generated_files(options.source_root.resolve())
+    except BuildError as error:
+        print(f"Site build failed: {error}", file=sys.stderr)
+        return 2
+
+    output_root = options.output_root.resolve()
+    stale = stale_outputs(output_root, generated)
+    if options.check:
+        if stale:
+            print("Generated output is stale:", file=sys.stderr)
+            for relative_path in stale:
+                print(f"  {relative_path}", file=sys.stderr)
+            print("Run: npm run build:site", file=sys.stderr)
+            return 1
+        print(f"Generated site is current ({len(generated)} files).")
+        return 0
+
+    write_outputs(output_root, generated)
+    print(f"Generated {len(generated)} files in {output_root}.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,84 @@
+
+        
+<section class="prediction-input">
+  <div class="container">
+    <div class="page-heading">
+      <p class="section-label">O-GlcNAcPRED-DL</p>
+      <h1>Deep-learning <span class="nowrap">O-GlcNAc</span> site prediction</h1>
+      <p>Submit human or mouse protein sequences in FASTA format. Use pasted input for a single sequence, or upload a FASTA file for multiple proteins.</p>
+      <p class="prediction-privacy"><strong>Private by design:</strong> prediction runs in your browser, and your protein sequence is not uploaded.</p>
+    </div>
+
+    
+
+    <div class="prediction-grid">
+      <form class="prediction-card" action="#" method="post" id="prediction-text-form">
+        
+        <div class="prediction-card-header">
+          <span>Option 1</span>
+          <h2>Paste FASTA sequence</h2>
+        </div>
+
+        <fieldset class="species-control">
+          <legend>Select species</legend>
+          <label><input type="radio" name="drone" value="human" checked> Human</label>
+          <label><input type="radio" name="drone" value="mouse"> Mouse</label>
+        </fieldset>
+
+        <label for="message">Protein sequence in FASTA format</label>
+        <textarea required id="message" name="short_fasta" rows="14" maxlength="200000" class="form-control md-textarea" spellcheck="false"></textarea>
+
+        <div class="example-links">
+          <a href="/static/fasta/individual_protein_human.fasta" target="_blank" rel="noopener">Human example</a>
+          <a href="/static/fasta/individual_protein_mouse.fasta" target="_blank" rel="noopener">Mouse example</a>
+          <a href="/pred_dl/tutorial">Tutorial</a>
+        </div>
+
+        <button type="submit">Submit for prediction</button>
+      </form>
+
+      <form class="prediction-card" method="post" action="#" enctype="multipart/form-data" id="prediction-file-form">
+        
+        <div class="prediction-card-header">
+          <span>Option 2</span>
+          <h2>Upload FASTA file</h2>
+        </div>
+
+        <fieldset class="species-control">
+          <legend>Select species</legend>
+          <label><input type="radio" name="drone" value="human" checked> Human</label>
+          <label><input type="radio" name="drone" value="mouse"> Mouse</label>
+        </fieldset>
+
+        <label for="fasta-file">FASTA file with one or more protein sequences</label>
+        <input id="fasta-file" class="form-control-file" type="file" required name="inp_sequence.fasta" accept=".fasta,.fa,.faa,.txt">
+
+        <div class="example-links">
+          <a href="/static/fasta/multiple_proteins_human.fasta" target="_blank" rel="noopener">Human examples</a>
+          <a href="/static/fasta/multiple_proteins_mouse.fasta" target="_blank" rel="noopener">Mouse examples</a>
+          <a href="/pred_dl/tutorial">Tutorial</a>
+        </div>
+
+        <button type="submit">Submit for prediction</button>
+      </form>
+    </div>
+    <div class="prediction-status-card" id="prediction-status" style="display:none;" aria-live="polite">
+      <div class="prediction-status-heading">
+        <strong id="prediction-status-label">Preparing prediction</strong>
+        <button type="button" class="prediction-cancel-button" id="prediction-cancel">Cancel</button>
+      </div>
+      <div class="progress" aria-label="Prediction progress">
+        <div class="progress-bar" id="prediction-progress" role="progressbar" style="width: 0%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+      </div>
+    </div>
+    <div class="results-card" id="prediction-results-card" style="display:none; margin-top: 28px;">
+      <table class="table hover compact" id="prediction-results-table">
+        <thead class="thead-inverse"><tr><th>ID</th><th>Position</th><th>Residue</th><th>O-GlcNAc prediction score</th><th>Confidence level</th></tr></thead>
+        <tbody id="prediction-results-body"></tbody>
+      </table>
+    </div>
+    <div class="alert alert-danger" id="prediction-error" role="alert" style="display:none; margin-top: 20px;"></div>
+  </div>
+</section>
+
+    

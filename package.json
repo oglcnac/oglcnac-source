@@ -2,6 +2,10 @@
   "name": "oglcnac-source",
   "private": true,
   "scripts": {
+    "build:site": "python3 scripts/build_site.py",
+    "check:site": "python3 scripts/build_site.py --check",
+    "qa:runtime": "python3 scripts/check_site.py --forbid-external-runtime frontend",
+    "test:site": "python3 -m unittest scripts.tests.test_site_build -v",
     "screenshots": "node scripts/capture_screenshots.js",
     "smoke:static": "python3 scripts/smoke_static_site.py",
     "smoke:static:browser": "node scripts/smoke_static_site_browser.js",

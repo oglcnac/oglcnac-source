@@ -1,0 +1,70 @@
+
+
+    
+
+    
+  <script src="/static/js/static-data.js"></script>
+  <script src="/static/js/table-utils.js"></script>
+  <script>
+    function resetInteractomeTable() {
+      window.OglcnacUi.resetTable("#search_result", "interactome-search-results");
+    }
+
+    function startInteractomeTable() {
+      window.OglcnacUi.startExportTable("#search_result");
+    }
+
+    async function runInteractomeSearch(event) {
+      if (event) {
+        event.preventDefault();
+      }
+      const form = document.getElementById("interactome-search-form");
+      const term = form.q.value.trim();
+      const field = form.field.value;
+      resetInteractomeTable();
+      if (!term) {
+        startInteractomeTable();
+        return;
+      }
+      const results = await window.OglcnacStaticData.searchOgtPin(term, field);
+      const body = document.getElementById("interactome-search-results");
+      results.forEach((record) => {
+        const row = body.insertRow();
+        window.OglcnacUi.textCell(row, record.uuid_a);
+        window.OglcnacUi.textCell(row, record.gene_name_a);
+        window.OglcnacUi.textCell(row, record.ncbi_id_b);
+        const idCell = row.insertCell();
+        idCell.className = "align-middle";
+        const uniprot = document.createElement("a");
+        uniprot.href = `https://www.uniprot.org/uniprot/${encodeURIComponent(record.uuid_b)}`;
+        uniprot.textContent = "UniProt ";
+        idCell.appendChild(uniprot);
+        const detail = document.createElement("a");
+        detail.href = `/ogt-pin/detail/?id=${encodeURIComponent(record.uuid_b)}`;
+        const strong = document.createElement("strong");
+        strong.textContent = record.uuid_b || "";
+        detail.appendChild(strong);
+        idCell.appendChild(detail);
+        window.OglcnacUi.textCell(row, record.gene_name_b);
+        window.OglcnacUi.textCell(row, record.protein_name_b);
+      });
+      startInteractomeTable();
+      window.history.replaceState({}, "", `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`);
+    }
+
+    $(document).ready(function () {
+      startInteractomeTable();
+      const form = document.getElementById("interactome-search-form");
+      form.addEventListener("submit", runInteractomeSearch);
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("q")) {
+        form.q.value = params.get("q");
+        if (params.get("field")) {
+          form.field.value = params.get("field");
+        }
+        runInteractomeSearch();
+      }
+    });
+  </script>
+
+

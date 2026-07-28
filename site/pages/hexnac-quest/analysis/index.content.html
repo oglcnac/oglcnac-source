@@ -1,0 +1,81 @@
+
+    <header class="hq-page-heading">
+      <div class="hq-container">
+        <p class="hq-kicker">Browser-based prediction</p>
+        <h1>Analyze oxonium-ion intensities</h1>
+        <p>Select one CSV with the columns <code>id,f126,f138,f144,f168,f186</code>. Headers may be reordered and extra columns are ignored.</p>
+      </div>
+    </header>
+
+    <section class="hq-section">
+      <div class="hq-container">
+        <div class="hq-card hq-upload-card">
+          <div>
+            <label class="hq-file-label" for="hexnac-file">Input CSV</label>
+            <input id="hexnac-file" type="file" accept=".csv,text/csv">
+            <p class="hq-help">Maximum 25 MB and 250,000 data rows. <a href="/static/hexnac-quest/example_input_data.csv" download>Download the canonical example CSV.</a></p>
+          </div>
+          <div class="hq-actions">
+            <button id="hexnac-run" class="hq-button hq-button-primary" type="button" disabled>Run prediction</button>
+            <button id="hexnac-cancel" class="hq-button" type="button" disabled>Cancel</button>
+            <button id="hexnac-download" class="hq-button" type="button" disabled>Download results</button>
+          </div>
+          <div id="hexnac-status" class="hq-status" role="status" aria-live="polite" data-state="idle"></div>
+          <progress id="hexnac-progress" max="1" value="0" aria-label="Prediction progress"></progress>
+          <span id="hexnac-progress-text" class="hq-help"></span>
+          <p class="hq-privacy-note"><strong>Private by design:</strong> parsing and prediction happen entirely in your browser. The selected file is never uploaded.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="hexnac-preview-card" class="hq-section" hidden>
+      <div class="hq-container hq-grid-2 hq-analysis-grid">
+        <div class="hq-card">
+          <h2>Valid-row preview</h2>
+          <p class="hq-help">Select a row to update the spectrum chart. The preview is capped at the first 500 valid rows; all valid rows are still predicted.</p>
+          <div class="hq-table-wrap">
+            <table class="hq-table">
+              <thead><tr><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead>
+              <tbody id="hexnac-preview-body"></tbody>
+            </table>
+          </div>
+          <div id="hexnac-preview-pager" class="hq-pager"></div>
+        </div>
+        <div class="hq-card">
+          <h2>Selected-row intensities</h2>
+          <svg id="hexnac-spectrum" role="img"></svg>
+        </div>
+      </div>
+    </section>
+
+    <section id="hexnac-skipped-card" class="hq-section" hidden>
+      <div class="hq-container">
+        <div class="hq-card">
+          <h2>Skipped rows</h2>
+          <p class="hq-help">These rows will not appear in the prediction download.</p>
+          <div class="hq-table-wrap">
+            <table class="hq-table"><thead><tr><th>CSV row</th><th>Reason</th></tr></thead><tbody id="hexnac-skipped-body"></tbody></table>
+          </div>
+          <div id="hexnac-skipped-pager" class="hq-pager"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="hexnac-results-card" class="hq-section" hidden>
+      <div class="hq-container">
+        <div class="hq-summary-grid" aria-label="Prediction summary">
+          <div><span data-summary="total">0</span><strong>Predicted</strong></div>
+          <div><span data-summary="skipped">0</span><strong>Skipped</strong></div>
+          <div><span data-summary="glcnac">0</span><strong>GlcNAc</strong></div>
+          <div><span data-summary="galnac">0</span><strong>GalNAc</strong></div>
+        </div>
+        <div class="hq-card">
+          <h2>Prediction results</h2>
+          <div class="hq-table-wrap">
+            <table class="hq-table"><thead><tr><th>pred_outcome</th><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead><tbody id="hexnac-results-body"></tbody></table>
+          </div>
+          <div id="hexnac-results-pager" class="hq-pager"></div>
+        </div>
+      </div>
+    </section>
+  

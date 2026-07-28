@@ -1,0 +1,86 @@
+
+
+    
+
+    
+<script>
+  function peptideCell(row, record) {
+    const cell = row.insertCell();
+    cell.className = "align-middle";
+    const peptide = record.peptide_seq || "";
+    const position = Number.parseInt(record.position_in_peptide, 10);
+    if (!peptide || !position || position < 1 || position > peptide.length) {
+      cell.textContent = peptide;
+      return cell;
+    }
+    cell.appendChild(document.createTextNode(peptide.slice(0, position - 1)));
+    const mark = document.createElement("span");
+    mark.style.color = "#ff0000";
+    const strong = document.createElement("strong");
+    strong.textContent = peptide[position - 1];
+    mark.appendChild(strong);
+    cell.appendChild(mark);
+    cell.appendChild(document.createTextNode(peptide.slice(position)));
+    return cell;
+  }
+
+  function startDetailTable(id) {
+    window.OglcnacUi.startExportTable(`#${id}`);
+  }
+
+  async function loadAtlasDetail() {
+    const payload = await window.OglcnacStaticData.getAtlasDetail(ATLAS_ACCESSION);
+    if (!payload.records.length) {
+      document.getElementById("protein-sequence").textContent = "Atlas record is not available.";
+      ["detail1", "detail2", "detail3"].forEach(startDetailTable);
+      return;
+    }
+    const fasta = await window.OglcnacStaticData.getCachedUniprotFasta(ATLAS_ACCESSION);
+    if (!fasta || ["NA", "N/A"].includes(fasta.trim().toUpperCase())) {
+      document.getElementById("protein-sequence").textContent = "Protein sequence for this entry is not available in UniProt. Please refer to the original paper for details.";
+    } else {
+      document.getElementById("protein-sequence").innerHTML = formatSequence(fasta, payload.positions || []);
+    }
+
+    payload.records.forEach((record) => {
+      let row = document.getElementById("atlas-peptide-rows").insertRow();
+      window.OglcnacUi.textCell(row, record.id);
+      peptideCell(row, record);
+      window.OglcnacUi.textCell(row, record.site_residue);
+      window.OglcnacUi.textCell(row, record.position_in_peptide);
+      window.OglcnacUi.textCell(row, record.position_in_protein);
+
+      row = document.getElementById("atlas-evidence-rows").insertRow();
+      window.OglcnacUi.textCell(row, record.id);
+      window.OglcnacUi.textCell(row, record.method);
+      window.OglcnacUi.textCell(row, record.analytical_throughput);
+      window.OglcnacUi.textCell(row, record.ambiguous);
+      window.OglcnacUi.textCell(row, record.species);
+      window.OglcnacUi.textCell(row, record.sample_type);
+      window.OglcnacUi.textCell(row, record.condition);
+      window.OglcnacUi.textCell(row, record.log2FC);
+      window.OglcnacUi.textCell(row, record.p_value);
+      window.OglcnacUi.pmidCell(row, record.pmid);
+      window.OglcnacUi.textCell(row, record.comments);
+
+      row = document.getElementById("atlas-export-rows").insertRow();
+      window.OglcnacUi.textCell(row, record.id);
+      peptideCell(row, record);
+      window.OglcnacUi.textCell(row, record.site_residue);
+      window.OglcnacUi.textCell(row, record.position_in_peptide);
+      window.OglcnacUi.textCell(row, record.position_in_protein);
+      window.OglcnacUi.textCell(row, record.method);
+      window.OglcnacUi.textCell(row, record.analytical_throughput);
+      window.OglcnacUi.textCell(row, record.ambiguous);
+      window.OglcnacUi.textCell(row, record.species);
+      window.OglcnacUi.textCell(row, record.sample_type);
+      window.OglcnacUi.pmidCell(row, record.pmid);
+      window.OglcnacUi.textCell(row, record.comments);
+    });
+    ["detail1", "detail2", "detail3"].forEach(startDetailTable);
+  }
+
+  $(document).ready(loadAtlasDetail);
+</script>
+
+

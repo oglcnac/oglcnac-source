@@ -1,0 +1,42 @@
+
+
+    
+
+    
+    <script src="/static/js/static-data.js"></script>
+    <script src="/static/js/table-utils.js"></script>
+    <script>
+        const detailParams = new URLSearchParams(window.location.search);
+        const INTERACTOME_UUID_B = detailParams.get("id") || decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "Q9H1M0");
+        document.getElementById("interactome-title").textContent = INTERACTOME_UUID_B;
+
+        function startInteractomeDetailTable() {
+            window.OglcnacUi.startExportTable("#interactome");
+        }
+
+        async function loadInteractomeDetail() {
+            const payload = await window.OglcnacStaticData.getOgtPinDetail(INTERACTOME_UUID_B);
+            if (!payload.records.length) {
+                startInteractomeDetailTable();
+                return;
+            }
+            const body = document.getElementById("interactome-detail-rows");
+            payload.records.forEach((record) => {
+                const row = body.insertRow();
+                window.OglcnacUi.textCell(row, record.uuid_b);
+                window.OglcnacUi.textCell(row, record.alt_id_b);
+                window.OglcnacUi.textCell(row, record.detection_method);
+                window.OglcnacUi.pmidCell(row, record.pmid);
+                window.OglcnacUi.textCell(row, record.analytic_throughput);
+                window.OglcnacUi.textCell(row, record.source);
+                window.OglcnacUi.textCell(row, record.curater_comments);
+                window.OglcnacUi.textCell(row, record.meeting_imex_criteria);
+                window.OglcnacUi.textCell(row, record.high_stringency_interactor);
+            });
+            startInteractomeDetailTable();
+        }
+
+        $(document).ready(loadInteractomeDetail);
+    </script>
+
+

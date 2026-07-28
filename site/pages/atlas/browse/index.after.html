@@ -1,0 +1,66 @@
+
+
+    
+
+<script src="/static/js/static-data.js"></script>
+<script src="/static/js/table-utils.js"></script>
+<script>
+let selectedBrowseSpecies = "Human";
+let browseTable = null;
+
+function atlasBrowseRow(record) {
+  const accession = record.accession || "";
+  return [
+    accession ? `<a href="/atlas/detail/?id=${encodeURIComponent(accession)}"><strong>${accession}</strong></a>` : "Not available",
+    record.entry_name || "Not available",
+    record.protein_name || "Not available",
+    record.gene_name || "Not available",
+    record.position_in_protein || "Not available",
+    accession ? `<a href="https://www.uniprot.org/uniprot/${encodeURIComponent(accession)}">UniProt</a>` : "Not available"
+  ];
+}
+
+function loadBrowse(species) {
+  selectedBrowseSpecies = species || "Human";
+  document.querySelectorAll(".species-filter [data-species]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.species === selectedBrowseSpecies);
+  });
+  window.history.replaceState({}, "", `${window.location.pathname}?species=${encodeURIComponent(selectedBrowseSpecies)}`);
+
+  if (browseTable) {
+    browseTable.ajax.reload();
+    return;
+  }
+
+  browseTable = window.OglcnacUi.startExportTable("#search_result", {
+    processing: true,
+    serverSide: true,
+    searchDelay: 300,
+    pageLength: 10,
+    lengthMenu: [10, 25, 50, 100],
+    ajax: async function (request, callback) {
+      try {
+        const results = await window.OglcnacStaticData.browseAtlas(selectedBrowseSpecies, request.search.value || "");
+        const page = results.slice(request.start, request.start + request.length);
+        callback({
+          draw: request.draw,
+          recordsTotal: results.length,
+          recordsFiltered: results.length,
+          data: page.map(atlasBrowseRow)
+        });
+      } catch (error) {
+        callback({ draw: request.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+      }
+    }
+  });
+}
+
+$(document).ready(function () {
+  document.querySelectorAll(".species-filter [data-species]").forEach((button) => {
+    button.addEventListener("click", () => loadBrowse(button.dataset.species));
+  });
+  const params = new URLSearchParams(window.location.search);
+  loadBrowse(params.get("species") || "Human");
+});
+</script>
+

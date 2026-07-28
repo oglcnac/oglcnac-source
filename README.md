@@ -6,7 +6,9 @@ Use this repository for new development.
 
 Production is intentionally simple:
 
-- `frontend/` is the editable static website source.
+- `site/` contains the dependency-free templates, page fragments, metadata,
+  and modular CSS sources.
+- `frontend/` is the tracked generated website deployed to GitHub Pages.
 - `prediction-service/` is the Python reference implementation used to export
   and verify the static browser predictor.
 - `ops/api-proxy/` retains the old prediction API during its transition period.
@@ -18,7 +20,8 @@ This source repository is pushed to `github.com/oglcnac/oglcnac-source`.
 ## Layout
 
 ```text
-frontend/              Static website source for GitHub Pages
+site/                  Build-time templates, page content, metadata, and CSS
+frontend/              Tracked generated website for GitHub Pages
 prediction-service/    FastAPI O-GlcNAcPRED-DL backend
 ops/api-proxy/         Linode API-only proxy for api.oglcnac.org
 scripts/               Local deployment helpers
@@ -43,6 +46,8 @@ From this repository:
 
 ```bash
 git status --short --branch
+npm run check:site
+npm run test:site
 npm run smoke:static
 npm run smoke:static:browser
 ```

@@ -1,0 +1,72 @@
+
+        
+    <section class="detail-search-strip">
+        <div class="container">
+            <div class="row justify-content-md-center">
+                <div class="col-md-auto">
+                    <h3 class="text-center">OGT-PIN Search</h3>
+                    <h5 class="text-center">Database of OGT-interacting proteins</h5>
+                </div>
+            </div>
+            <div class="row justify-content-md-center">
+                <form action="/ogt-pin/search/" method="get" class="form-inline" role="form">
+                    <div class="form-group mx-sm-3 mb-2">
+                        
+                            <input type="text" required="required" class="form-control" placeholder="Search Term" name="q">
+                        
+                    </div>
+                    <div class="form-group mx-sm-3 mb-2">
+                        <select class="form-control" name="field">
+                            
+                            <option value="gene_name_b">Gene name for interactor B</option>
+                            <option value="uuid_b">Unique identifier for interactor B</option>
+                            <option value="gene_name_a">Gene name for interactor A</option>
+                            <option value="uuid_a">Unique identifier for interactor A</option>
+                            <option value="species">Species</option>
+
+                        </select>
+                    </div>
+                    <div class="form-group mx-sm-3 mb-2">
+                        <button type="submit" class="btn btn-primary mb-2">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+<section class="detail-page interactome-detail-page">
+  <div class="container">
+    <div class="detail-hero">
+      <p class="section-label">OGT-PIN record</p>
+      <h1 id="interactome-title">Q9H1M0</h1>
+      <p>Curated OGT interaction evidence for this interactor.</p>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-heading">
+        <span>Interactome</span>
+        <h2>Interaction information</h2>
+      </div>
+      <div class="table-scroll">
+      <table class="table hover compact detail-table" id="interactome">
+        <thead class="thead-inverse">
+          <tr>
+            <th>Unique identifier for interactor B</th>
+            <th>Alternative identifier for interactor B</th>
+            <th>Interaction detection method</th>
+            <th>PMID</th>
+            <th>Analytic throughput</th>
+            <th>Source</th>
+            <th>Curator comments</th>
+            <th>Meeting IMEx criteria</th>
+            <th>High-stringency interactor</th>
+          </tr>
+        </thead>
+        <tbody id="interactome-detail-rows"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+    
