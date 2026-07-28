@@ -31,8 +31,8 @@ failures included:
 Two pre-migration guards already passed in RED:
 
 - The public HTML route set matched the 25 tracked routes.
-- The SHA-256 snapshots of every content page's `<main>` bytes matched the
-  baseline.
+- The whitespace-normalized SHA-256 snapshots of every content page's
+  `<main>` matched the baseline.
 
 The complete final RED output was captured locally in
 `/tmp/publication-task1-red-final.log`.
@@ -60,9 +60,10 @@ while accepting both root-relative and document-relative same-origin assets.
   and centralized legacy runtime declarations.
 - Added `site/site.json` with all page routes, titles, descriptions, canonical
   paths, body/main classes, section navigation, and page-specific head assets.
-- Moved every existing page's `<main>` bytes and post-footer scripts into
-  tracked page fragments. A regression test locks the original main-content
-  hashes so Task 1 cannot silently rewrite page-specific content.
+- Moved every existing page's `<main>` content and post-footer scripts into
+  tracked page fragments, normalizing only insignificant trailing whitespace.
+  A regression test locks whitespace-normalized baseline hashes so Task 1
+  cannot silently rewrite page-specific content.
 - Split the existing application stylesheet into three tracked source modules
   and added a fourth shared-shell module. The generated CSS remains tracked.
 - Added `scripts/check_site.py`, a strict same-origin runtime auditor. The
@@ -135,6 +136,8 @@ transitional vendor copies were added.
 
 - `b0cf494a98f97e1aa27e4a6b7b423a3e4e3fa46f` — Build reproducible shared site
   shell
+- `4200c470919d178195b73c2493276bc0c9057e58` — Normalize generated site source
+  whitespace
 
 ## Self-Review
 
@@ -145,7 +148,8 @@ transitional vendor copies were added.
   and the deploy helper rejects it before touching a deploy repository.
 - Confirmed all generated HTML/CSS outputs remain tracked.
 - Confirmed the exact pre-migration public route set is preserved.
-- Confirmed every page-specific `<main>` byte hash remains unchanged.
+- Confirmed every page-specific `<main>` whitespace-normalized hash remains
+  unchanged.
 - Confirmed generated content pages have shared metadata and semantic
   landmarks, and representative desktop/static interactions pass in Chromium.
 - Confirmed Atlas release CSVs, prediction reference backend, API proxy,
