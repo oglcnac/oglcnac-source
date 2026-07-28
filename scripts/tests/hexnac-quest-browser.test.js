@@ -138,6 +138,11 @@ test("predicts the canonical corpus with the legacy class totals", async () => {
   await page.waitForFunction(
     () => document.querySelector("#hexnac-status").dataset.state === "ready",
   );
+  await page.click("#hexnac-preview-pager button:last-child");
+  assert.equal(
+    await page.locator("#hexnac-preview-body tr").first().locator("td").first().textContent(),
+    "21",
+  );
   await page.click("#hexnac-run");
   await page.waitForFunction(
     () => document.querySelector("#hexnac-status").dataset.state === "complete",
@@ -156,10 +161,11 @@ test("predicts the canonical corpus with the legacy class totals", async () => {
     await page.locator('[data-summary="galnac"]').textContent(),
     "548",
   );
+  assert.equal(await page.locator("#hexnac-progress").getAttribute("value"), "10000");
   await page.close();
 });
 
-test("cancels active browser prediction and discards partial output", async () => {
+test("cancels active prediction, discards output, and permits selecting the same file again", async () => {
   const page = await browser.newPage();
   await page.goto(`${baseUrl}/hexnac-quest/analysis/`, {
     waitUntil: "domcontentloaded",
@@ -178,5 +184,52 @@ test("cancels active browser prediction and discards partial output", async () =
   );
   assert.equal(await page.locator("#hexnac-results-body tr").count(), 0);
   assert.equal(await page.locator("#hexnac-run").isDisabled(), true);
+  assert.equal(await page.locator("#hexnac-file").inputValue(), "");
+  await page.setInputFiles(
+    "#hexnac-file",
+    path.join(STATIC_ROOT, "static/hexnac-quest/example_input_data.csv"),
+  );
+  await page.waitForFunction(
+    () => document.querySelector("#hexnac-status").dataset.state === "ready",
+  );
+  assert.equal(await page.locator("#hexnac-run").isEnabled(), true);
+  await page.close();
+});
+
+test("ignores an older file read that finishes after a newer selection", async () => {
+  const page = await browser.newPage();
+  await page.goto(`${baseUrl}/hexnac-quest/analysis/`, {
+    waitUntil: "domcontentloaded",
+  });
+  await page.evaluate(() => {
+    const original = File.prototype.arrayBuffer;
+    File.prototype.arrayBuffer = async function delayedArrayBuffer() {
+      const buffer = await original.call(this);
+      if (this.name === "first.csv") {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+      return buffer;
+    };
+  });
+  const csv = (id) =>
+    Buffer.from(`id,f126,f138,f144,f168,f186\n${id},1,2,3,4,5`);
+  await page.setInputFiles("#hexnac-file", {
+    name: "first.csv",
+    mimeType: "text/csv",
+    buffer: csv("FIRST"),
+  });
+  await page.setInputFiles("#hexnac-file", {
+    name: "second.csv",
+    mimeType: "text/csv",
+    buffer: csv("SECOND"),
+  });
+  await page.waitForFunction(
+    () => document.querySelector("#hexnac-status").dataset.state === "ready",
+  );
+  await page.waitForTimeout(250);
+  assert.equal(
+    await page.locator("#hexnac-preview-body tr").first().locator("td").first().textContent(),
+    "SECOND",
+  );
   await page.close();
 });

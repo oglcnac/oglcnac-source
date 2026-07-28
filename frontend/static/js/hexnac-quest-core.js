@@ -55,7 +55,10 @@
       counts.set(header, (counts.get(header) || 0) + 1);
     }
     const duplicates = [...counts]
-      .filter(([, count]) => count > 1)
+      .filter(
+        ([header, count]) =>
+          count > 1 && manifest.required_columns.includes(header),
+      )
       .map(([header]) => header)
       .filter(Boolean);
     if (duplicates.length) {

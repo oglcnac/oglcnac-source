@@ -72,6 +72,26 @@ test("rejects missing or duplicate required headers", () => {
   );
 });
 
+test("ignores duplicate extra headers while still rejecting duplicate required headers", () => {
+  assert.doesNotThrow(() =>
+    hexnac.parseCsv(
+      "id,f126,f138,f144,f168,f186,note,note\nx,1,2,3,4,5,a,b",
+      manifest,
+    ),
+  );
+  assert.throws(
+    () =>
+      hexnac.parseCsv(
+        "id,f126,f138,f144,f168,f186,f126\nx,1,2,3,4,5,6",
+        manifest,
+      ),
+    (error) =>
+      error.code === "duplicate_headers" &&
+      error.duplicates.length === 1 &&
+      error.duplicates[0] === "f126",
+  );
+});
+
 test("skips invalid rows with their CSV data-row number and concrete reason", () => {
   const csv = [
     "id,f126,f138,f144,f168,f186",

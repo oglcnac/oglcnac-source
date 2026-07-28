@@ -31,6 +31,7 @@
   let previewRows = [];
   let invalidRows = [];
   let results = [];
+  let selectionToken = 0;
 
   function setStatus(state, message) {
     elements.status.dataset.state = state;
@@ -171,6 +172,7 @@
       elements.run.disabled = true;
       elements.cancel.disabled = true;
     };
+    return worker;
   }
 
   function handleWorkerMessage(event) {
@@ -246,6 +248,7 @@
   }
 
   elements.file.addEventListener("change", async () => {
+    const token = ++selectionToken;
     resetOutput();
     const file = elements.file.files[0];
     elements.run.disabled = true;
@@ -260,9 +263,10 @@
       return;
     }
     setStatus("parsing", "Reading and validating the CSV in your browser…");
-    createWorker();
+    const selectionWorker = createWorker();
     const buffer = await file.arrayBuffer();
-    worker.postMessage({ type: "parse", buffer }, [buffer]);
+    if (token !== selectionToken || worker !== selectionWorker) return;
+    selectionWorker.postMessage({ type: "parse", buffer }, [buffer]);
   });
 
   elements.run.addEventListener("click", () => {
@@ -277,6 +281,7 @@
   });
 
   elements.cancel.addEventListener("click", () => {
+    selectionToken += 1;
     if (worker) worker.terminate();
     worker = null;
     results = [];
@@ -287,6 +292,7 @@
     elements.download.disabled = true;
     elements.progress.value = 0;
     elements.progressText.textContent = "";
+    elements.file.value = "";
     setStatus(
       "cancelled",
       "Prediction cancelled. Select the CSV again to restart.",
