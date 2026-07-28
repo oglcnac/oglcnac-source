@@ -52,8 +52,7 @@
       "description": "Explore O-GlcNAcAtlas, OGT-PIN, HexNAcQuest, and O-GlcNAcPRED-DL through one integrated research portal.",
       "section": "home",
       "body_class": "site-body",
-      "main_class": "home-page",
-      "legacy_runtime": true
+      "main_class": "home-page"
     },
     {
       "output": "atlas/index.html",
@@ -62,8 +61,7 @@
       "description": "Search and explore experimentally identified protein O-GlcNAcylation sites in O-GlcNAcAtlas.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "atlas/statistics/index.html",
@@ -72,8 +70,7 @@
       "description": "Review O-GlcNAcAtlas dataset statistics and publication figures.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "atlas/search/index.html",
@@ -82,8 +79,7 @@
       "description": "Search curated O-GlcNAc sites by accession, protein, gene, peptide sequence, or species.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "atlas/browse/index.html",
@@ -92,8 +88,7 @@
       "description": "Browse curated O-GlcNAcAtlas records by species.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "atlas/detail/index.html",
@@ -102,8 +97,7 @@
       "description": "Inspect protein sequence and curated O-GlcNAcylation evidence for an O-GlcNAcAtlas accession.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "atlas/tutorial/index.html",
@@ -112,8 +106,7 @@
       "description": "Learn how to search, browse, and interpret O-GlcNAcAtlas records.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "atlas/download/index.html",
@@ -122,8 +115,7 @@
       "description": "Download current and archived O-GlcNAcAtlas release datasets.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "atlas/contact/index.html",
@@ -132,8 +124,7 @@
       "description": "Contact the O-GlcNAcAtlas team and access project resources.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "ogt-pin/index.html",
@@ -142,8 +133,7 @@
       "description": "Explore the curated OGT Protein Interaction Network across species and experimental reports.",
       "section": "ogt-pin",
       "body_class": "site-body section-body interactome-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "ogt-pin/statistics/index.html",
@@ -152,8 +142,7 @@
       "description": "Review OGT-PIN interaction statistics and publication figures.",
       "section": "ogt-pin",
       "body_class": "site-body section-body interactome-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "ogt-pin/search/index.html",
@@ -162,8 +151,7 @@
       "description": "Search experimentally identified OGT interaction proteins and supporting evidence.",
       "section": "ogt-pin",
       "body_class": "site-body section-body interactome-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "ogt-pin/detail/index.html",
@@ -172,8 +160,7 @@
       "description": "Inspect curated OGT interaction evidence for a selected protein.",
       "section": "ogt-pin",
       "body_class": "site-body section-body interactome-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "ogt-pin/tutorial/index.html",
@@ -182,8 +169,7 @@
       "description": "Learn how to search and interpret OGT-PIN interaction records.",
       "section": "ogt-pin",
       "body_class": "site-body section-body interactome-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "ogt-pin/contact/index.html",
@@ -192,8 +178,7 @@
       "description": "Contact the OGT-PIN team and access project resources.",
       "section": "ogt-pin",
       "body_class": "site-body section-body interactome-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "pred_dl/index.html",
@@ -202,8 +187,7 @@
       "description": "Predict protein O-GlcNAcylation sites with the browser-based O-GlcNAcPRED-DL ensemble model.",
       "section": "pred-dl",
       "body_class": "site-body section-body prediction-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "pred_dl/input_fasta/index.html",
@@ -212,8 +196,7 @@
       "description": "Submit FASTA sequences for private, browser-based O-GlcNAc site prediction.",
       "section": "pred-dl",
       "body_class": "site-body section-body prediction-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "pred_dl/tutorial/index.html",
@@ -222,8 +205,7 @@
       "description": "Learn how to prepare FASTA input and interpret O-GlcNAcPRED-DL predictions.",
       "section": "pred-dl",
       "body_class": "site-body section-body prediction-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "pred_dl/download/index.html",
@@ -232,8 +214,7 @@
       "description": "Download O-GlcNAcPRED-DL reference datasets and example FASTA files.",
       "section": "pred-dl",
       "body_class": "site-body section-body prediction-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "pred_dl/contact/index.html",
@@ -242,8 +223,7 @@
       "description": "Contact the O-GlcNAcPRED-DL team and access project resources.",
       "section": "pred-dl",
       "body_class": "site-body section-body prediction-section",
-      "main_class": "site-main",
-      "legacy_runtime": true
+      "main_class": "site-main"
     },
     {
       "output": "hexnac-quest/index.html",
@@ -252,8 +232,7 @@
       "description": "Distinguish O-GlcNAc and O-GalNAc from oxonium-ion intensities with a private, browser-based model.",
       "section": "hexnac-quest",
       "body_class": "site-body section-body hexnac-section",
-      "main_class": "site-main",
-      "legacy_runtime": false
+      "main_class": "site-main"
     },
     {
       "output": "hexnac-quest/analysis/index.html",
@@ -263,7 +242,6 @@
       "section": "hexnac-quest",
       "body_class": "site-body section-body hexnac-section",
       "main_class": "site-main",
-      "legacy_runtime": false,
       "head_scripts": [
         "/static/hexnac-quest/vendor/papaparse.min.js",
         "/static/js/hexnac-quest-core.js",
@@ -277,8 +255,7 @@
       "description": "Prepare compatible oxonium-ion CSV input and learn the HexNAcQuest workflow.",
       "section": "hexnac-quest",
       "body_class": "site-body section-body hexnac-section",
-      "main_class": "site-main",
-      "legacy_runtime": false
+      "main_class": "site-main"
     },
     {
       "output": "hexnac-quest/contact/index.html",
@@ -287,8 +264,7 @@
       "description": "Contact the HexNAcQuest team and access source and citation information.",
       "section": "hexnac-quest",
       "body_class": "site-body section-body hexnac-section",
-      "main_class": "site-main",
-      "legacy_runtime": false
+      "main_class": "site-main"
     }
   ]
 }
