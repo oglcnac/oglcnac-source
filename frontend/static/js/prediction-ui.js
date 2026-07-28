@@ -68,11 +68,11 @@
         record.confidence,
       ]);
     document.getElementById("prediction-results-card").style.display = "block";
-    resultsTable.setRows(rows);
+    resultsTable.setRows(rows, { preserveState: false });
   }
 
   function clearPredictionResults() {
-    resultsTable.setRows([]);
+    resultsTable.setRows([], { preserveState: false });
     document.getElementById("prediction-results-card").style.display = "none";
   }
 

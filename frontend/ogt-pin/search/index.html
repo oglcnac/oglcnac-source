@@ -173,7 +173,9 @@
       interactomeSearchTable.setLoading("Loading OGT-PIN records…");
       try {
         const results = await window.OglcnacStaticData.searchOgtPin(term, field);
-        interactomeSearchTable.setRows(results.map(interactomeSearchRow));
+        interactomeSearchTable.setRows(results.map(interactomeSearchRow), {
+          preserveState: false
+        });
         window.history.replaceState(
           {},
           "",

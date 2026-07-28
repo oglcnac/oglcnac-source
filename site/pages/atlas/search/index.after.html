@@ -41,7 +41,9 @@
       atlasSearchTable.setLoading("Loading Atlas records…");
       try {
         const results = await window.OglcnacStaticData.searchAtlas(term, field);
-        atlasSearchTable.setRows(results.map(atlasSearchRow));
+        atlasSearchTable.setRows(results.map(atlasSearchRow), {
+          preserveState: false
+        });
         window.history.replaceState(
           {},
           "",

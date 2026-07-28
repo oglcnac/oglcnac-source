@@ -216,6 +216,118 @@ test("OGT-PIN search preserves every field mapping", async () => {
   await page.close();
 });
 
+test(
+  "replacement Atlas, OGT-PIN, and PRED-DL results reset table interaction state",
+  { timeout: 120000 },
+  async () => {
+    const page = await browser.newPage();
+
+    async function dirtyState(tableId) {
+      await page.fill(
+        `[data-table-filter-for="${tableId}"]`,
+        "WILL-HIDE-REPLACEMENT",
+      );
+      await page.selectOption(
+        `[data-table-status-for="${tableId}"] + * + .native-table-pagination select`,
+        "25",
+      );
+      await page.click(`#${tableId} thead th:first-child button`);
+      await page.click(`#${tableId} thead th:first-child button`);
+    }
+
+    async function assertDefaultState(tableId, bodySelector, expectedText) {
+      assert.match(
+        await page.locator(`${bodySelector} tr`).first().textContent(),
+        expectedText,
+      );
+      assert.deepEqual(
+        await page.evaluate((id) => {
+          const table = window.OglcnacTables.get(id);
+          return {
+            filter: table.filterInput.value,
+            page: table.page,
+            pageSize: table.pageSize,
+            selectedPageSize: table.sizeSelect.value,
+            sortColumn: table.sortColumn,
+            sortDirection: table.sortDirection,
+          };
+        }, tableId),
+        {
+          filter: "",
+          page: 0,
+          pageSize: 10,
+          selectedPageSize: "10",
+          sortColumn: null,
+          sortDirection: "asc",
+        },
+      );
+    }
+
+    await page.goto(`${baseUrl}/atlas/search/`);
+    await setSearch(page, "atlas-search-form", "human", "species", "search_result");
+    await dirtyState("search_result");
+    await setSearch(
+      page,
+      "atlas-search-form",
+      "P18583",
+      "accession",
+      "search_result",
+    );
+    await assertDefaultState("search_result", "#atlas-search-results", /P18583/);
+
+    await page.goto(`${baseUrl}/ogt-pin/search/`);
+    await setSearch(
+      page,
+      "interactome-search-form",
+      "OGT",
+      "gene_name_a",
+      "search_result",
+    );
+    await dirtyState("search_result");
+    await setSearch(
+      page,
+      "interactome-search-form",
+      "Q9H1M0",
+      "uuid_b",
+      "search_result",
+    );
+    await assertDefaultState(
+      "search_result",
+      "#interactome-search-results",
+      /Q9H1M0/,
+    );
+
+    await page.goto(`${baseUrl}/pred_dl/input_fasta/`);
+    await page.fill("#message", ">FIRST\nAAAAAAAAAAAAAASAAAAAAAAAAAAAA");
+    await page.click('#prediction-text-form button[type="submit"]');
+    await page.waitForFunction(
+      () =>
+        window.OglcnacTables &&
+        window.OglcnacTables.get("prediction-results-table")?.rows[0]?.[0] ===
+          "FIRST",
+      null,
+      { timeout: 120000 },
+    );
+    await dirtyState("prediction-results-table");
+    await page.fill("#message", ">RESET\nAAAAAAAAAAAAAASAAAAAAAAAAAAAA");
+    await page.click('#prediction-text-form button[type="submit"]');
+    await page.waitForFunction(
+      () =>
+        window.OglcnacTables.get("prediction-results-table")?.rows[0]?.[0] ===
+        "RESET",
+      null,
+      { timeout: 120000 },
+    );
+    await assertDefaultState(
+      "prediction-results-table",
+      "#prediction-results-body",
+      /RESET/,
+    );
+
+    await page.close();
+  },
+);
+
 test("known and missing Atlas and OGT-PIN detail records have explicit states", async () => {
   const page = await browser.newPage();
   await page.route("https://rest.uniprot.org/**", (route) =>

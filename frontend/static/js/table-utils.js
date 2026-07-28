@@ -296,13 +296,26 @@
     }
 
     setRows(rows, options) {
+      const preserveState = Boolean(options && options.preserveState);
+      if (!preserveState) {
+        this.resetState();
+      }
       this.rows = Array.isArray(rows) ? rows : [];
       this.totalRows = this.rows.length;
       this.context = (options && options.context) || this.context;
       this.loading = false;
       this.error = "";
-      this.page = 0;
       this.render();
+      return this;
+    }
+
+    resetState() {
+      this.filterInput.value = "";
+      this.page = 0;
+      this.pageSize = this.options.pageSize;
+      this.sizeSelect.value = String(this.options.pageSize);
+      this.sortColumn = null;
+      this.sortDirection = "asc";
       return this;
     }
 
