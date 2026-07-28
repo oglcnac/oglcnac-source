@@ -48,7 +48,16 @@ def discover_internal_urls(base_url):
             split = urlsplit(full)
             if split.netloc == base_host and not split.path.startswith("/api/"):
                 urls.add(split.path + (f"?{split.query}" if split.query else ""))
-    urls.update(["/atlas/detail/?id=P18583", "/ogt-pin/detail/?id=Q9H1M0"])
+    urls.update(
+        [
+            "/atlas/detail/?id=P18583",
+            "/ogt-pin/detail/?id=Q9H1M0",
+            "/hexnac-quest/",
+            "/hexnac-quest/analysis/",
+            "/hexnac-quest/tutorial/",
+            "/hexnac-quest/contact/",
+        ]
+    )
     return sorted(urls)
 
 
