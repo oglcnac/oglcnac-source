@@ -379,8 +379,7 @@ a {
 }
 
 .detail-table,
-.results-table,
-.section-body table.dataTable {
+.results-table {
   margin: 0 !important;
   color: #24313f;
   border-collapse: separate !important;
@@ -388,8 +387,7 @@ a {
 }
 
 .detail-table th,
-.results-table th,
-.section-body table.dataTable thead th {
+.results-table th {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -402,8 +400,7 @@ a {
 }
 
 .detail-table td,
-.results-table td,
-.section-body table.dataTable tbody td {
+.results-table td {
   border-top: 1px solid #eef2f6;
   font-size: 0.88rem;
   line-height: 1.45;

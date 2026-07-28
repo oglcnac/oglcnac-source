@@ -9,6 +9,7 @@
   };
   let worker = null;
   let activeJobId = null;
+  let resultsTable = null;
 
   function selectedSpecies(form) {
     const selected = form.querySelector('input[name="drone"]:checked');
@@ -59,32 +60,19 @@
 
   function renderPredictionResults(results) {
     clearPredictionError();
-    window.OglcnacUi.resetTable(
-      "#prediction-results-table",
-      "prediction-results-body",
-    );
-    const body = document.getElementById("prediction-results-body");
-    results.forEach((record) => {
-      const row = body.insertRow();
-      [
+    const rows = results.map((record) => [
         record.id,
         record.position,
         record.residue,
         record.score,
         record.confidence,
-      ].forEach((value) => window.OglcnacUi.textCell(row, value));
-    });
+      ]);
     document.getElementById("prediction-results-card").style.display = "block";
-    window.OglcnacUi.startExportTable("#prediction-results-table", {
-      order: [],
-    });
+    resultsTable.setRows(rows);
   }
 
   function clearPredictionResults() {
-    window.OglcnacUi.resetTable(
-      "#prediction-results-table",
-      "prediction-results-body",
-    );
+    resultsTable.setRows([]);
     document.getElementById("prediction-results-card").style.display = "none";
   }
 
@@ -168,6 +156,9 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    resultsTable = window.OglcnacTables.create("prediction-results-table", {
+      filename: "oglcnac-pred-dl-results.csv",
+    });
     const textForm = document.getElementById("prediction-text-form");
     const fileForm = document.getElementById("prediction-file-form");
     textForm.addEventListener("submit", (event) => {

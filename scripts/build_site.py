@@ -157,7 +157,6 @@ def render_page(
         content = content[:-1]
     after_path = source_root / "pages" / f"{source_stem}.after.html"
     after_content = read_text(after_path) if after_path.exists() else ""
-    legacy_runtime = bool(page.get("legacy_runtime"))
     head_scripts = "\n".join(
         f'  <script defer src="{html.escape(str(source), quote=True)}"></script>'
         for source in page.get("head_scripts", [])
@@ -171,8 +170,6 @@ def render_page(
             "TITLE": html.escape(str(page["title"]), quote=False),
             "DESCRIPTION": html.escape(str(page["description"]), quote=True),
             "CANONICAL_URL": html.escape(canonical_url, quote=True),
-            "LEGACY_STYLES": templates["legacy_styles"] if legacy_runtime else "",
-            "LEGACY_SCRIPTS": templates["legacy_scripts"] if legacy_runtime else "",
             "HEAD_SCRIPTS": head_scripts,
             "BODY_CLASS": html.escape(str(page["body_class"]), quote=True),
             "HEADER": render_header(page, configuration, templates["header"]),
@@ -192,8 +189,6 @@ def generated_files(source_root: Path) -> Dict[str, bytes]:
         "layout": read_text(template_root / "layout.html"),
         "header": read_text(template_root / "header.html"),
         "footer": read_text(template_root / "footer.html"),
-        "legacy_styles": read_text(template_root / "legacy-styles.html").rstrip(),
-        "legacy_scripts": read_text(template_root / "legacy-scripts.html").rstrip(),
     }
     rendered: Dict[str, bytes] = {}
     for page in configuration["pages"]:

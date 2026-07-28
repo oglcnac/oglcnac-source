@@ -1,17 +1,42 @@
-
-
-
-
-
   <script src="/static/js/static-data.js"></script>
   <script src="/static/js/table-utils.js"></script>
   <script>
-    function resetInteractomeTable() {
-      window.OglcnacUi.resetTable("#search_result", "interactome-search-results");
+    const interactomeSearchTable = window.OglcnacTables.create("search_result", {
+      filename: "ogt-pin-search.csv"
+    });
+
+    function interactomeIdentifierCell(record) {
+      const uuid = record.uuid_b || "";
+      return {
+        text: uuid,
+        render(cell) {
+          if (!uuid) {
+            return;
+          }
+          const uniprot = document.createElement("a");
+          uniprot.href = `https://www.uniprot.org/uniprot/${encodeURIComponent(uuid)}`;
+          uniprot.rel = "noopener";
+          uniprot.textContent = "UniProt ";
+          cell.appendChild(uniprot);
+          const detail = document.createElement("a");
+          detail.href = `/ogt-pin/detail/?id=${encodeURIComponent(uuid)}`;
+          const strong = document.createElement("strong");
+          strong.textContent = uuid;
+          detail.appendChild(strong);
+          cell.appendChild(detail);
+        }
+      };
     }
 
-    function startInteractomeTable() {
-      window.OglcnacUi.startExportTable("#search_result");
+    function interactomeSearchRow(record) {
+      return [
+        record.uuid_a,
+        record.gene_name_a,
+        record.ncbi_id_b,
+        interactomeIdentifierCell(record),
+        record.gene_name_b,
+        record.protein_name_b
+      ];
     }
 
     async function runInteractomeSearch(event) {
@@ -21,48 +46,36 @@
       const form = document.getElementById("interactome-search-form");
       const term = form.q.value.trim();
       const field = form.field.value;
-      resetInteractomeTable();
       if (!term) {
-        startInteractomeTable();
+        interactomeSearchTable.setRows([]);
         return;
       }
-      const results = await window.OglcnacStaticData.searchOgtPin(term, field);
-      const body = document.getElementById("interactome-search-results");
-      results.forEach((record) => {
-        const row = body.insertRow();
-        window.OglcnacUi.textCell(row, record.uuid_a);
-        window.OglcnacUi.textCell(row, record.gene_name_a);
-        window.OglcnacUi.textCell(row, record.ncbi_id_b);
-        const idCell = row.insertCell();
-        idCell.className = "align-middle";
-        const uniprot = document.createElement("a");
-        uniprot.href = `https://www.uniprot.org/uniprot/${encodeURIComponent(record.uuid_b)}`;
-        uniprot.textContent = "UniProt ";
-        idCell.appendChild(uniprot);
-        const detail = document.createElement("a");
-        detail.href = `/ogt-pin/detail/?id=${encodeURIComponent(record.uuid_b)}`;
-        const strong = document.createElement("strong");
-        strong.textContent = record.uuid_b || "";
-        detail.appendChild(strong);
-        idCell.appendChild(detail);
-        window.OglcnacUi.textCell(row, record.gene_name_b);
-        window.OglcnacUi.textCell(row, record.protein_name_b);
-      });
-      startInteractomeTable();
-      window.history.replaceState({}, "", `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`);
+      interactomeSearchTable.setLoading("Loading OGT-PIN records…");
+      try {
+        const results = await window.OglcnacStaticData.searchOgtPin(term, field);
+        interactomeSearchTable.setRows(results.map(interactomeSearchRow));
+        window.history.replaceState(
+          {},
+          "",
+          `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`
+        );
+      } catch (error) {
+        interactomeSearchTable.setError(
+          "OGT-PIN records could not be loaded. Please try again."
+        );
+      }
     }
 
-    $(document).ready(function () {
-      startInteractomeTable();
-      const form = document.getElementById("interactome-search-form");
-      form.addEventListener("submit", runInteractomeSearch);
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("q")) {
-        form.q.value = params.get("q");
-        if (params.get("field")) {
-          form.field.value = params.get("field");
-        }
-        runInteractomeSearch();
+    const interactomeSearchForm = document.getElementById(
+      "interactome-search-form"
+    );
+    interactomeSearchForm.addEventListener("submit", runInteractomeSearch);
+    const interactomeSearchParams = new URLSearchParams(window.location.search);
+    if (interactomeSearchParams.get("q")) {
+      interactomeSearchForm.q.value = interactomeSearchParams.get("q");
+      if (interactomeSearchParams.get("field")) {
+        interactomeSearchForm.field.value = interactomeSearchParams.get("field");
       }
-    });
+      runInteractomeSearch();
+    }
   </script>

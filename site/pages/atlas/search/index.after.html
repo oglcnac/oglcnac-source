@@ -1,17 +1,30 @@
-
-
-
-
-
   <script src="/static/js/static-data.js"></script>
   <script src="/static/js/table-utils.js"></script>
   <script>
-    function resetAtlasTable() {
-      window.OglcnacUi.resetTable("#search_result", "atlas-search-results");
-    }
+    const atlasSearchTable = window.OglcnacTables.create("search_result", {
+      filename: "oglcnac-atlas-search.csv"
+    });
 
-    function startAtlasTable() {
-      window.OglcnacUi.startExportTable("#search_result");
+    function atlasSearchRow(record) {
+      const accession = record.accession || "";
+      return [
+        {
+          text: accession,
+          href: `/atlas/detail/?id=${encodeURIComponent(accession)}`,
+          strong: true
+        },
+        record.entry_name,
+        record.protein_name,
+        record.gene_name,
+        record.position_in_protein,
+        {
+          text: accession ? "UniProt" : "",
+          href: accession
+            ? `https://www.uniprot.org/uniprot/${encodeURIComponent(accession)}`
+            : "",
+          external: true
+        }
+      ];
     }
 
     async function runAtlasSearch(event) {
@@ -21,38 +34,35 @@
       const form = document.getElementById("atlas-search-form");
       const term = form.q.value.trim();
       const field = form.field.value;
-      resetAtlasTable();
       if (!term) {
-        startAtlasTable();
+        atlasSearchTable.setRows([]);
         return;
       }
-      const results = await window.OglcnacStaticData.searchAtlas(term, field);
-      const body = document.getElementById("atlas-search-results");
-      results.forEach((record) => {
-        const row = body.insertRow();
-        window.OglcnacUi.linkCell(row, `/atlas/detail/?id=${encodeURIComponent(record.accession)}`, record.accession, true);
-        window.OglcnacUi.textCell(row, record.entry_name);
-        window.OglcnacUi.textCell(row, record.protein_name);
-        window.OglcnacUi.textCell(row, record.gene_name);
-        window.OglcnacUi.textCell(row, record.position_in_protein);
-        window.OglcnacUi.linkCell(row, `https://www.uniprot.org/uniprot/${encodeURIComponent(record.accession)}`, "UniProt", false);
-      });
-      startAtlasTable();
-      window.history.replaceState({}, "", `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`);
+      atlasSearchTable.setLoading("Loading Atlas records…");
+      try {
+        const results = await window.OglcnacStaticData.searchAtlas(term, field);
+        atlasSearchTable.setRows(results.map(atlasSearchRow));
+        window.history.replaceState(
+          {},
+          "",
+          `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`
+        );
+      } catch (error) {
+        atlasSearchTable.setError(
+          "Atlas records could not be loaded. Please try again."
+        );
+      }
     }
 
-    $(document).ready(function () {
-      startAtlasTable();
-      const form = document.getElementById("atlas-search-form");
-      form.addEventListener("submit", runAtlasSearch);
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("q")) {
-        document.body.classList.add("has-search-query");
-        form.q.value = params.get("q");
-        if (params.get("field")) {
-          form.field.value = params.get("field");
-        }
-        runAtlasSearch();
+    const atlasSearchForm = document.getElementById("atlas-search-form");
+    atlasSearchForm.addEventListener("submit", runAtlasSearch);
+    const atlasSearchParams = new URLSearchParams(window.location.search);
+    if (atlasSearchParams.get("q")) {
+      document.body.classList.add("has-search-query");
+      atlasSearchForm.q.value = atlasSearchParams.get("q");
+      if (atlasSearchParams.get("field")) {
+        atlasSearchForm.field.value = atlasSearchParams.get("field");
       }
-    });
+      runAtlasSearch();
+    }
   </script>

@@ -7,15 +7,7 @@
   <title>Interaction Record | OGT-PIN</title>
   <meta name="description" content="Inspect curated OGT interaction evidence for a selected protein.">
   <link rel="canonical" href="https://oglcnac.org/ogt-pin/detail/">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css">
   <link rel="stylesheet" href="/static/css/app.css?v=20260728-publication1">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-  <script src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
 
 </head>
 <body class="site-body section-body interactome-section">
@@ -121,11 +113,6 @@
   </div>
 </footer>
 
-
-
-
-
-
     <script src="/static/js/static-data.js"></script>
     <script src="/static/js/table-utils.js"></script>
     <script>
@@ -133,33 +120,69 @@
         const INTERACTOME_UUID_B = detailParams.get("id") || decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "Q9H1M0");
         document.getElementById("interactome-title").textContent = INTERACTOME_UUID_B;
 
-        function startInteractomeDetailTable() {
-            window.OglcnacUi.startExportTable("#interactome");
+        const interactomeDetailTable = window.OglcnacTables.create(
+            "interactome",
+            { filename: `${INTERACTOME_UUID_B}-ogt-pin.csv` }
+        );
+        const interactomeRecordState = document.createElement("p");
+        interactomeRecordState.setAttribute("data-record-state", "ogt-pin");
+        interactomeRecordState.setAttribute("role", "status");
+        document.querySelector(".interactome-detail-page .detail-hero").appendChild(
+            interactomeRecordState
+        );
+
+        function interactomeDetailRow(record) {
+            return [
+                record.uuid_b,
+                record.alt_id_b,
+                record.detection_method,
+                {
+                    text: record.pmid,
+                    href: record.pmid
+                        ? `https://www.ncbi.nlm.nih.gov/pubmed/?term=${encodeURIComponent(record.pmid)}`
+                        : "",
+                    external: true
+                },
+                record.analytic_throughput,
+                record.source,
+                record.curater_comments,
+                record.meeting_imex_criteria,
+                record.high_stringency_interactor
+            ];
         }
 
         async function loadInteractomeDetail() {
-            const payload = await window.OglcnacStaticData.getOgtPinDetail(INTERACTOME_UUID_B);
-            if (!payload.records.length) {
-                startInteractomeDetailTable();
-                return;
+            interactomeRecordState.dataset.state = "loading";
+            interactomeRecordState.textContent = "Loading interaction record…";
+            interactomeDetailTable.setLoading("Loading interaction evidence…");
+            try {
+                const payload = await window.OglcnacStaticData.getOgtPinDetail(
+                    INTERACTOME_UUID_B
+                );
+                if (!payload.records.length) {
+                    interactomeRecordState.dataset.state = "empty";
+                    interactomeRecordState.textContent =
+                        `No OGT-PIN record was found for ${INTERACTOME_UUID_B}.`;
+                    interactomeDetailTable.setRows([]);
+                    return;
+                }
+                interactomeDetailTable.setRows(
+                    payload.records.map(interactomeDetailRow)
+                );
+                interactomeRecordState.dataset.state = "ready";
+                interactomeRecordState.textContent =
+                    `${payload.records.length.toLocaleString()} interaction evidence records loaded.`;
+            } catch (error) {
+                interactomeRecordState.dataset.state = "error";
+                interactomeRecordState.textContent =
+                    "This OGT-PIN record could not be loaded. Please try again.";
+                interactomeDetailTable.setError(
+                    "Interaction evidence could not be loaded."
+                );
             }
-            const body = document.getElementById("interactome-detail-rows");
-            payload.records.forEach((record) => {
-                const row = body.insertRow();
-                window.OglcnacUi.textCell(row, record.uuid_b);
-                window.OglcnacUi.textCell(row, record.alt_id_b);
-                window.OglcnacUi.textCell(row, record.detection_method);
-                window.OglcnacUi.pmidCell(row, record.pmid);
-                window.OglcnacUi.textCell(row, record.analytic_throughput);
-                window.OglcnacUi.textCell(row, record.source);
-                window.OglcnacUi.textCell(row, record.curater_comments);
-                window.OglcnacUi.textCell(row, record.meeting_imex_criteria);
-                window.OglcnacUi.textCell(row, record.high_stringency_interactor);
-            });
-            startInteractomeDetailTable();
         }
 
-        $(document).ready(loadInteractomeDetail);
+        loadInteractomeDetail();
     </script>
 
 </body>

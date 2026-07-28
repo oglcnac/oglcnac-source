@@ -382,6 +382,23 @@ class SiteBuildTests(unittest.TestCase):
                 result.stderr,
             )
 
+    def test_generated_site_has_no_external_runtime_dependencies(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-S",
+                str(QA_SCRIPT),
+                "--forbid-external-runtime",
+                str(FRONTEND_ROOT),
+            ],
+            cwd=REPOSITORY_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_page_specific_main_content_is_unchanged(self) -> None:
         for relative_path, expected_hash in MAIN_CONTENT_SHA256.items():
             html = (FRONTEND_ROOT / relative_path).read_text()

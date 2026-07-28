@@ -1,84 +1,160 @@
-
-
-
-
-
 <script>
-  function peptideCell(row, record) {
-    const cell = row.insertCell();
-    cell.className = "align-middle";
+  function peptideDescriptor(record) {
     const peptide = record.peptide_seq || "";
-    const position = Number.parseInt(record.position_in_peptide, 10);
-    if (!peptide || !position || position < 1 || position > peptide.length) {
-      cell.textContent = peptide;
-      return cell;
-    }
-    cell.appendChild(document.createTextNode(peptide.slice(0, position - 1)));
-    const mark = document.createElement("span");
-    mark.style.color = "#ff0000";
-    const strong = document.createElement("strong");
-    strong.textContent = peptide[position - 1];
-    mark.appendChild(strong);
-    cell.appendChild(mark);
-    cell.appendChild(document.createTextNode(peptide.slice(position)));
-    return cell;
+    return {
+      text: peptide,
+      render(cell) {
+        const position = Number.parseInt(record.position_in_peptide, 10);
+        if (!peptide || !position || position < 1 || position > peptide.length) {
+          cell.textContent = peptide;
+          return;
+        }
+        cell.appendChild(document.createTextNode(peptide.slice(0, position - 1)));
+        const mark = document.createElement("mark");
+        const strong = document.createElement("strong");
+        strong.textContent = peptide[position - 1];
+        mark.appendChild(strong);
+        cell.appendChild(mark);
+        cell.appendChild(document.createTextNode(peptide.slice(position)));
+      }
+    };
   }
 
-  function startDetailTable(id) {
-    window.OglcnacUi.startExportTable(`#${id}`);
+  function pmidDescriptor(pmid) {
+    return {
+      text: pmid,
+      href: pmid
+        ? `https://www.ncbi.nlm.nih.gov/pubmed/?term=${encodeURIComponent(pmid)}`
+        : "",
+      external: true
+    };
+  }
+
+  function atlasPeptideRow(record) {
+    return [
+      record.id,
+      peptideDescriptor(record),
+      record.site_residue,
+      record.position_in_peptide,
+      record.position_in_protein
+    ];
+  }
+
+  function atlasEvidenceRow(record) {
+    return [
+      record.id,
+      record.method,
+      record.analytical_throughput,
+      record.ambiguous,
+      record.species,
+      record.sample_type,
+      record.condition,
+      record.log2FC,
+      record.p_value,
+      pmidDescriptor(record.pmid),
+      record.comments
+    ];
+  }
+
+  function atlasExportRow(record) {
+    return [
+      record.id,
+      peptideDescriptor(record),
+      record.site_residue,
+      record.position_in_peptide,
+      record.position_in_protein,
+      record.method,
+      record.analytical_throughput,
+      record.ambiguous,
+      record.species,
+      record.sample_type,
+      pmidDescriptor(record.pmid),
+      record.comments
+    ];
+  }
+
+  const atlasPeptideTable = window.OglcnacTables.create("detail1", {
+    filename: `${ATLAS_ACCESSION}-peptides.csv`
+  });
+  const atlasEvidenceTable = window.OglcnacTables.create("detail2", {
+    filename: `${ATLAS_ACCESSION}-evidence.csv`
+  });
+  const atlasExportTable = window.OglcnacTables.create("detail3", {
+    filename: `${ATLAS_ACCESSION}-all-fields.csv`
+  });
+  const atlasRecordState = document.createElement("p");
+  atlasRecordState.setAttribute("data-record-state", "atlas");
+  atlasRecordState.setAttribute("role", "status");
+  document.querySelector(".atlas-detail-page .detail-hero").appendChild(
+    atlasRecordState
+  );
+
+  function setAtlasTablesLoading() {
+    atlasPeptideTable.setLoading("Loading peptide records…");
+    atlasEvidenceTable.setLoading("Loading evidence records…");
+    atlasExportTable.setLoading("Loading complete records…");
+  }
+
+  function setAtlasTablesError() {
+    atlasPeptideTable.setError("Peptide records could not be loaded.");
+    atlasEvidenceTable.setError("Evidence records could not be loaded.");
+    atlasExportTable.setError("Complete records could not be loaded.");
   }
 
   async function loadAtlasDetail() {
-    const payload = await window.OglcnacStaticData.getAtlasDetail(ATLAS_ACCESSION);
-    if (!payload.records.length) {
-      document.getElementById("protein-sequence").textContent = "Atlas record is not available.";
-      ["detail1", "detail2", "detail3"].forEach(startDetailTable);
+    atlasRecordState.dataset.state = "loading";
+    atlasRecordState.textContent = "Loading Atlas record…";
+    setAtlasTablesLoading();
+    let payload;
+    try {
+      payload = await window.OglcnacStaticData.getAtlasDetail(ATLAS_ACCESSION);
+    } catch (error) {
+      atlasRecordState.dataset.state = "error";
+      atlasRecordState.textContent =
+        "This Atlas record could not be loaded. Please try again.";
+      document.getElementById("protein-sequence").textContent =
+        "Protein sequence is unavailable because the record could not be loaded.";
+      setAtlasTablesError();
       return;
     }
-    const fasta = await window.OglcnacStaticData.getCachedUniprotFasta(ATLAS_ACCESSION);
-    if (!fasta || ["NA", "N/A"].includes(fasta.trim().toUpperCase())) {
-      document.getElementById("protein-sequence").textContent = "Protein sequence for this entry is not available in UniProt. Please refer to the original paper for details.";
-    } else {
-      document.getElementById("protein-sequence").innerHTML = formatSequence(fasta, payload.positions || []);
+
+    if (!payload.records.length) {
+      atlasRecordState.dataset.state = "empty";
+      atlasRecordState.textContent =
+        `No Atlas record was found for ${ATLAS_ACCESSION}.`;
+      document.getElementById("protein-sequence").textContent =
+        "Atlas record is not available.";
+      atlasPeptideTable.setRows([]);
+      atlasEvidenceTable.setRows([]);
+      atlasExportTable.setRows([]);
+      return;
     }
 
-    payload.records.forEach((record) => {
-      let row = document.getElementById("atlas-peptide-rows").insertRow();
-      window.OglcnacUi.textCell(row, record.id);
-      peptideCell(row, record);
-      window.OglcnacUi.textCell(row, record.site_residue);
-      window.OglcnacUi.textCell(row, record.position_in_peptide);
-      window.OglcnacUi.textCell(row, record.position_in_protein);
+    let fasta = "";
+    try {
+      fasta = await window.OglcnacStaticData.getCachedUniprotFasta(
+        ATLAS_ACCESSION
+      );
+    } catch (error) {
+      fasta = "";
+    }
+    if (!fasta || ["NA", "N/A"].includes(fasta.trim().toUpperCase())) {
+      document.getElementById("protein-sequence").textContent =
+        "Protein sequence for this entry is not available in UniProt. Please refer to the original paper for details.";
+    } else {
+      document.getElementById("protein-sequence").innerHTML = formatSequence(
+        fasta,
+        payload.positions || []
+      );
+    }
 
-      row = document.getElementById("atlas-evidence-rows").insertRow();
-      window.OglcnacUi.textCell(row, record.id);
-      window.OglcnacUi.textCell(row, record.method);
-      window.OglcnacUi.textCell(row, record.analytical_throughput);
-      window.OglcnacUi.textCell(row, record.ambiguous);
-      window.OglcnacUi.textCell(row, record.species);
-      window.OglcnacUi.textCell(row, record.sample_type);
-      window.OglcnacUi.textCell(row, record.condition);
-      window.OglcnacUi.textCell(row, record.log2FC);
-      window.OglcnacUi.textCell(row, record.p_value);
-      window.OglcnacUi.pmidCell(row, record.pmid);
-      window.OglcnacUi.textCell(row, record.comments);
-
-      row = document.getElementById("atlas-export-rows").insertRow();
-      window.OglcnacUi.textCell(row, record.id);
-      peptideCell(row, record);
-      window.OglcnacUi.textCell(row, record.site_residue);
-      window.OglcnacUi.textCell(row, record.position_in_peptide);
-      window.OglcnacUi.textCell(row, record.position_in_protein);
-      window.OglcnacUi.textCell(row, record.method);
-      window.OglcnacUi.textCell(row, record.analytical_throughput);
-      window.OglcnacUi.textCell(row, record.ambiguous);
-      window.OglcnacUi.textCell(row, record.species);
-      window.OglcnacUi.textCell(row, record.sample_type);
-      window.OglcnacUi.pmidCell(row, record.pmid);
-      window.OglcnacUi.textCell(row, record.comments);
-    });
-    ["detail1", "detail2", "detail3"].forEach(startDetailTable);
+    atlasPeptideTable.setRows(payload.records.map(atlasPeptideRow));
+    atlasEvidenceTable.setRows(payload.records.map(atlasEvidenceRow));
+    atlasExportTable.setRows(payload.records.map(atlasExportRow));
+    atlasRecordState.dataset.state = "ready";
+    atlasRecordState.textContent =
+      `${payload.records.length.toLocaleString()} curated Atlas records loaded.`;
   }
 
-  $(document).ready(loadAtlasDetail);
+  loadAtlasDetail();
 </script>

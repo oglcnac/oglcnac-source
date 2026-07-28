@@ -1,8 +1,3 @@
-
-
-
-
-
     <script src="/static/js/static-data.js"></script>
     <script src="/static/js/table-utils.js"></script>
     <script>
@@ -10,31 +5,67 @@
         const INTERACTOME_UUID_B = detailParams.get("id") || decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "Q9H1M0");
         document.getElementById("interactome-title").textContent = INTERACTOME_UUID_B;
 
-        function startInteractomeDetailTable() {
-            window.OglcnacUi.startExportTable("#interactome");
+        const interactomeDetailTable = window.OglcnacTables.create(
+            "interactome",
+            { filename: `${INTERACTOME_UUID_B}-ogt-pin.csv` }
+        );
+        const interactomeRecordState = document.createElement("p");
+        interactomeRecordState.setAttribute("data-record-state", "ogt-pin");
+        interactomeRecordState.setAttribute("role", "status");
+        document.querySelector(".interactome-detail-page .detail-hero").appendChild(
+            interactomeRecordState
+        );
+
+        function interactomeDetailRow(record) {
+            return [
+                record.uuid_b,
+                record.alt_id_b,
+                record.detection_method,
+                {
+                    text: record.pmid,
+                    href: record.pmid
+                        ? `https://www.ncbi.nlm.nih.gov/pubmed/?term=${encodeURIComponent(record.pmid)}`
+                        : "",
+                    external: true
+                },
+                record.analytic_throughput,
+                record.source,
+                record.curater_comments,
+                record.meeting_imex_criteria,
+                record.high_stringency_interactor
+            ];
         }
 
         async function loadInteractomeDetail() {
-            const payload = await window.OglcnacStaticData.getOgtPinDetail(INTERACTOME_UUID_B);
-            if (!payload.records.length) {
-                startInteractomeDetailTable();
-                return;
+            interactomeRecordState.dataset.state = "loading";
+            interactomeRecordState.textContent = "Loading interaction record…";
+            interactomeDetailTable.setLoading("Loading interaction evidence…");
+            try {
+                const payload = await window.OglcnacStaticData.getOgtPinDetail(
+                    INTERACTOME_UUID_B
+                );
+                if (!payload.records.length) {
+                    interactomeRecordState.dataset.state = "empty";
+                    interactomeRecordState.textContent =
+                        `No OGT-PIN record was found for ${INTERACTOME_UUID_B}.`;
+                    interactomeDetailTable.setRows([]);
+                    return;
+                }
+                interactomeDetailTable.setRows(
+                    payload.records.map(interactomeDetailRow)
+                );
+                interactomeRecordState.dataset.state = "ready";
+                interactomeRecordState.textContent =
+                    `${payload.records.length.toLocaleString()} interaction evidence records loaded.`;
+            } catch (error) {
+                interactomeRecordState.dataset.state = "error";
+                interactomeRecordState.textContent =
+                    "This OGT-PIN record could not be loaded. Please try again.";
+                interactomeDetailTable.setError(
+                    "Interaction evidence could not be loaded."
+                );
             }
-            const body = document.getElementById("interactome-detail-rows");
-            payload.records.forEach((record) => {
-                const row = body.insertRow();
-                window.OglcnacUi.textCell(row, record.uuid_b);
-                window.OglcnacUi.textCell(row, record.alt_id_b);
-                window.OglcnacUi.textCell(row, record.detection_method);
-                window.OglcnacUi.pmidCell(row, record.pmid);
-                window.OglcnacUi.textCell(row, record.analytic_throughput);
-                window.OglcnacUi.textCell(row, record.source);
-                window.OglcnacUi.textCell(row, record.curater_comments);
-                window.OglcnacUi.textCell(row, record.meeting_imex_criteria);
-                window.OglcnacUi.textCell(row, record.high_stringency_interactor);
-            });
-            startInteractomeDetailTable();
         }
 
-        $(document).ready(loadInteractomeDetail);
+        loadInteractomeDetail();
     </script>

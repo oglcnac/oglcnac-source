@@ -1694,8 +1694,7 @@ a {
 }
 
 .detail-table,
-.results-table,
-.section-body table.dataTable {
+.results-table {
   margin: 0 !important;
   color: #24313f;
   border-collapse: separate !important;
@@ -1703,8 +1702,7 @@ a {
 }
 
 .detail-table th,
-.results-table th,
-.section-body table.dataTable thead th {
+.results-table th {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -1717,8 +1715,7 @@ a {
 }
 
 .detail-table td,
-.results-table td,
-.section-body table.dataTable tbody td {
+.results-table td {
   border-top: 1px solid #eef2f6;
   font-size: 0.88rem;
   line-height: 1.45;
@@ -2063,6 +2060,102 @@ a {
   box-shadow: inset 0 -2px #83b9ff;
 }
 
+/* Dependency-free table controls shared by Atlas, OGT-PIN, and PRED-DL. */
+.native-table-controls,
+.native-table-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.native-table-filter {
+  display: grid;
+  min-width: min(100%, 280px);
+  gap: 5px;
+  color: #314353;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.native-table-filter input,
+.native-table-pagination select {
+  min-height: 40px;
+  padding: 0.45rem 0.65rem;
+  color: #14202b;
+  background: #fff;
+  border: 1px solid #b8c7d3;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.native-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.native-table-status {
+  min-height: 1.5em;
+  margin: 8px 0;
+  color: #526270;
+}
+
+.native-table-status[data-table-state="error"] {
+  color: #9f1d2f;
+  font-weight: 700;
+}
+
+.native-table-pagination {
+  align-items: center;
+}
+
+.native-table-pagination label {
+  color: #526270;
+  font-size: 0.88rem;
+}
+
+.section-body .native-table-sort {
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font: inherit;
+  text-align: left;
+}
+
+.section-body .native-table-sort::after {
+  content: " ↕";
+  color: #667788;
+}
+
+.section-body table th,
+.section-body table td {
+  padding: 0.7rem 0.75rem;
+  text-align: left;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+mark {
+  color: #b42335;
+  background: transparent;
+}
+
 .interactome-section .site-section-nav a[aria-current="page"] {
   box-shadow: inset 0 -2px #71d5c9;
 }
@@ -2148,5 +2241,21 @@ a {
   .site-primary-nav a,
   .site-section-nav a {
     padding: 0.65rem 0.75rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .native-table-controls,
+  .native-table-pagination {
+    align-items: stretch;
+  }
+
+  .native-table-filter,
+  .native-table-actions {
+    width: 100%;
+  }
+
+  .native-table-actions button {
+    flex: 1 1 150px;
   }
 }

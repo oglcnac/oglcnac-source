@@ -191,20 +191,17 @@ test(
       await page.click('#prediction-text-form button[type="submit"]');
       await page.waitForFunction(
         (expectedRows) =>
-          window.jQuery &&
-          jQuery.fn.dataTable.isDataTable("#prediction-results-table") &&
-          jQuery("#prediction-results-table").DataTable().rows().count() ===
+          window.OglcnacTables &&
+          window.OglcnacTables.get("prediction-results-table") &&
+          window.OglcnacTables.get("prediction-results-table").totalRows ===
             expectedRows,
         goldenCase.results.length,
         { timeout: 120000 },
       );
       const actual = await page.evaluate(() =>
-        jQuery("#prediction-results-table")
-          .DataTable()
-          .rows()
-          .data()
-          .toArray()
-          .map((row) => Array.from(row, (value) => String(value))),
+        window.OglcnacTables
+          .get("prediction-results-table")
+          .rows.map((row) => row.map((value) => String(value))),
       );
       const expected = goldenCase.results.map((record) => [
         record.id,
