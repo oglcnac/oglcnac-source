@@ -256,6 +256,29 @@ test("native table headers expose the active sort direction", async () => {
   await page.close();
 });
 
+test("wide result tables keep readable headers inside a horizontal scroll region", async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.goto(`${baseUrl}/ogt-pin/search/?q=Q9H1M0&field=uuid_b`);
+  await waitForTable(page, "search_result");
+
+  const layout = await page.evaluate(() => {
+    const table = document.querySelector("#search_result");
+    const region = table.closest(".table-scroll");
+    const widths = Array.from(table.querySelectorAll("thead th")).map(
+      (header) => Math.round(header.getBoundingClientRect().width),
+    );
+    return {
+      regionWidth: Math.round(region.getBoundingClientRect().width),
+      tableWidth: Math.round(table.getBoundingClientRect().width),
+      minimumHeaderWidth: Math.min(...widths),
+    };
+  });
+
+  assert.ok(layout.tableWidth > layout.regionWidth, layout);
+  assert.ok(layout.minimumHeaderWidth >= 120, layout);
+  await page.close();
+});
+
 test("OGT-PIN search preserves every field mapping", async () => {
   const page = await browser.newPage();
   await page.goto(`${baseUrl}/ogt-pin/search/`);

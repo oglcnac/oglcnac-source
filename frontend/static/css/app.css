@@ -3134,6 +3134,11 @@ th,
   font-size: 0.81rem;
 }
 
+.results-table th,
+.detail-table th {
+  min-width: 120px;
+}
+
 .native-table-controls,
 .native-table-pagination {
   gap: 10px;

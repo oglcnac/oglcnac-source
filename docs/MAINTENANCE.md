@@ -101,6 +101,25 @@ files. `npm run check:site` separately rejects stale generated output.
 See `REBUILD.md` for clean-room rebuild, source ownership, vendor/model refresh,
 deploy-checkout recreation, verification, secrets, and rollback.
 
+## Visual Release Audit
+
+Serve the candidate `frontend/` locally, then capture the complete 39-state
+matrix at 1440×1100 and 390×844:
+
+```bash
+python3 -m http.server 8771 --bind 127.0.0.1 --directory frontend
+SCREENSHOT_BASE_URL=http://127.0.0.1:8771 \
+SCREENSHOT_OUTPUT_DIR=/tmp/oglcnac-visual-review \
+npm run screenshots
+```
+
+The command writes 78 full-page screenshots, desktop/mobile contact sheets,
+and `report.json`. It fails for overflow, missing/multiple H1 elements,
+unexpected console/page errors, or API/Shiny requests. Intentional Atlas and
+OGT-PIN 503 fixtures are recorded separately from unexpected errors. Review
+the contact sheets and representative full-page captures before deploying;
+do not commit the generated images.
+
 ## Reference Backend Restart
 
 ```bash
