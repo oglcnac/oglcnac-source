@@ -378,3 +378,290 @@ artifacts are added.
    This removes the normal external sequence dependency but increases the
    first Atlas detail data transfer when the server does not serve the
    precompressed companion.
+
+## Review Fix Round 1: Snapshot Trust, Reconciliation, Bounds, and Provenance
+
+Status: `DONE_WITH_CONCERNS`
+
+Commit:
+
+- `584555182b8d571fe8780e62a6424e2f69d38dbd` — Harden Atlas sequence snapshot generation
+
+### Finding 1: Fail Closed Without Snapshot Membership Proof
+
+Root cause: `getAtlasProteinFasta()` caught snapshot fetch/parse failures and
+then fell through to the UniProt fallback. The fallback therefore had no
+successful local-snapshot membership proof.
+
+#### RED
+
+```bash
+node --test --test-name-pattern='fails closed' \
+  scripts/tests/static-data.test.js
+```
+
+Result: 1 failed, 0 passed.
+
+```text
+Expected values to be strictly deep-equal:
+actual:
+  /static/data/atlas-sequences-v1.json
+  https://rest.uniprot.org/uniprotkb/AT1G01030.fasta
+expected:
+  /static/data/atlas-sequences-v1.json
+```
+
+Log: `/tmp/publication-task3-fix1-red-fail-closed.log`
+
+#### GREEN
+
+```bash
+node --test --test-name-pattern='fails closed' \
+  scripts/tests/static-data.test.js
+```
+
+Result:
+
+```text
+tests 1
+pass 1
+fail 0
+```
+
+Log: `/tmp/publication-task3-fix1-green-fail-closed.log`
+
+Fix: snapshot fetch, HTTP, JSON parse, or shape failures now return an empty
+sequence immediately. UniProt is contacted only after a successful snapshot
+load and exact accession membership in `missing_accessions`.
+
+### Finding 2: Reconcile Existing Snapshot With Every New CSV Release
+
+Root cause: the normal no-FASTA/no-network branch loaded the existing snapshot
+and reused its prior sequences, coverage, missing list, and exclusions without
+comparing them to current CSV-derived categories.
+
+#### RED
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_normal_regeneration_reconciles_snapshot_to_new_release_accessions \
+  -v
+```
+
+The controlled first release supplied `P11111`; the second release replaced it
+with `P22222`. Before the fix:
+
+```text
+FAIL
+AssertionError: {'P11111': 'MSTAA'} != {}
+Ran 1 test
+FAILED (failures=1)
+```
+
+Log: `/tmp/publication-task3-fix1-red-stale-snapshot.log`
+
+#### GREEN
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_normal_regeneration_reconciles_snapshot_to_new_release_accessions \
+  -v
+```
+
+Result:
+
+```text
+Ran 1 test
+OK
+```
+
+Log: `/tmp/publication-task3-fix1-green-stale-snapshot.log`
+
+Fix: normal regeneration now intersects stored sequences with the exact
+current eligible-accession set, removes obsolete sequences, rebuilds coverage
+and exclusion lists from current CSV categories, lists newly eligible
+accessions as missing, rewrites the reconciled snapshot, and passes that exact
+coverage into release metadata. The documented normal workflow remains
+network-independent but cannot silently publish stale sequence eligibility.
+
+### Finding 3: Enforce Batch/Retry Bounds and Test Network Mechanics Offline
+
+Root cause: curator CLI options used unconstrained `int` parsers even though
+the documented interface promised bounded batching and retries.
+
+#### RED
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_network_option_bounds_are_rejected_by_argument_parser \
+  -v
+```
+
+Result: both subtests failed because invalid values reached the later generic
+input validation:
+
+```text
+'between 1 and 100' not found in ... Provide --database or CSV inputs.
+'between 1 and 5' not found in ... Provide --database or CSV inputs.
+Ran 1 test
+FAILED (failures=2)
+```
+
+Log: `/tmp/publication-task3-fix1-red-bounds.log`
+
+#### GREEN
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_network_option_bounds_are_rejected_by_argument_parser \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_uniprot_batches_are_bounded_to_100_accessions \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_uniprot_batch_retries_then_uses_its_cache \
+  -v
+```
+
+Result:
+
+```text
+test_network_option_bounds_are_rejected_by_argument_parser ... ok
+test_uniprot_batches_are_bounded_to_100_accessions ... ok
+test_uniprot_batch_retries_then_uses_its_cache ... ok
+Ran 3 tests
+OK
+uniprot_batch=1 requested=100 ... cached=yes
+uniprot_batch=2 requested=100 ... cached=yes
+uniprot_batch=3 requested=5 ... cached=yes
+```
+
+Log: `/tmp/publication-task3-fix1-green-bounds-cache-retry.log`
+
+Fix:
+
+- `--uniprot-batch-size` accepts only 1–100;
+- `--uniprot-retries` accepts only 1–5;
+- defaults remain 100 and three;
+- a 205-accession fake proves 100/100/5 batching;
+- a fake transient `URLError` proves retry/backoff;
+- a second identical call proves cached response reuse without another network
+  call.
+
+All network-mechanics tests use controlled fakes and temporary cache files; no
+live UniProt request occurs.
+
+### Finding 4: Reject Mixed Batch Provenance
+
+Root cause: `fetch_uniprot_sequences()` merged batch headers with
+`dict.update()`, so the final batch silently overwrote earlier release,
+release-date, and API-deployment values.
+
+#### RED
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_mixed_uniprot_batch_provenance_is_rejected \
+  -v
+```
+
+Result:
+
+```text
+FAIL
+AssertionError: RuntimeError not raised
+Ran 1 test
+FAILED (failures=1)
+```
+
+Log: `/tmp/publication-task3-fix1-red-provenance.log`
+
+#### GREEN
+
+```bash
+python3 -m unittest \
+  scripts.tests.test_generate_static_data.StaticDataGeneratorTests.test_mixed_uniprot_batch_provenance_is_rejected \
+  -v
+```
+
+Result:
+
+```text
+Ran 1 test
+OK
+```
+
+Log: `/tmp/publication-task3-fix1-green-provenance.log`
+
+Fix: each batch contributes to a set for UniProt release, release date, and API
+deployment date. Generation raises `RuntimeError` with both conflicting values
+as soon as any set contains more than one value. A single-release provenance
+claim is emitted only when all reported batch values are consistent.
+
+### Fix-Round Full Verification
+
+```bash
+npm run test:data
+```
+
+Result:
+
+```text
+generator tests: 8 passed, 0 failed
+browser-data tests: 5 passed, 0 failed
+```
+
+```bash
+npm run test:tables
+```
+
+Result:
+
+```text
+table/static-data unit tests: 9 passed, 0 failed
+Chromium interaction tests: 10 passed, 0 failed
+```
+
+```bash
+npm run build:site
+npm run check:site
+npm run qa:runtime
+npm run test:site
+```
+
+Result:
+
+```text
+Generated 26 files.
+Generated site is current (26 files).
+Site QA checks passed.
+Site build tests: 14 passed, 0 failed.
+```
+
+```bash
+git diff --check
+python3 -m py_compile \
+  frontend/scripts/generate_static_data.py \
+  scripts/tests/test_generate_static_data.py
+```
+
+Both commands exited 0. A direct tracked-artifact check reported:
+
+```text
+artifact_integrity=PASS records=61035 sequences=7239 missing=311
+```
+
+### Fix-Round Self-Review
+
+- Confirmed a failed snapshot fetch/parse has no code path to UniProt.
+- Confirmed successful local membership remains required for fallback.
+- Confirmed two-release regeneration removes the old sequence, marks the new
+  eligible accession missing, and publishes matching release coverage.
+- Confirmed normal reconciliation is local-only and retains only exact
+  currently eligible accessions.
+- Confirmed invalid CLI batch/retry bounds fail during argument parsing before
+  any input or network work.
+- Confirmed batching, one retry/backoff, and cache reuse are observable under
+  controlled no-network tests.
+- Confirmed each provenance dimension is accumulated independently and any
+  mixed reported value aborts generation.
+- Confirmed canonical tracked release/snapshot artifacts and their 7,239/311
+  coverage remain unchanged by this logic-only fix.
+- Confirmed the ledgered unique-site normalization wording was not expanded
+  into unrelated UI or counting changes.
