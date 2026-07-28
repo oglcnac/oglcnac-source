@@ -982,6 +982,22 @@ th,
   gap: 16px;
 }
 
+.resource-directory {
+  padding-bottom: 0;
+}
+
+.resource-directory + .content-section {
+  padding-top: 34px;
+}
+
+.resource-directory h2 {
+  margin-top: 0;
+}
+
+.resource-links-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .download-card,
 .contact-card,
 .resource-links a {

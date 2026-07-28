@@ -16,7 +16,7 @@
 <header class="site-header">
   <div class="site-header-inner">
     <a class="site-brand" href="/">oglcnac.org</a>
-    <details class="site-nav-disclosure">
+    <details class="site-nav-disclosure" open>
       <summary>Menu</summary>
       <div class="site-nav-panel">
         <nav class="site-primary-nav" aria-label="Primary navigation">
@@ -27,6 +27,21 @@
     </details>
   </div>
 </header>
+<script>
+  (function configureResponsiveNavigation() {
+    const disclosure = document.querySelector(".site-nav-disclosure");
+    const desktop = window.matchMedia("(min-width: 1101px)");
+    const sync = (query) => {
+      disclosure.open = query.matches;
+    };
+    sync(desktop);
+    if (desktop.addEventListener) {
+      desktop.addEventListener("change", sync);
+    } else {
+      desktop.addListener(sync);
+    }
+  })();
+</script>
 
 <main id="main-content" class="site-main"><section class="page-hero page-hero-compact">
   <div class="container page-hero-inner">

@@ -104,6 +104,27 @@ class DocumentParser(HTMLParser):
         return [attrs for tag, attrs in self.start_tags if tag == name]
 
 
+class MainLinkParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._main_depth = 0
+        self.hrefs: set[str] = set()
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        if tag == "main":
+            self._main_depth += 1
+        if tag == "a" and self._main_depth:
+            href = dict(attrs).get("href")
+            if href:
+                self.hrefs.add(href)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "main" and self._main_depth:
+            self._main_depth -= 1
+
+
 class AccessibilityParser(HTMLParser):
     VOID_ELEMENTS = {
         "area",
@@ -351,6 +372,77 @@ class SiteBuildTests(unittest.TestCase):
             )
         )
         self.assertEqual(actual, tuple(sorted(GENERATED_HTML)))
+
+    def test_resource_home_pages_expose_every_destination_in_main_content(self) -> None:
+        expected = {
+            "atlas/index.html": {
+                "/atlas/statistics/",
+                "/atlas/search/",
+                "/atlas/browse/",
+                "/atlas/tutorial/",
+                "/atlas/download/",
+                "/atlas/contact/",
+            },
+            "ogt-pin/index.html": {
+                "/ogt-pin/statistics/",
+                "/ogt-pin/search/",
+                "/ogt-pin/tutorial/",
+                "/ogt-pin/contact/",
+            },
+            "pred_dl/index.html": {
+                "/pred_dl/input_fasta/",
+                "/pred_dl/tutorial/",
+                "/pred_dl/download/",
+                "/pred_dl/contact/",
+            },
+            "hexnac-quest/index.html": {
+                "/hexnac-quest/analysis/",
+                "/hexnac-quest/tutorial/",
+                "/hexnac-quest/contact/",
+            },
+        }
+        for relative_path, required_links in expected.items():
+            with self.subTest(page=relative_path):
+                parser = MainLinkParser()
+                parser.feed((FRONTEND_ROOT / relative_path).read_text())
+                self.assertEqual(required_links - parser.hrefs, set())
+
+    def test_pre_refresh_scientific_context_remains_present(self) -> None:
+        expected_facts = {
+            "index.html": (
+                "serine, threonine, and tyrosine",
+                "transcription, translation, cell-cycle control, metabolism, and signaling",
+                "download curated datasets",
+            ),
+            "atlas/index.html": (
+                "nucleus, cytosol, and mitochondria",
+                "species-, tissue-/cell-, protein-, and site-specific",
+            ),
+            "ogt-pin/index.html": (
+                "molecular networks",
+                "drug development",
+                "past several decades",
+            ),
+            "pred_dl/index.html": (
+                "improved sensitivity and accuracy",
+                "physiology and disease",
+                "contributed equally",
+            ),
+            "hexnac-quest/index.html": (
+                "shinyapps.io",
+                "prediction api",
+                "save the result as csv",
+            ),
+        }
+        for relative_path, facts in expected_facts.items():
+            with self.subTest(page=relative_path):
+                text = re.sub(
+                    r"\s+",
+                    " ",
+                    (FRONTEND_ROOT / relative_path).read_text().casefold(),
+                )
+                for fact in facts:
+                    self.assertIn(fact.casefold(), text)
 
     def test_shared_shell_has_metadata_and_semantic_landmarks(self) -> None:
         for relative_path in GENERATED_HTML:

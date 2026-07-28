@@ -627,6 +627,85 @@ test("mobile navigation opens with keyboard-accessible links", async () => {
   await page.close();
 });
 
+test("desktop section navigation is visible without interaction", async () => {
+  const expected = {
+    "/atlas/": "/atlas/statistics/",
+    "/ogt-pin/": "/ogt-pin/statistics/",
+    "/pred_dl/": "/pred_dl/download/",
+    "/hexnac-quest/": "/hexnac-quest/contact/",
+  };
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+  for (const [route, destination] of Object.entries(expected)) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const disclosure = page.locator(".site-nav-disclosure");
+    assert.equal(
+      await disclosure.getAttribute("open"),
+      "",
+      `${route} desktop navigation disclosure must be open`,
+    );
+    assert.equal(
+      await page
+        .locator(`.site-section-nav a[href="${destination}"]`)
+        .isVisible(),
+      true,
+      `${route} hides desktop section link ${destination}`,
+    );
+  }
+  await page.close();
+});
+
+test("tool home pages expose every resource without opening the header menu", async () => {
+  const expected = {
+    "/atlas/": [
+      "/atlas/statistics/",
+      "/atlas/search/",
+      "/atlas/browse/",
+      "/atlas/tutorial/",
+      "/atlas/download/",
+      "/atlas/contact/",
+    ],
+    "/ogt-pin/": [
+      "/ogt-pin/statistics/",
+      "/ogt-pin/search/",
+      "/ogt-pin/tutorial/",
+      "/ogt-pin/contact/",
+    ],
+    "/pred_dl/": [
+      "/pred_dl/input_fasta/",
+      "/pred_dl/tutorial/",
+      "/pred_dl/download/",
+      "/pred_dl/contact/",
+    ],
+    "/hexnac-quest/": [
+      "/hexnac-quest/analysis/",
+      "/hexnac-quest/tutorial/",
+      "/hexnac-quest/contact/",
+    ],
+  };
+  for (const width of [1024, 390]) {
+    const page = await browser.newPage({ viewport: { width, height: 844 } });
+    for (const [route, links] of Object.entries(expected)) {
+      await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+      for (const href of links) {
+        const link = page.locator(
+          `main .resource-directory a[href="${href}"]`,
+        );
+        assert.equal(
+          await link.count(),
+          1,
+          `${route} must expose ${href} once in main content at ${width}px`,
+        );
+        assert.equal(
+          await link.isVisible(),
+          true,
+          `${route} hides ${href} in main content at ${width}px`,
+        );
+      }
+    }
+    await page.close();
+  }
+});
+
 test("unknown routes retain a useful 404 page while legacy detail paths redirect", async () => {
   const page = await browser.newPage();
   const response = await page.goto(`${baseUrl}/missing-publication-page`);
