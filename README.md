@@ -32,9 +32,10 @@ https://oglcnac.org/              Static frontend on GitHub Pages
 https://api.oglcnac.org/health    Legacy prediction API during transition
 ```
 
-Atlas, OGT-PIN, and PRED-DL run fully in the browser from versioned static
-assets. PRED-DL uses TensorFlow.js with the WASM backend; protein sequences do
-not leave the browser.
+Atlas, OGT-PIN, PRED-DL, and HexNAcQuest run fully in the browser from
+versioned static assets. PRED-DL uses TensorFlow.js with the WASM backend;
+HexNAcQuest uses an exact JavaScript representation of its published logistic
+model. Protein sequences and HexNAcQuest CSV files do not leave the browser.
 
 ## Daily Checks
 
@@ -57,6 +58,7 @@ and browser prediction parity without contacting the API.
 - Curator workflow: see `docs/CURATOR-WORKFLOW.md`.
 - Frontend source notes: see `frontend/README.md`.
 - Static prediction architecture and transition: see `docs/STATIC-PREDICTION.md`.
+- Static HexNAcQuest architecture and model contract: see `docs/HEXNAC-QUEST.md`.
 - Prediction export/reference-service notes: see `prediction-service/README.md`.
 
 ## Do Not Commit

@@ -11,6 +11,7 @@ git status --short --branch
 npm run smoke:static
 npm run smoke:static:browser
 npm run test:prediction
+npm run test:hexnac
 ```
 
 Deploy only from a clean source checkout unless you are deliberately testing local edits.
@@ -33,6 +34,13 @@ parity with the Python reference and rejects API requests.
 
 When model inputs or weights change, follow the export workflow in
 `prediction-service/README.md` before deploying.
+
+## Static HexNAcQuest
+
+HexNAcQuest pages, its exact JavaScript model, the pinned CSV parser, tutorial
+assets, and canonical example all deploy with `frontend/`. It has no Shiny,
+WebR, or API runtime. `npm run test:hexnac` verifies the legacy R golden corpus
+and the complete browser workflow. See `HEXNAC-QUEST.md`.
 
 ## Legacy Prediction Backend
 

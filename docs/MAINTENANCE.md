@@ -13,8 +13,9 @@ Legacy API:        https://api.oglcnac.org/ (transition through 2026-08-11)
 Reference backend: 127.0.0.1:8010
 ```
 
-Atlas and OGT-PIN use static frontend data. O-GlcNAcPRED-DL runs locally in a
-browser Web Worker using static TensorFlow.js/WASM assets.
+Atlas and OGT-PIN use static frontend data. O-GlcNAcPRED-DL and HexNAcQuest
+run locally in browser Web Workers. HexNAcQuest needs only its static
+JavaScript, JSON model manifest, CSV parser, and public assets.
 
 ## Health Check
 
@@ -44,6 +45,7 @@ git status --short --branch
 npm run smoke:static
 npm run smoke:static:browser
 npm run test:prediction
+npm run test:hexnac
 git add frontend docs scripts README.md package.json package-lock.json
 git commit -m "Describe the frontend update"
 git push
@@ -66,6 +68,16 @@ npm run test:prediction
 This checks FASTA handling and exact human/mouse parity against the Python
 golden corpus while blocking all prediction API requests. The scheduled GitHub
 Actions workflow runs the same check daily.
+
+## HexNAcQuest Verification
+
+```bash
+npm run test:hexnac
+```
+
+This checks the CSV contract, all 10,000 legacy R reference classifications,
+the complete browser workflow, and the absence of prediction API or
+shinyapps.io requests. The scheduled three-browser workflow runs daily.
 
 ## Reference Backend Restart
 

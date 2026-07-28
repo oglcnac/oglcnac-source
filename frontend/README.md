@@ -9,6 +9,8 @@ Dynamic behavior is browser-side:
 - Atlas Browse uses client-side pagination over the static bundle.
 - PRED-DL loads versioned TensorFlow.js models from `/static/prediction/` and
   performs inference in a Web Worker using the WASM backend.
+- HexNAcQuest parses CSV and applies its versioned logistic model in a dedicated
+  Web Worker from self-hosted static assets under `/static/hexnac-quest/`.
 - Submitted protein sequences remain in the browser; there is no automatic API
   fallback.
 - Contact pages use mailto links.
@@ -42,3 +44,10 @@ npm run test:prediction
 
 The browser output must exactly match the Python golden corpus before a new
 bundle is deployed.
+
+## Static HexNAcQuest
+
+HexNAcQuest pages live in `hexnac-quest/`. Its model manifest, canonical
+example, tutorial images, and pinned Papa Parse runtime live in
+`static/hexnac-quest/`. Run `npm run test:hexnac` after any related change.
+See `../docs/HEXNAC-QUEST.md` for its data and model contract.

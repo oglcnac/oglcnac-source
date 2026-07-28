@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "model_id": "hexnac-quest-logistic-v1",
+  "model_type": "binomial_logistic_regression",
+  "required_columns": ["id", "f126", "f138", "f144", "f168", "f186"],
+  "feature_columns": ["f126", "f138", "f144", "f168", "f186"],
+  "normalized_model_features": ["pf126", "pf138", "pf144"],
+  "normalization_denominator": ["f126", "f138", "f144", "f168", "f186"],
+  "coefficients": {
+    "intercept": 0.793507659661583,
+    "pf126": -2.425337384814185,
+    "pf138": 3.254446222587966,
+    "pf144": -11.240096307175865
+  },
+  "decision": {
+    "quantity": "linear_predictor",
+    "operator": ">",
+    "threshold": 0,
+    "positive_label": "GlcNAc",
+    "negative_label": "GalNAc"
+  },
+  "limits": {
+    "max_file_bytes": 26214400,
+    "max_data_rows": 250000
+  },
+  "provenance": {
+    "legacy_rds_sha256": "331d894c18476ad8187c7bb7ce420b5375d4f8d627d2007fb33d440ece744e26",
+    "canonical_example_sha256": "49af13c31d1561e2f3cad3cfc5a13166f51a712962fb19da6eff84798d29f890",
+    "golden_predictions_sha256": "81fd954683c349e0d0afa46ca075db23e136f24c28d6a0a3238afd8913a4427a"
+  }
+}

@@ -5,6 +5,9 @@
     "screenshots": "node scripts/capture_screenshots.js",
     "smoke:static": "python3 scripts/smoke_static_site.py",
     "smoke:static:browser": "node scripts/smoke_static_site_browser.js",
+    "test:hexnac": "npm run test:hexnac:unit && npm run test:hexnac:browser",
+    "test:hexnac:unit": "node --test scripts/tests/hexnac-quest-core.test.js",
+    "test:hexnac:browser": "node --test scripts/tests/hexnac-quest-browser.test.js",
     "test:prediction": "npm run test:prediction:unit && npm run test:prediction:browser",
     "test:prediction:unit": "node --test scripts/tests/prediction-core.test.js",
     "test:prediction:browser": "node --test scripts/tests/prediction-browser.test.js"
@@ -14,6 +17,7 @@
   },
   "dependencies": {
     "@tensorflow/tfjs": "2.8.5",
-    "@tensorflow/tfjs-backend-wasm": "2.8.5"
+    "@tensorflow/tfjs-backend-wasm": "2.8.5",
+    "papaparse": "5.5.4"
   }
 }

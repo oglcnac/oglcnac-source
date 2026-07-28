@@ -20,6 +20,10 @@ const pages = [
   '/pred_dl/tutorial/',
   '/pred_dl/download/',
   '/pred_dl/contact/',
+  '/hexnac-quest/',
+  '/hexnac-quest/analysis/',
+  '/hexnac-quest/tutorial/',
+  '/hexnac-quest/contact/',
 ];
 
 function isIgnoredRequest(url) {
@@ -120,6 +124,34 @@ function isIgnoredRequest(url) {
   }
   if (predictionApiRequests.length) {
     throw new Error(`PRED-DL made API requests: ${predictionApiRequests.join(', ')}`);
+  }
+
+  await page.goto(baseUrl + '/hexnac-quest/analysis/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.setInputFiles('#hexnac-file', {
+    name: 'smoke.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(
+      'id,f126,f138,f144,f168,f186\nsmoke-glc,0,100,0,0,0\nsmoke-gal,0,0,100,0,0',
+    ),
+  });
+  await page.waitForFunction(
+    () => document.querySelector('#hexnac-status').dataset.state === 'ready',
+    null,
+    { timeout: 15000 },
+  );
+  await page.click('#hexnac-run');
+  await page.waitForFunction(
+    () => document.querySelector('#hexnac-status').dataset.state === 'complete',
+    null,
+    { timeout: 15000 },
+  );
+  const hexnacSummary = await page.locator('[data-summary]').allTextContents();
+  console.log(`HEXNAC_SUMMARY ${hexnacSummary.join('|')}`);
+  if (hexnacSummary.join('|') !== '2|0|1|1') {
+    throw new Error(`HexNAcQuest parity mismatch: ${hexnacSummary.join('|')}`);
+  }
+  if (predictionApiRequests.length) {
+    throw new Error(`Static tools made API requests: ${predictionApiRequests.join(', ')}`);
   }
 
   if (apiDataRequests.length) {

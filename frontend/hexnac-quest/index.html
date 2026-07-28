@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HexNAcQuest | oglcnac.org</title>
+  <meta name="description" content="Distinguish O-GlcNAc and O-GalNAc from oxonium-ion intensities with a private, browser-based model.">
+  <link rel="stylesheet" href="/static/css/app.css?v=20260728-hexnac1">
+</head>
+<body class="site-body section-body hexnac-section">
+  <nav class="hq-navbar" aria-label="HexNAcQuest navigation">
+    <a class="hq-brand" href="/">oglcnac.org</a>
+    <div class="hq-nav-links">
+      <a class="active" href="/hexnac-quest/">HexNAcQuest</a>
+      <a href="/hexnac-quest/analysis/">Analysis</a>
+      <a href="/hexnac-quest/tutorial/">Tutorial</a>
+      <a href="/hexnac-quest/contact/">Contact</a>
+    </div>
+  </nav>
+
+  <main class="site-main">
+    <section class="hq-hero">
+      <div class="hq-container hq-hero-grid">
+        <div>
+          <p class="hq-kicker">Static, private glycoform analysis</p>
+          <h1>HexNAcQuest</h1>
+          <p class="hq-lead">Distinguish O-GlcNAc and O-GalNAc signals from diagnostic oxonium-ion intensities using the published logistic regression model.</p>
+          <div class="hq-actions">
+            <a class="hq-button hq-button-primary" href="/hexnac-quest/analysis/">Analyze a CSV</a>
+            <a class="hq-button" href="/static/hexnac-quest/example_input_data.csv" download>Download example</a>
+          </div>
+        </div>
+        <img src="/static/hexnac-quest/home-img.svg" alt="HexNAcQuest workflow from mass spectra to GlcNAc or GalNAc classification">
+      </div>
+    </section>
+
+    <section class="hq-section">
+      <div class="hq-container hq-grid-2">
+        <article class="hq-card">
+          <p class="hq-kicker">How it works</p>
+          <h2>Five intensities, one reproducible classification</h2>
+          <p>Upload a CSV containing the intensities at m/z 126, 138, 144, 168, and 186. HexNAcQuest normalizes each row and applies the same fitted model used by the original Shiny application.</p>
+          <p><a href="/hexnac-quest/tutorial/">Prepare compatible input data</a></p>
+        </article>
+        <article class="hq-card hq-privacy">
+          <p class="hq-kicker">Privacy</p>
+          <h2>Your data stays in your browser</h2>
+          <p>The CSV parser and prediction model are downloaded as static website files. Your selected data is not uploaded to oglcnac.org, shinyapps.io, or a prediction API.</p>
+          <p>You can save the result as CSV after prediction.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="hq-section hq-section-muted">
+      <div class="hq-container">
+        <h2>References</h2>
+        <p>Li W. et al. HexNAcQuest: A Tool to Distinguish O-GlcNAc and O-GalNAc. <em>Journal of the American Society for Mass Spectrometry</em> 2022, 33 (10), 2008–2012. <a href="https://doi.org/10.1021/jasms.2c00172">DOI: 10.1021/jasms.2c00172</a></p>
+        <p>Hou C. et al. Integrating HexNAcQuest with glycoproteomics data analysis software to distinguish HexNAc isomers on peptides. <em>Methods in Molecular Biology</em> 2024, 2836, 67–76. <a href="https://doi.org/10.1007/978-1-0716-4007-4_5">DOI: 10.1007/978-1-0716-4007-4_5</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer site-footer">
+    <div class="container footer-inner">
+      <div><strong>oglcnac.org</strong><span>Integrated O-GlcNAc resources from Ma Lab</span></div>
+      <div class="footer-links">
+        <a href="/atlas/">Atlas</a><a href="/ogt-pin">OGT-PIN</a><a href="/pred_dl/">PRED-DL</a><a href="/hexnac-quest/">HexNAcQuest</a><a href="https://junfengmalab.org/">Ma Lab</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

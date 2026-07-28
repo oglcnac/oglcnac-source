@@ -88,6 +88,12 @@ def main():
     static_paths = [
         "/static/data/atlas-records.json",
         "/static/data/ogt-pin-records.json",
+        "/static/hexnac-quest/example_input_data.csv",
+        "/static/hexnac-quest/vendor/papaparse.min.js",
+        "/static/hexnac-quest/v1/model.json",
+        "/static/js/hexnac-quest-core.js",
+        "/static/js/hexnac-quest-ui.js",
+        "/static/js/hexnac-quest-worker.js",
         "/static/js/prediction-core.js",
         "/static/js/prediction-ui.js",
         "/static/js/prediction-worker.js",
@@ -98,6 +104,22 @@ def main():
     ]
     for path in static_paths:
         check_url(base_url, path, failures)
+
+    try:
+        _, hexnac_manifest_body = request(
+            base_url + "/static/hexnac-quest/v1/model.json"
+        )
+        hexnac_manifest = json.loads(hexnac_manifest_body)
+        check_url(
+            base_url,
+            "/static/hexnac-quest/example_input_data.csv",
+            failures,
+            expected_sha256=hexnac_manifest["provenance"][
+                "canonical_example_sha256"
+            ],
+        )
+    except Exception as exc:
+        failures.append(f"HexNAcQuest manifest: {exc}")
 
     try:
         _, manifest_body = request(base_url + "/static/prediction/v1/manifest.json")
