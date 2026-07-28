@@ -1,0 +1,184 @@
+{
+  "version": "1.0.0",
+  "runtime": "tensorflowjs-wasm-2.8.5",
+  "batch_size": 128,
+  "features": {
+    "aaindex": "aaindex.json",
+    "aaindex_source_sha256": "e972c55050a6398e8d4a21b57cd5976d7de3edd08c90f26450f0ccdc72c1669c",
+    "aaindex_sha256": "8a7529fd3b0f67f135f70cdd29db8471138407f21cceb6b0017f827ce84e57c7"
+  },
+  "species": {
+    "human": {
+      "word2vec": {
+        "metadata": "human/word2vec/word2vec.json",
+        "vectors": "human/word2vec/word2vec.bin",
+        "source_sha256": "baa243f3865343c0fa7fdeb2e9c4bec0a2e5b75f7af4e80fa5ed75212b7325e1",
+        "metadata_sha256": "e8fd3ee20843483363c48c105fe4375b56b133d512ccf5ea9da5845c3078e9bd",
+        "vectors_sha256": "cd204faef6a750f68e3321ec877dce17058b8d0461419dba80f0d0b90afca3b5"
+      },
+      "models": [
+        {
+          "name": "hm_M1",
+          "input_source": "aaindex",
+          "input_shape": [
+            28,
+            29
+          ],
+          "ensemble_weight": 0.05,
+          "model": "human/models/hm_M1/model.json",
+          "source_sha256": "078bf5d5e41d3be0d0142d6804f937506de719f2db295928550aa3b77ed66456",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "d6f16c047af48c3a8ee7182bec6928637430f673d36d15fd1f874275d543f089",
+            "model.json": "91d83ae3c47bd19a66f2ebfb0803e8d777a2eb6b3fc1217614e5662527d8882f"
+          }
+        },
+        {
+          "name": "hm_M2",
+          "input_source": "aaindex",
+          "input_shape": [
+            28,
+            29
+          ],
+          "ensemble_weight": 0.15,
+          "model": "human/models/hm_M2/model.json",
+          "source_sha256": "f81467d0dd8f6213556ab24afff02b5aba7b2d6d7c544aac7da8bc58376daee9",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "d78251e99aeade42fb50683095ef36e837d5bdaab67ed1aba081c8114ab7ee8c",
+            "model.json": "91d83ae3c47bd19a66f2ebfb0803e8d777a2eb6b3fc1217614e5662527d8882f"
+          }
+        },
+        {
+          "name": "hm_M3",
+          "input_source": "aaindex",
+          "input_shape": [
+            28,
+            29
+          ],
+          "ensemble_weight": 0.3,
+          "model": "human/models/hm_M3/model.json",
+          "source_sha256": "5704295fbf7043f77541be4be38e08ad6e7881ef2e99e32f20d77859e28a34c3",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "dfba7cc006aaa926a03a6ecae1587fae0d31049551509e6e2357b4d47aaa0923",
+            "model.json": "91d83ae3c47bd19a66f2ebfb0803e8d777a2eb6b3fc1217614e5662527d8882f"
+          }
+        },
+        {
+          "name": "hm_M4",
+          "input_source": "aaindex",
+          "input_shape": [
+            28,
+            29
+          ],
+          "ensemble_weight": 0.2,
+          "model": "human/models/hm_M4/model.json",
+          "source_sha256": "aa34932813471bc840919796e9bbfa4c8a61e38d5e0ea5fd19bd3ca0845eebd7",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "c0eae07d12c88d3df71b6d6d81201eac7db0bee2470fc3f1bc8c3032ab57999e",
+            "model.json": "91d83ae3c47bd19a66f2ebfb0803e8d777a2eb6b3fc1217614e5662527d8882f"
+          }
+        },
+        {
+          "name": "hm_M5",
+          "input_source": "word2vec",
+          "input_shape": [
+            28,
+            30
+          ],
+          "ensemble_weight": 0.3,
+          "model": "human/models/hm_M5/model.json",
+          "source_sha256": "01e0c68053f18bc666695acaa70f1ee26938f2604df2e899f2f678a04326ffcb",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "13cbc5d40ab29c12ae146ef2cfbebed65c40d03c8b3965281630a6389ad89b76",
+            "model.json": "b4071193765d0fc69a071171fac712d8b45149e382c4b3dbd673a798ab42c0f0"
+          }
+        }
+      ]
+    },
+    "mouse": {
+      "word2vec": {
+        "metadata": "mouse/word2vec/word2vec.json",
+        "vectors": "mouse/word2vec/word2vec.bin",
+        "source_sha256": "8a6789c5fcbe6b398ce560bb45e0767e9298f349abe67ef4ff94a19fa2227dec",
+        "metadata_sha256": "9879d152133e7891211df2a80b5f90b59417e24023b62d6ca419d68afaf4a3d0",
+        "vectors_sha256": "4e5e1b5ea176afbca26dddaba199061d4ef3491d5b7626e02e085d2622a1d4c3"
+      },
+      "models": [
+        {
+          "name": "ms_M1",
+          "input_source": "aaindex",
+          "input_shape": [
+            28,
+            29
+          ],
+          "ensemble_weight": 0.2,
+          "model": "mouse/models/ms_M1/model.json",
+          "source_sha256": "6fa7f732816f7aedeb0d819e31699e49c7ef47b89ebf7e7bd79e27b986392581",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "e9ec9ef2c1c2aaa7609a81dda466e2530127faf05c6f0bb97e88ecfb254dd9e1",
+            "model.json": "b3f96a0b1fc1e73cb75bcc2f47d6f7279badd34c53c580fbf8560c810ac185bc"
+          }
+        },
+        {
+          "name": "ms_M2",
+          "input_source": "aaindex",
+          "input_shape": [
+            28,
+            29
+          ],
+          "ensemble_weight": 0.05,
+          "model": "mouse/models/ms_M2/model.json",
+          "source_sha256": "846652e288e185e460b50612f52bc10708c6bfde7acc4a80f7c10bccde7c11ea",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "dec665889a2f479c016d0cac1326044124fed6beb878430eaa04b27521c0a32e",
+            "model.json": "1f42e6d7a085a13f53345513361987c4f306ec57b2ac97799049eba4f5c6059d"
+          }
+        },
+        {
+          "name": "ms_M3",
+          "input_source": "aaindex",
+          "input_shape": [
+            28,
+            29
+          ],
+          "ensemble_weight": 0.15,
+          "model": "mouse/models/ms_M3/model.json",
+          "source_sha256": "db090657fa384ccfa57a5c4df6d479da66e45b8e46c15731392c1b4fb3b657be",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "81f361709124ef37b92a4f6fd450731fe08b834c3f7ef97817d23ebc281ca2c8",
+            "model.json": "b3f96a0b1fc1e73cb75bcc2f47d6f7279badd34c53c580fbf8560c810ac185bc"
+          }
+        },
+        {
+          "name": "ms_M4",
+          "input_source": "aaindex",
+          "input_shape": [
+            28,
+            29
+          ],
+          "ensemble_weight": 0.3,
+          "model": "mouse/models/ms_M4/model.json",
+          "source_sha256": "c49c9deaf9f99d83324d2ee8e68e12136e85877b052c3ca04448210fd3fddebb",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "446f7aa51803fda81fdc989aff1daa3b1deef627e1f4c6a5e252c991f9267020",
+            "model.json": "b3f96a0b1fc1e73cb75bcc2f47d6f7279badd34c53c580fbf8560c810ac185bc"
+          }
+        },
+        {
+          "name": "ms_M5",
+          "input_source": "word2vec",
+          "input_shape": [
+            28,
+            30
+          ],
+          "ensemble_weight": 0.3,
+          "model": "mouse/models/ms_M5/model.json",
+          "source_sha256": "0689604e78d6fcd061ca781878344678b549dbba162099e21f7943fe42386fa5",
+          "asset_sha256": {
+            "group1-shard1of1.bin": "3026d38858f6b2a065d7c8e4edc58c3bb35afb54a803867fce48acd19ca2eb73",
+            "model.json": "6d3b7de035d95722ea1ad5cec27f66a3a7b644d6b6c27fc240cb0678d6d34941"
+          }
+        }
+      ]
+    }
+  }
+}

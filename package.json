@@ -1,10 +1,19 @@
 {
+  "name": "oglcnac-source",
+  "private": true,
   "scripts": {
     "screenshots": "node scripts/capture_screenshots.js",
     "smoke:static": "python3 scripts/smoke_static_site.py",
-    "smoke:static:browser": "node scripts/smoke_static_site_browser.js"
+    "smoke:static:browser": "node scripts/smoke_static_site_browser.js",
+    "test:prediction": "npm run test:prediction:unit && npm run test:prediction:browser",
+    "test:prediction:unit": "node --test scripts/tests/prediction-core.test.js",
+    "test:prediction:browser": "node --test scripts/tests/prediction-browser.test.js"
   },
   "devDependencies": {
     "playwright": "^1.60.0"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "2.8.5",
+    "@tensorflow/tfjs-backend-wasm": "2.8.5"
   }
 }

@@ -729,6 +729,34 @@ hr {
   border-radius: 6px;
 }
 
+.prediction-privacy {
+  color: #245f55;
+}
+
+.prediction-status-card {
+  margin-top: 24px;
+  padding: 18px 20px;
+  border: 1px solid rgba(31, 111, 94, 0.22);
+  border-radius: 14px;
+  background: #f6fbf9;
+}
+
+.prediction-status-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.prediction-cancel-button {
+  padding: 5px 14px;
+  color: #8b2f2f;
+  background: #fff;
+  border: 1px solid #8b2f2f;
+  border-radius: 999px;
+}
+
 .alert {
   border-radius: 6px;
 }

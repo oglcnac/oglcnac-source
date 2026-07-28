@@ -1,0 +1,44 @@
+name: Prediction browser smoke
+
+on:
+  push:
+    paths:
+      - "frontend/pred_dl/**"
+      - "frontend/static/js/prediction-*.js"
+      - "frontend/static/prediction/**"
+      - "prediction-service/tools/**"
+      - "scripts/tests/**"
+      - "package.json"
+      - "package-lock.json"
+  pull_request:
+    paths:
+      - "frontend/pred_dl/**"
+      - "frontend/static/js/prediction-*.js"
+      - "frontend/static/prediction/**"
+      - "prediction-service/tools/**"
+      - "scripts/tests/**"
+      - "package.json"
+      - "package-lock.json"
+  schedule:
+    - cron: "20 9 * * *"
+  workflow_dispatch:
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:prediction
+        env:
+          PREDICTION_BROWSER: ${{ matrix.browser }}

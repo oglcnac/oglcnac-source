@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# TensorFlow.js 2.8.5 matches the self-hosted browser runtime. These converter
+# versions require the protobuf 3.x API when used with TensorFlow 2.12.
+protobuf==3.20.3
+tensorflow-hub==0.9.0
+tensorflowjs==2.8.5

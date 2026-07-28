@@ -7,7 +7,10 @@ Dynamic behavior is browser-side:
 
 - Atlas/OGT-PIN search, browse, and detail pages use static JSON bundles in `/static/data/`.
 - Atlas Browse uses client-side pagination over the static bundle.
-- PRED-DL prediction calls `https://api.oglcnac.org/api/v1/predict`.
+- PRED-DL loads versioned TensorFlow.js models from `/static/prediction/` and
+  performs inference in a Web Worker using the WASM backend.
+- Submitted protein sequences remain in the browser; there is no automatic API
+  fallback.
 - Contact pages use mailto links.
 
 ## GitHub Pages
@@ -21,5 +24,21 @@ This repository is prepared for GitHub Pages:
 ## Static Data
 
 The generated JSON bundles live in `static/data/` and are tracked in git.
-Regenerate them only when the source SQLite database changes.
+Regenerate them from the curator CSV bundle.
 See `../docs/DATA-UPDATES.md`.
+
+## Static PRED-DL Assets
+
+The browser runtime is self-hosted in `static/prediction/vendor/`. Exported
+models, AAindex features, word2vec vectors, checksums, and their manifest live
+in `static/prediction/v1/`. Regenerate these assets with:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r prediction-service/browser-export-requirements.txt
+.venv/bin/python prediction-service/tools/export_browser_predictor.py
+npm run test:prediction
+```
+
+The browser output must exactly match the Python golden corpus before a new
+bundle is deployed.

@@ -8,11 +8,13 @@ Use this checklist for routine checks, small content changes, and production upd
 Source repo:        /home/bach/oglcnac-source
 Frontend deploy:   /home/bach/oglcnac-static-site
 Public site:       https://oglcnac.org/
-Public API:        https://api.oglcnac.org/
-Prediction backend 127.0.0.1:8010
+Static predictor:  /static/prediction/v1/
+Legacy API:        https://api.oglcnac.org/ (transition through 2026-08-11)
+Reference backend: 127.0.0.1:8010
 ```
 
-Atlas and OGT-PIN are static frontend data. O-GlcNAcPRED-DL is the only backend.
+Atlas and OGT-PIN use static frontend data. O-GlcNAcPRED-DL runs locally in a
+browser Web Worker using static TensorFlow.js/WASM assets.
 
 ## Health Check
 
@@ -31,7 +33,7 @@ Expected result:
 ```text
 source repo is clean or only has intended edits
 site returns 200
-API health returns 200
+legacy API health returns 200 during transition
 smoke tests pass
 ```
 
@@ -41,6 +43,7 @@ smoke tests pass
 git status --short --branch
 npm run smoke:static
 npm run smoke:static:browser
+npm run test:prediction
 git add frontend docs scripts README.md package.json package-lock.json
 git commit -m "Describe the frontend update"
 git push
@@ -54,7 +57,17 @@ curl -L -s https://oglcnac.org/ -o /tmp/oglcnac-home.html -w '%{http_code}\n'
 npm run smoke:static
 ```
 
-## Prediction Backend Restart
+## Static Prediction Verification
+
+```bash
+npm run test:prediction
+```
+
+This checks FASTA handling and exact human/mouse parity against the Python
+golden corpus while blocking all prediction API requests. The scheduled GitHub
+Actions workflow runs the same check daily.
+
+## Reference Backend Restart
 
 ```bash
 cd /home/bach/oglcnac-source/prediction-service
@@ -64,6 +77,11 @@ curl -L -s https://api.oglcnac.org/health -o /tmp/oglcnac-api.json -w '%{http_co
 ```
 
 Runtime settings live in `prediction-service/.env`. Do not commit that file.
+
+The reference backend is not called by the website. Keep it available through
+2026-08-11 for transition monitoring. Retirement after that date requires a
+separate explicit decision; do not remove DNS, the proxy, or model sources as
+part of routine frontend maintenance.
 
 ## API Proxy Restart
 

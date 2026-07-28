@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 from html.parser import HTMLParser
 from pathlib import Path
@@ -9,7 +10,6 @@ from urllib.request import Request, urlopen
 
 
 DEFAULT_BASE_URL = "https://oglcnac.org"
-DEFAULT_PREDICTION_URL = "https://api.oglcnac.org/api/v1/predict"
 STATIC_ROOT = Path("/home/bach/oglcnac-static-site")
 
 
@@ -52,13 +52,19 @@ def discover_internal_urls(base_url):
     return sorted(urls)
 
 
-def check_url(base_url, path, failures):
+def check_url(base_url, path, failures, expected_sha256=None):
     url = base_url.rstrip("/") + path
     try:
         status, body = request(url)
         print(f"{status} {len(body):>8} {path}")
         if status != 200:
             failures.append(f"{path}: HTTP {status}")
+        if expected_sha256:
+            actual_sha256 = hashlib.sha256(body).hexdigest()
+            if actual_sha256 != expected_sha256:
+                failures.append(
+                    f"{path}: SHA-256 {actual_sha256} != {expected_sha256}"
+                )
     except HTTPError as exc:
         print(f"{exc.code} {'':>8} {path}")
         failures.append(f"{path}: HTTP {exc.code}")
@@ -70,7 +76,6 @@ def check_url(base_url, path, failures):
 def main():
     parser = argparse.ArgumentParser(description="Smoke-test the static O-GlcNAcDB website.")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
-    parser.add_argument("--prediction-url", default=DEFAULT_PREDICTION_URL)
     args = parser.parse_args()
     base_url = args.base_url.rstrip("/")
     failures = []
@@ -79,31 +84,44 @@ def main():
     for path in discover_internal_urls(base_url):
         check_url(base_url, path, failures)
 
-    print("\nAPI")
-    api_paths = [
+    print("\nSTATIC DATA AND PREDICTION ASSETS")
+    static_paths = [
         "/static/data/atlas-records.json",
         "/static/data/ogt-pin-records.json",
+        "/static/js/prediction-core.js",
+        "/static/js/prediction-ui.js",
+        "/static/js/prediction-worker.js",
+        "/static/prediction/vendor/tfjs-2.8.5/tf.min.js",
+        "/static/prediction/vendor/tfjs-2.8.5/tf-backend-wasm.min.js",
+        "/static/prediction/vendor/tfjs-2.8.5/tfjs-backend-wasm.wasm",
+        "/static/prediction/v1/manifest.json",
     ]
-    for path in api_paths:
+    for path in static_paths:
         check_url(base_url, path, failures)
 
-    payload = json.dumps(
-        {"species": "human", "fasta": ">SEQ1\nAAAAAAAAAAAAAASAAAAAAAAAAAAAA"}
-    ).encode("utf-8")
     try:
-        status, body = request(
-            args.prediction_url,
-            method="POST",
-            data=payload,
-            content_type="application/json",
-            timeout=120,
-        )
-        print(f"{status} {len(body):>8} prediction")
-        if status != 200:
-            failures.append(f"{args.prediction_url}: HTTP {status}")
+        _, manifest_body = request(base_url + "/static/prediction/v1/manifest.json")
+        manifest = json.loads(manifest_body)
+        prediction_paths = {
+            manifest["features"]["aaindex"]: manifest["features"]["aaindex_sha256"],
+        }
+        for species in manifest["species"].values():
+            word2vec = species["word2vec"]
+            prediction_paths[word2vec["metadata"]] = word2vec["metadata_sha256"]
+            prediction_paths[word2vec["vectors"]] = word2vec["vectors_sha256"]
+            for model in species["models"]:
+                model_directory = str(Path(model["model"]).parent)
+                for filename, checksum in model["asset_sha256"].items():
+                    prediction_paths[f"{model_directory}/{filename}"] = checksum
+        for path, checksum in sorted(prediction_paths.items()):
+            check_url(
+                base_url,
+                f"/static/prediction/v1/{path}",
+                failures,
+                expected_sha256=checksum,
+            )
     except Exception as exc:
-        print(f"ERR {'':>8} {args.prediction_url} {exc}")
-        failures.append(f"{args.prediction_url}: {exc}")
+        failures.append(f"prediction manifest: {exc}")
 
     if failures:
         print("\nFAIL")

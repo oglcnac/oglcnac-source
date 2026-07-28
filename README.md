@@ -1,13 +1,15 @@
 # O-GlcNAc Source
 
-This is the source monorepo for the public O-GlcNAc website and prediction backend.
+This is the source monorepo for the public O-GlcNAc website and the retained
+prediction reference service.
 Use this repository for new development.
 
 Production is intentionally simple:
 
 - `frontend/` is the editable static website source.
-- `prediction-service/` is the only backend.
-- `ops/api-proxy/` forwards `api.oglcnac.org` traffic to the backend.
+- `prediction-service/` is the Python reference implementation used to export
+  and verify the static browser predictor.
+- `ops/api-proxy/` retains the old prediction API during its transition period.
 - `/home/bach/oglcnac-static-site` is the generated GitHub Pages deploy checkout.
 
 The generated deploy checkout is pushed to `github.com/oglcnac/oglcnac`.
@@ -27,10 +29,12 @@ docs/                  Operational notes
 
 ```text
 https://oglcnac.org/              Static frontend on GitHub Pages
-https://api.oglcnac.org/health    Prediction API proxy on Linode
+https://api.oglcnac.org/health    Legacy prediction API during transition
 ```
 
-Atlas and OGT-PIN run fully from static frontend data in `frontend/static/data/`. The only backend is the prediction service.
+Atlas, OGT-PIN, and PRED-DL run fully in the browser from versioned static
+assets. PRED-DL uses TensorFlow.js with the WASM backend; protein sequences do
+not leave the browser.
 
 ## Daily Checks
 
@@ -42,7 +46,8 @@ npm run smoke:static
 npm run smoke:static:browser
 ```
 
-The smoke tests check the public site and public API.
+The smoke tests check every public page, static data, static prediction assets,
+and browser prediction parity without contacting the API.
 
 ## Common Workflows
 
@@ -51,7 +56,8 @@ The smoke tests check the public site and public API.
 - Data updates: see `docs/DATA-UPDATES.md`.
 - Curator workflow: see `docs/CURATOR-WORKFLOW.md`.
 - Frontend source notes: see `frontend/README.md`.
-- Prediction backend notes: see `prediction-service/README.md`.
+- Static prediction architecture and transition: see `docs/STATIC-PREDICTION.md`.
+- Prediction export/reference-service notes: see `prediction-service/README.md`.
 
 ## Do Not Commit
 

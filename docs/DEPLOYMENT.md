@@ -1,6 +1,7 @@
 # Deployment
 
-Production uses GitHub Pages for the static site and Linode only for `api.oglcnac.org`.
+Production uses GitHub Pages for the complete static site, including PRED-DL
+browser inference. Linode serves only the retained legacy API during transition.
 Keep deployments manual and explicit unless there is a clear reason to automate more.
 
 ## Before Deploying
@@ -9,6 +10,7 @@ Keep deployments manual and explicit unless there is a clear reason to automate 
 git status --short --branch
 npm run smoke:static
 npm run smoke:static:browser
+npm run test:prediction
 ```
 
 Deploy only from a clean source checkout unless you are deliberately testing local edits.
@@ -23,7 +25,16 @@ Deploy manually:
 ./scripts/deploy-frontend.sh
 ```
 
-## Prediction Backend
+## Static Prediction Bundle
+
+PRED-DL assets are tracked under `frontend/static/prediction/` and deploy with
+the rest of `frontend/`. The browser golden-corpus test verifies exact displayed
+parity with the Python reference and rejects API requests.
+
+When model inputs or weights change, follow the export workflow in
+`prediction-service/README.md` before deploying.
+
+## Legacy Prediction Backend
 
 ```bash
 cd prediction-service
@@ -31,7 +42,9 @@ docker compose up -d --build
 curl http://127.0.0.1:8010/health
 ```
 
-The container binds to `127.0.0.1:8010` and is exposed publicly only through the API proxy.
+The container binds to `127.0.0.1:8010` and is exposed publicly only through the
+API proxy. Keep it available through 2026-08-11 while static prediction is
+monitored. The website must continue to work when this API is unavailable.
 
 Runtime settings live in `prediction-service/.env`.
 Do not commit secrets.
@@ -63,4 +76,9 @@ The API host should return `200`; the non-API host should return `404`.
 curl -L -s https://oglcnac.org/ -o /tmp/oglcnac-home.html -w '%{http_code}\n'
 curl -L -s https://api.oglcnac.org/health -o /tmp/oglcnac-api.json -w '%{http_code}\n'
 npm run smoke:static
+npm run smoke:static:browser
 ```
+
+After 14 clean days, retire the API proxy/backend in a separate, explicitly
+approved operation. DNS and service shutdown are intentionally not part of a
+normal frontend deployment.

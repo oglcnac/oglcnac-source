@@ -30,6 +30,7 @@ function isIgnoredRequest(url) {
   const errors = [];
   const failedRequests = [];
   const apiDataRequests = [];
+  const predictionApiRequests = [];
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
   const page = await context.newPage();
@@ -45,6 +46,9 @@ function isIgnoredRequest(url) {
   page.on('request', (request) => {
     if (request.url().includes('/api/data/')) {
       apiDataRequests.push(request.url());
+    }
+    if (request.url().includes('api.oglcnac.org')) {
+      predictionApiRequests.push(request.url());
     }
   });
 
@@ -108,8 +112,15 @@ function isIgnoredRequest(url) {
   );
   const predictionRows = await page.locator('#prediction-results-body tr').count();
   const predictionError = await page.locator('#prediction-error').textContent().catch(() => '');
+  const predictionCells = await page.locator('#prediction-results-body tr').first().locator('td').allTextContents();
   console.log(`PREDICTION_ROWS ${predictionRows}`);
   if (!predictionRows) throw new Error(`prediction returned no rendered rows: ${predictionError}`);
+  if (predictionCells.join('|') !== 'SEQ1|15|S|0.796|+') {
+    throw new Error(`prediction parity mismatch: ${predictionCells.join('|')}`);
+  }
+  if (predictionApiRequests.length) {
+    throw new Error(`PRED-DL made API requests: ${predictionApiRequests.join(', ')}`);
+  }
 
   if (apiDataRequests.length) {
     throw new Error(`Atlas/OGT-PIN made /api/data requests: ${apiDataRequests.join(', ')}`);
