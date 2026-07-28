@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 930" role="img" aria-labelledby="title desc">
+  <title id="title">O-GlcNAcPRED-DL model-development workflow</title>
+  <desc id="desc">O-GlcNAcAtlas data are divided into training and testing groups. Word2Vec, one-hot sequence, BLOSUM62 evolutionary, and AAindex physicochemical features are evaluated with CNN-BiLSTM models across five splits. Selected models vote in the O-GlcNAcPRED-DL ensemble.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0 0 8 3 0 6Z" fill="#7182a5"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="930" rx="32" fill="#f2f5fc"/>
+  <g font-family="Arial, sans-serif">
+    <rect x="350" y="34" width="300" height="66" rx="33" fill="#dce9fc" stroke="#4f70c2" stroke-width="3"/>
+    <text x="500" y="76" fill="#263e77" font-size="28" font-weight="700" text-anchor="middle">O-GlcNAcAtlas</text>
+
+    <path d="M500 103v42" fill="none" stroke="#7182a5" stroke-width="4" marker-end="url(#arrow)"/>
+    <text x="530" y="133" fill="#53637d" font-size="20" font-weight="700">Train–test split</text>
+
+    <g font-size="24" font-weight="700" text-anchor="middle">
+      <rect x="130" y="164" width="120" height="60" rx="14" fill="#e5eafb" stroke="#8397c7" stroke-width="2"/>
+      <rect x="280" y="164" width="120" height="60" rx="14" fill="#e5eafb" stroke="#8397c7" stroke-width="2"/>
+      <rect x="430" y="164" width="120" height="60" rx="14" fill="#d8e5fa" stroke="#607bb9" stroke-width="2"/>
+      <rect x="580" y="164" width="120" height="60" rx="14" fill="#e5eafb" stroke="#8397c7" stroke-width="2"/>
+      <rect x="750" y="164" width="120" height="60" rx="14" fill="#c9dcf4" stroke="#4f70c2" stroke-width="2"/>
+      <g fill="#2e477d">
+        <text x="190" y="202">1</text><text x="340" y="202">2</text><text x="490" y="202">3</text><text x="640" y="202">4</text><text x="810" y="202">5</text>
+      </g>
+    </g>
+    <text x="810" y="249" fill="#53637d" font-size="19" font-weight="700" text-anchor="middle">Testing</text>
+
+    <path d="M500 232v42" fill="none" stroke="#7182a5" stroke-width="4" marker-end="url(#arrow)"/>
+    <rect x="94" y="290" width="812" height="176" rx="22" fill="#fff" stroke="#c2cce3" stroke-width="3"/>
+    <text x="132" y="330" fill="#40598f" font-size="20" font-weight="700" letter-spacing="2">FEATURE REPRESENTATION</text>
+    <g font-size="21">
+      <rect x="128" y="350" width="348" height="42" rx="10" fill="#edf1fb"/>
+      <rect x="524" y="350" width="348" height="42" rx="10" fill="#edf1fb"/>
+      <rect x="128" y="408" width="348" height="42" rx="10" fill="#edf1fb"/>
+      <rect x="524" y="408" width="348" height="42" rx="10" fill="#edf1fb"/>
+      <text x="302" y="378" fill="#243b6d" text-anchor="middle"><tspan font-weight="700">Word embedding</tspan> (Word2Vec)</text>
+      <text x="698" y="378" fill="#243b6d" text-anchor="middle"><tspan font-weight="700">Sequence information</tspan> (one-hot)</text>
+      <text x="302" y="436" fill="#243b6d" text-anchor="middle"><tspan font-weight="700">Evolutionary information</tspan> (BLOSUM62)</text>
+      <text x="698" y="436" fill="#243b6d" text-anchor="middle"><tspan font-weight="700">Physicochemical properties</tspan> (AAindex)</text>
+    </g>
+
+    <path d="M500 470v38" fill="none" stroke="#7182a5" stroke-width="4" marker-end="url(#arrow)"/>
+    <rect x="188" y="524" width="624" height="64" rx="16" fill="#4f70c2"/>
+    <text x="500" y="553" fill="#fff" font-size="25" font-weight="700" text-anchor="middle">Deep-learning models</text>
+    <text x="500" y="579" fill="#e7ecfb" font-size="21" text-anchor="middle">(CNN–BiLSTM)</text>
+
+    <rect x="188" y="604" width="624" height="114" rx="16" fill="#fff" stroke="#c2cce3" stroke-width="3"/>
+    <g fill="#53637d" font-size="18" font-weight="700">
+      <text x="216" y="638">Split 1</text><text x="216" y="673">Split 2</text><text x="216" y="704">Split 5</text>
+    </g>
+    <g>
+      <rect x="312" y="620" width="118" height="24" rx="8" fill="#6ea0de"/>
+      <rect x="450" y="620" width="118" height="24" rx="8" fill="#62b690"/>
+      <rect x="588" y="620" width="118" height="24" rx="8" fill="#6ea0de"/>
+      <rect x="312" y="655" width="118" height="24" rx="8" fill="#62b690"/>
+      <rect x="450" y="655" width="118" height="24" rx="8" fill="#6ea0de"/>
+      <rect x="588" y="655" width="118" height="24" rx="8" fill="#6ea0de"/>
+      <rect x="312" y="690" width="118" height="24" rx="8" fill="#6ea0de"/>
+      <rect x="450" y="690" width="118" height="24" rx="8" fill="#6ea0de"/>
+      <rect x="588" y="690" width="118" height="24" rx="8" fill="#62b690"/>
+    </g>
+
+    <path d="M500 722v36" fill="none" stroke="#7182a5" stroke-width="4" marker-end="url(#arrow)"/>
+    <text x="535" y="750" fill="#53637d" font-size="20" font-weight="700">Model selection</text>
+    <g font-size="20" font-weight="700" text-anchor="middle">
+      <rect x="170" y="774" width="180" height="54" rx="13" fill="#fff" stroke="#8397c7" stroke-width="2"/>
+      <rect x="410" y="774" width="180" height="54" rx="13" fill="#fff" stroke="#8397c7" stroke-width="2"/>
+      <rect x="650" y="774" width="180" height="54" rx="13" fill="#fff" stroke="#8397c7" stroke-width="2"/>
+      <text x="260" y="808" fill="#2e477d">Model I</text>
+      <text x="500" y="808" fill="#2e477d">Model II ···</text>
+      <text x="740" y="808" fill="#2e477d">Model V</text>
+    </g>
+
+    <path d="M500 832v31" fill="none" stroke="#7182a5" stroke-width="4" marker-end="url(#arrow)"/>
+    <text x="535" y="858" fill="#53637d" font-size="20" font-weight="700">Voting</text>
+    <rect x="314" y="875" width="372" height="42" rx="21" fill="#263e77"/>
+    <text x="500" y="903" fill="#fff" font-size="24" font-weight="700" text-anchor="middle">O-GlcNAcPRED-DL</text>
+  </g>
+</svg>

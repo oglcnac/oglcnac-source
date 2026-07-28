@@ -3,7 +3,8 @@
     "styles/10-base.css",
     "styles/20-hexnac.css",
     "styles/30-polish.css",
-    "styles/40-shell.css"
+    "styles/40-shell.css",
+    "styles/50-publication.css"
   ],
   "primary_navigation": [
     ["Home", "/", "home"],
@@ -45,6 +46,16 @@
     ]
   },
   "pages": [
+    {
+      "output": "404.html",
+      "route": "/404/",
+      "title": "Resource Not Found | oglcnac.org",
+      "description": "The requested oglcnac.org resource could not be found.",
+      "section": "home",
+      "body_class": "site-body section-body not-found-body",
+      "main_class": "site-main",
+      "head_markup": "  <meta name=\"robots\" content=\"noindex\">"
+    },
     {
       "output": "index.html",
       "route": "/",

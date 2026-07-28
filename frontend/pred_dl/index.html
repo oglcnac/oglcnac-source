@@ -7,10 +7,12 @@
   <title>O-GlcNAcPRED-DL | oglcnac.org</title>
   <meta name="description" content="Predict protein O-GlcNAcylation sites with the browser-based O-GlcNAcPRED-DL ensemble model.">
   <link rel="canonical" href="https://oglcnac.org/pred_dl/">
+
   <link rel="stylesheet" href="/static/css/app.css?v=20260728-publication1">
 
 </head>
 <body class="site-body section-body prediction-section">
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <header class="site-header">
   <div class="site-header-inner">
     <a class="site-brand" href="/">oglcnac.org</a>
@@ -28,40 +30,70 @@
   </div>
 </header>
 
-<main class="site-main">
-
-  <div class="home">
-    <div class="landing-section hero">
-      <div class="container">
-        <div class="row">
-          <div class="col-sm-8">
-            <p class="hero-tagline"> </p>
-          </div>
-        </div>
+<main id="main-content" class="site-main"><section class="resource-hero">
+  <div class="container resource-hero-grid">
+    <div>
+      <p class="eyebrow">Browser-based deep learning</p>
+      <h1><span class="nowrap">O-GlcNAcPRED-DL</span></h1>
+      <p class="page-lead">
+        Predict human and mouse protein O-GlcNAcylation sites from FASTA
+        sequences with an ensemble deep-learning model.
+      </p>
+      <div class="button-row">
+        <a class="button button-primary" href="/pred_dl/input_fasta/">Start a prediction</a>
+        <a class="button button-secondary" href="/pred_dl/tutorial/">Read the tutorial</a>
       </div>
     </div>
+    <img class="resource-art" src="/static/img/tool-pred-dl.svg" alt="Protein sequence passing through a neural network to site scores for O-GlcNAcPRED-DL">
+  </div>
+</section>
 
-    <div class="landing-section features">
-      <div class="container">
-        <div class="row">
-          <div class="col-sm-12">
-            <br>
-
-            <p>
-              O-GlcNAcylation functions in a protein- and site-specific manner. Despite the great progress in experimentally mapping O-GlcNAc sites, it is still a challenging task in many cases. We constructed an ensemble model O-GlcNAcPRED-DL to <u>predict</u> O-GlcNAc sites on proteins by using <u>d</u>eep <u>l</u>earning approaches. In comparison to existing methods, O-GlcNAcPRED-DL shows improved sensitivity and accuracy. We anticipate that it will be used as a valuable tool to expedite the discovery of O-GlcNAc sites on proteins (especially of humans and mice) and elucidation of their functions in physiology and diseases.
-            </p>
-            <img width="29%" class="centered-img", src="/static/img/predDL.png" alt="figure1">
-            <br>
-            <p>
-              <font size="-1">
-              If you find this resource helpful, please cite our paper (Fengzhu Hu,# Weiyu Li,# Yaoxiang Li, Chunyan Hou, Junfeng Ma,* Cangzhi Jia.* O-GlcNAcPRED-DL: prediction of protein O-GlcNAcylation sites based on an ensemble model of deep learning. Journal of Proteome Research. 2024, 23, 1, 95–106. <a href="https://pubs.acs.org/doi/10.1021/acs.jproteome.3c00458">https://pubs.acs.org/doi/10.1021/acs.jproteome.3c00458</a>) </font>
-            </p>
-            <br><br>
-          </div>
-        </div>
-      </div>
+<section class="content-section content-section-spacious">
+  <div class="container two-column">
+    <div class="prose">
+      <p class="eyebrow">About the model</p>
+      <h2>Sequence-based candidate site prediction</h2>
+      <p>
+        O-GlcNAcylation functions in a protein- and site-specific manner.
+        Despite substantial progress in experimentally mapping O-GlcNAc sites,
+        the task remains challenging in many cases. We constructed the
+        ensemble model O-GlcNAcPRED-DL to predict O-GlcNAc sites on proteins
+        using deep-learning approaches.
+      </p>
+      <p>
+        Compared with existing methods, O-GlcNAcPRED-DL shows improved
+        sensitivity and accuracy. We anticipate that it will be a valuable
+        tool for expediting the discovery of O-GlcNAc sites on proteins,
+        especially human and mouse proteins, and for elucidating their
+        functions in physiology and disease.
+      </p>
     </div>
-  </div></main>
+    <figure class="concept-figure">
+      <img src="/static/img/pred-dl-workflow.svg" alt="O-GlcNAcAtlas data are split for training and testing; Word2Vec, one-hot, BLOSUM62, and AAindex features feed CNN-BiLSTM models whose selected outputs vote in O-GlcNAcPRED-DL">
+      <figcaption>
+        Model-development workflow preserved from the publication concept:
+        Atlas train/test splits, four feature representations, CNN–BiLSTM
+        models, model selection, and ensemble voting. The published
+        species-specific ensemble now runs in the browser.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
+    <div class="panel panel-narrow">
+      <h2>Cite O-GlcNAcPRED-DL</h2>
+      <p>
+        Hu F., Li W., Li Y., Hou C., Ma J., and Jia C.
+        O-GlcNAcPRED-DL: prediction of protein O-GlcNAcylation sites based on
+        an ensemble model of deep learning. <em>Journal of Proteome Research</em>.
+        2024, 23(1), 95–106.
+        <a href="https://pubs.acs.org/doi/10.1021/acs.jproteome.3c00458">DOI: 10.1021/acs.jproteome.3c00458</a>.
+      </p>
+    </div>
+  </div>
+</section></main>
 <footer class="footer site-footer">
   <div class="container footer-inner">
     <div>

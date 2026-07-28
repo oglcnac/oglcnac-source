@@ -7,12 +7,14 @@
   <title>{{TITLE}}</title>
   <meta name="description" content="{{DESCRIPTION}}">
   <link rel="canonical" href="{{CANONICAL_URL}}">
+{{HEAD_MARKUP}}
   <link rel="stylesheet" href="/static/css/app.css?v=20260728-publication1">
 {{HEAD_SCRIPTS}}
 </head>
 <body class="{{BODY_CLASS}}">
+<a class="skip-link" href="#main-content">Skip to main content</a>
 {{HEADER}}
-<main class="{{MAIN_CLASS}}">{{CONTENT}}</main>
+<main id="main-content" class="{{MAIN_CLASS}}">{{CONTENT}}</main>
 {{FOOTER}}
 {{AFTER_CONTENT}}
 </body>

@@ -62,7 +62,7 @@
         <button type="submit">Submit for prediction</button>
       </form>
     </div>
-    <div class="prediction-status-card" id="prediction-status" style="display:none;" aria-live="polite">
+    <div class="prediction-status-card" id="prediction-status" style="display:none;" role="status" aria-live="polite">
       <div class="prediction-status-heading">
         <strong id="prediction-status-label">Preparing prediction</strong>
         <button type="button" class="prediction-cancel-button" id="prediction-cancel">Cancel</button>
@@ -71,12 +71,18 @@
         <div class="progress-bar" id="prediction-progress" role="progressbar" style="width: 0%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
       </div>
     </div>
-    <div class="results-card" id="prediction-results-card" style="display:none; margin-top: 28px;">
-      <table class="table hover compact" id="prediction-results-table">
-        <thead class="thead-inverse"><tr><th>ID</th><th>Position</th><th>Residue</th><th>O-GlcNAc prediction score</th><th>Confidence level</th></tr></thead>
-        <tbody id="prediction-results-body"></tbody>
-      </table>
+    <div class="results-card" id="prediction-results-card" style="display:none;">
+      <div class="table-card-header">
+        <span>Prediction output</span>
+        <h2 id="prediction-results-heading">Predicted O-GlcNAc sites</h2>
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-labelledby="prediction-results-heading">
+        <table class="table results-table" id="prediction-results-table">
+          <thead><tr><th>ID</th><th>Position</th><th>Residue</th><th>O-GlcNAc prediction score</th><th>Confidence level</th></tr></thead>
+          <tbody id="prediction-results-body"></tbody>
+        </table>
+      </div>
     </div>
-    <div class="alert alert-danger" id="prediction-error" role="alert" style="display:none; margin-top: 20px;"></div>
+    <div class="alert alert-danger" id="prediction-error" role="alert" aria-live="assertive" style="display:none;"></div>
   </div>
 </section>

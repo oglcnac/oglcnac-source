@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -45,35 +46,31 @@ GENERATED_HTML = (
     "pred_dl/tutorial/index.html",
 )
 
-GENERATED_OUTPUTS = GENERATED_HTML + ("static/css/app.css",)
+GENERATED_ARTWORK = (
+    "static/img/ogt-pin-overview.svg",
+    "static/img/pred-dl-workflow.svg",
+    "static/img/suite-hero.svg",
+    "static/img/suite-workflow.svg",
+    "static/img/tool-atlas.svg",
+    "static/img/tool-hexnac-quest.svg",
+    "static/img/tool-ogt-pin.svg",
+    "static/img/tool-pred-dl.svg",
+)
+
+GENERATED_OUTPUTS = (
+    GENERATED_HTML
+    + ("static/css/app.css", "static/.site-build-assets.json")
+    + GENERATED_ARTWORK
+)
 
 # This migration must not rewrite page-specific main content. These hashes were
 # captured before introducing the shared build-time shell.
-MAIN_CONTENT_SHA256 = {
-    "atlas/browse/index.html": "069eeabe697b5cb087c924bfa5247268d3a454949f2bb5873cf224c985061024",
-    "atlas/contact/index.html": "0795bb3f860da3b64b0e8675d00b31ebc1aa41e25fe470552429747b2b505dc2",
-    "atlas/detail/index.html": "e7b2f31c5db4650498c77feb530fd57b393b00935284317619f109850fff1a18",
-    "atlas/download/index.html": "5dc0f2d980738860c8d3dbddab449da47a47be830bd407d29f49c0383850534f",
-    "atlas/index.html": "0600b76429d35ebe86ba8534d521f42ad1f8514174d4fc52500ed3414c0ba3d6",
-    "atlas/search/index.html": "77c0ee8f7fac0333f9d5eff983438081f6f7187cb41f4c5527c088b86a9d519e",
-    "atlas/statistics/index.html": "daef42eaf2f3e60c14d895665123c53ab94aabcbd10a4bcd4f71699e48b93854",
-    "atlas/tutorial/index.html": "1bfb7b2a9965537a0cff99938a0fa89b20bbff09496b77f48f330c86c98dd138",
-    "hexnac-quest/analysis/index.html": "664598fdcbc374e58f4290049203ea6dd678fca3bfacd24f4062a516841183e0",
-    "hexnac-quest/contact/index.html": "79e17731540b8dd4977acd96bd83a6c7af014c04901f43b03420d32cb1dbbd09",
-    "hexnac-quest/index.html": "7ce09e0f481ee685f0ceb269935c59262c3de8eab58f0d04b5cad30e3572be9a",
-    "hexnac-quest/tutorial/index.html": "1d26a9c03829400500798aa468a1da365f52cb679b8fdec24bd94e9070563043",
-    "index.html": "232f94c9ccef8bb70ee43818b0d117b24be53b1977010010810b9c342191fa75",
-    "ogt-pin/contact/index.html": "0795bb3f860da3b64b0e8675d00b31ebc1aa41e25fe470552429747b2b505dc2",
-    "ogt-pin/detail/index.html": "8fe1a13b5914796296c16f5e848890a151bec988f48e4f9c7f35d8ecb47bf05a",
-    "ogt-pin/index.html": "1117c1e0aa1b9cbb626fc521d8023d791ddd5c3cef761c87261fe7f2ebf0125e",
-    "ogt-pin/search/index.html": "3cda35116bad0509de0f85106d5cce8c338fb7ecf6a596268f091c3a8096553b",
-    "ogt-pin/statistics/index.html": "fb41d76553cdea5e03cc71d87a3d118799a07765c5e42dc27f058838e5b64ab2",
-    "ogt-pin/tutorial/index.html": "8f7fec2e778f4c24194432e95b3af690b98883f898196becae05225e61c2c7f0",
-    "pred_dl/contact/index.html": "bc5c818bd90292a3369b36511c6fe1b7c427a4fb89fc3e0ff89b66bbbf41a1fe",
-    "pred_dl/download/index.html": "9251f122223bf8da1c3b50d815c0b70caaaf8ca35781bf54042651939810d271",
-    "pred_dl/index.html": "28def70798f252853aba6490a1fe0ab71171ee2532b85e3634c8f9dd07516694",
-    "pred_dl/input_fasta/index.html": "f03e00c68404b2ce9fe2fea4d1806fe270487006afac4e6211be6e38faf840ac",
-    "pred_dl/tutorial/index.html": "af74a273b5e3f16a778d6d01d5d3fc99637047a9153ec22dc01173f71e7af45d",
+EVIDENCE_ASSET_SHA256 = {
+    "static/img/figure1.png": "a17d21d28fc7f02091aa27ee642c00eb355797439406bbf5037635c799629a2b",
+    "static/img/figure2.png": "5b710de762c39eeca761f3e7c7d1ea31b567b2d7fbf1fe01a1d0cd101bbe471d",
+    "static/img/table1.png": "eb1c9aa6ffe6199624b39e5e92582a9248f194c01d11d70602d0aaf789b7f3a8",
+    "static/img/interactome-figure1.svg": "77df672b016e3d923b3640b2526a0576c8a5b4a9b0040d285a59cc6493984f6d",
+    "static/img/OGT-Interactome-760.svg": "6602ab1e8f2cf906a23a7447806e9efe5565d1ed4eef97e82d0522f8736f0708",
 }
 
 
@@ -102,6 +99,90 @@ class DocumentParser(HTMLParser):
 
     def tags(self, name: str) -> list[dict[str, str]]:
         return [attrs for tag, attrs in self.start_tags if tag == name]
+
+
+class AccessibilityParser(HTMLParser):
+    VOID_ELEMENTS = {
+        "area",
+        "base",
+        "br",
+        "col",
+        "embed",
+        "hr",
+        "img",
+        "input",
+        "link",
+        "meta",
+        "param",
+        "source",
+        "track",
+        "wbr",
+    }
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.stack: list[tuple[str, dict[str, str]]] = []
+        self.headings: list[int] = []
+        self.controls: list[tuple[str, dict[str, str], bool]] = []
+        self.label_fors: set[str] = set()
+        self.images: list[dict[str, str]] = []
+        self.tables_outside_scroll: list[str] = []
+        self.forbidden_markup: list[str] = []
+        self.figure_sources: dict[str, bool] = {}
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        normalized = {name: value or "" for name, value in attrs}
+        if re.fullmatch(r"h[1-6]", tag):
+            self.headings.append(int(tag[1]))
+        if tag == "label" and normalized.get("for"):
+            self.label_fors.add(normalized["for"])
+        if tag in {"input", "select", "textarea"}:
+            nested_label = any(parent == "label" for parent, _ in self.stack)
+            self.controls.append((tag, normalized, nested_label))
+        if tag == "img":
+            self.images.append(normalized)
+            source = normalized.get("src", "")
+            if any(parent == "figure" for parent, _ in self.stack):
+                self.figure_sources[source] = False
+        if tag == "figcaption":
+            for parent, parent_attrs in reversed(self.stack):
+                if parent == "figure":
+                    source = parent_attrs.get("data-figure-source", "")
+                    if source:
+                        self.figure_sources[source] = True
+                    break
+        if tag == "figure":
+            normalized["data-figure-source"] = ""
+        if tag == "img":
+            for index in range(len(self.stack) - 1, -1, -1):
+                parent, parent_attrs = self.stack[index]
+                if parent == "figure":
+                    parent_attrs["data-figure-source"] = normalized.get("src", "")
+                    break
+        if tag == "table":
+            has_scroll_region = any(
+                "table-scroll" in parent_attrs.get("class", "").split()
+                for _, parent_attrs in self.stack
+            )
+            if not has_scroll_region:
+                self.tables_outside_scroll.append(normalized.get("id", "<unnamed>"))
+        if tag == "font":
+            self.forbidden_markup.append("<font>")
+        for name in ("align", "valign"):
+            if name in normalized:
+                self.forbidden_markup.append(f"{tag}[{name}]")
+        if normalized.get("class", "").endswith(","):
+            self.forbidden_markup.append(f"{tag}[class comma]")
+        if tag not in self.VOID_ELEMENTS:
+            self.stack.append((tag, normalized))
+
+    def handle_endtag(self, tag: str) -> None:
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                return
 
 
 def run_build(*arguments: str) -> subprocess.CompletedProcess[str]:
@@ -205,6 +286,46 @@ class SiteBuildTests(unittest.TestCase):
             for path in unrelated_paths:
                 self.assertTrue(path.is_file(), path)
 
+    def test_source_asset_manifest_detects_and_removes_retired_assets(self) -> None:
+        with tempfile.TemporaryDirectory() as source_directory, tempfile.TemporaryDirectory() as output_directory:
+            source_root = Path(source_directory) / "site"
+            shutil.copytree(REPOSITORY_ROOT / "site", source_root)
+            initial_build = run_build(
+                "--source-root",
+                str(source_root),
+                "--output-root",
+                output_directory,
+            )
+            self.assertEqual(initial_build.returncode, 0, initial_build.stderr)
+
+            retired_source = source_root / "assets" / "img" / "tool-atlas.svg"
+            retired_output = (
+                Path(output_directory) / "static" / "img" / "tool-atlas.svg"
+            )
+            unrelated = Path(output_directory) / "static" / "img" / "curator.svg"
+            unrelated.write_text("<svg/>")
+            retired_source.unlink()
+
+            check_result = run_build(
+                "--check",
+                "--source-root",
+                str(source_root),
+                "--output-root",
+                output_directory,
+            )
+            self.assertNotEqual(check_result.returncode, 0)
+            self.assertIn("static/img/tool-atlas.svg", check_result.stderr)
+
+            rebuild_result = run_build(
+                "--source-root",
+                str(source_root),
+                "--output-root",
+                output_directory,
+            )
+            self.assertEqual(rebuild_result.returncode, 0, rebuild_result.stderr)
+            self.assertFalse(retired_output.exists())
+            self.assertTrue(unrelated.is_file())
+
     def test_tracked_generated_outputs_are_current(self) -> None:
         check_result = run_build("--check")
         self.assertEqual(check_result.returncode, 0, check_result.stderr)
@@ -230,8 +351,6 @@ class SiteBuildTests(unittest.TestCase):
 
     def test_shared_shell_has_metadata_and_semantic_landmarks(self) -> None:
         for relative_path in GENERATED_HTML:
-            if relative_path == "404.html":
-                continue
             with self.subTest(page=relative_path):
                 parser = DocumentParser()
                 parser.feed((FRONTEND_ROOT / relative_path).read_text())
@@ -239,6 +358,14 @@ class SiteBuildTests(unittest.TestCase):
                 self.assertEqual(html[0].get("lang"), "en")
                 self.assertTrue("".join(parser.title_parts).strip())
                 self.assertEqual(len(parser.tags("main")), 1)
+                self.assertEqual(parser.tags("main")[0].get("id"), "main-content")
+                skip_links = [
+                    attrs
+                    for attrs in parser.tags("a")
+                    if attrs.get("href") == "#main-content"
+                    and "skip-link" in attrs.get("class", "").split()
+                ]
+                self.assertEqual(len(skip_links), 1)
                 site_headers = [
                     attrs
                     for attrs in parser.tags("header")
@@ -272,6 +399,162 @@ class SiteBuildTests(unittest.TestCase):
                     or attrs.get("data-section-current") == "true"
                 ]
                 self.assertGreaterEqual(len(current_links), 1)
+
+    def test_every_page_has_one_h1_and_ordered_headings(self) -> None:
+        for relative_path in GENERATED_HTML:
+            with self.subTest(page=relative_path):
+                parser = AccessibilityParser()
+                parser.feed((FRONTEND_ROOT / relative_path).read_text())
+                self.assertTrue(parser.headings, "page has no headings")
+                self.assertEqual(parser.headings[0], 1, parser.headings)
+                self.assertEqual(parser.headings.count(1), 1, parser.headings)
+                previous = 1
+                for level in parser.headings[1:]:
+                    self.assertLessEqual(
+                        level,
+                        previous + 1,
+                        f"heading level jumps from h{previous} to h{level}",
+                    )
+                    previous = level
+
+    def test_form_controls_have_programmatic_names(self) -> None:
+        ignored_types = {"button", "hidden", "reset", "submit"}
+        unnamed: list[str] = []
+        for relative_path in GENERATED_HTML:
+            parser = AccessibilityParser()
+            parser.feed((FRONTEND_ROOT / relative_path).read_text())
+            for tag, attrs, nested_label in parser.controls:
+                if attrs.get("type", "").lower() in ignored_types:
+                    continue
+                control_id = attrs.get("id", "")
+                named = (
+                    nested_label
+                    or bool(attrs.get("aria-label"))
+                    or bool(attrs.get("aria-labelledby"))
+                    or bool(control_id and control_id in parser.label_fors)
+                )
+                if not named:
+                    unnamed.append(
+                        f"{relative_path}: {tag} {attrs.get('name') or control_id}"
+                    )
+        self.assertEqual(unnamed, [])
+
+    def test_images_and_evidence_figures_are_meaningfully_described(self) -> None:
+        undescribed: list[str] = []
+        figures_without_captions: list[str] = []
+        for relative_path in GENERATED_HTML:
+            parser = AccessibilityParser()
+            parser.feed((FRONTEND_ROOT / relative_path).read_text())
+            for attrs in parser.images:
+                description = attrs.get("alt", "").strip()
+                if len(description) < 8 or re.fullmatch(
+                    r"(figure|table|image)\s*\d*", description, re.IGNORECASE
+                ):
+                    undescribed.append(
+                        f"{relative_path}: {attrs.get('src', '<missing src>')}"
+                    )
+            for source, has_caption in parser.figure_sources.items():
+                if not has_caption:
+                    figures_without_captions.append(f"{relative_path}: {source}")
+        self.assertEqual(undescribed, [])
+        self.assertEqual(figures_without_captions, [])
+
+    def test_tables_are_in_keyboard_focusable_scroll_regions(self) -> None:
+        uncontained: list[str] = []
+        for relative_path in GENERATED_HTML:
+            parser = AccessibilityParser()
+            parser.feed((FRONTEND_ROOT / relative_path).read_text())
+            uncontained.extend(
+                f"{relative_path}: {table}"
+                for table in parser.tables_outside_scroll
+            )
+        self.assertEqual(uncontained, [])
+
+        for relative_path in GENERATED_HTML:
+            html = (FRONTEND_ROOT / relative_path).read_text()
+            for match in re.finditer(
+                r'<div\b[^>]*class="[^"]*\btable-scroll\b[^"]*"[^>]*>',
+                html,
+                re.IGNORECASE,
+            ):
+                start_tag = match.group(0)
+                self.assertRegex(start_tag, r'\btabindex="0"')
+                self.assertRegex(start_tag, r'\brole="region"')
+                self.assertRegex(
+                    start_tag,
+                    r'\baria-label(?:ledby)?="[^"]+"',
+                )
+
+    def test_generated_presentation_uses_modern_semantic_markup(self) -> None:
+        offenders: list[str] = []
+        for relative_path in GENERATED_HTML:
+            parser = AccessibilityParser()
+            parser.feed((FRONTEND_ROOT / relative_path).read_text())
+            offenders.extend(
+                f"{relative_path}: {description}"
+                for description in parser.forbidden_markup
+            )
+        self.assertEqual(offenders, [])
+
+    def test_conceptual_art_is_correctly_scoped_and_evidence_is_preserved(
+        self,
+    ) -> None:
+        homepage = (FRONTEND_ROOT / "index.html").read_text()
+        for misleading_source in (
+            "/static/img/header.png",
+            "/static/img/figure1.png",
+            "/static/img/figure2.png",
+        ):
+            self.assertNotIn(misleading_source, homepage)
+        for expected_source in (
+            "/static/img/suite-hero.svg",
+            "/static/img/suite-workflow.svg",
+            "/static/img/tool-atlas.svg",
+            "/static/img/tool-ogt-pin.svg",
+            "/static/img/tool-pred-dl.svg",
+            "/static/img/tool-hexnac-quest.svg",
+        ):
+            self.assertIn(expected_source, homepage)
+            self.assertTrue((FRONTEND_ROOT / expected_source.lstrip("/")).is_file())
+
+        suite_workflow = (
+            FRONTEND_ROOT / "static/img/suite-workflow.svg"
+        ).read_text()
+        self.assertIn(
+            'data-flow="protein-to-pred-dl"',
+            suite_workflow,
+            "The protein-sequence input must connect to O-GlcNAcPRED-DL",
+        )
+
+        self.assertIn(
+            "/static/img/ogt-pin-overview.svg",
+            (FRONTEND_ROOT / "ogt-pin/index.html").read_text(),
+        )
+        self.assertIn(
+            "/static/img/pred-dl-workflow.svg",
+            (FRONTEND_ROOT / "pred_dl/index.html").read_text(),
+        )
+        pred_workflow = (
+            FRONTEND_ROOT / "static/img/pred-dl-workflow.svg"
+        ).read_text()
+        for preserved_concept in (
+            "O-GlcNAcAtlas",
+            "Train–test split",
+            "Word2Vec",
+            "one-hot",
+            "BLOSUM62",
+            "AAindex",
+            "CNN–BiLSTM",
+            "Model selection",
+            "Voting",
+            "O-GlcNAcPRED-DL",
+        ):
+            self.assertIn(preserved_concept, pred_workflow)
+        for relative_path, expected_hash in EVIDENCE_ASSET_SHA256.items():
+            actual = hashlib.sha256(
+                (FRONTEND_ROOT / relative_path).read_bytes()
+            ).hexdigest()
+            self.assertEqual(actual, expected_hash, relative_path)
 
     def test_local_runtime_scripts_and_styles_resolve_to_tracked_assets(self) -> None:
         missing_runtime_assets: list[str] = []
@@ -398,17 +681,6 @@ class SiteBuildTests(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 0, result.stderr)
-
-    def test_page_specific_main_content_is_unchanged(self) -> None:
-        for relative_path, expected_hash in MAIN_CONTENT_SHA256.items():
-            html = (FRONTEND_ROOT / relative_path).read_text()
-            match = re.search(r"<main\b[^>]*>(.*)</main>", html, re.DOTALL | re.IGNORECASE)
-            self.assertIsNotNone(match, relative_path)
-            normalized_content = "\n".join(
-                line.rstrip() for line in match.group(1).splitlines()
-            ).strip()
-            actual_hash = hashlib.sha256(normalized_content.encode()).hexdigest()
-            self.assertEqual(actual_hash, expected_hash, relative_path)
 
     def test_deploy_rejects_stale_generated_output_before_copying(self) -> None:
         with tempfile.TemporaryDirectory() as source_directory:

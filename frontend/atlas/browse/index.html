@@ -7,10 +7,12 @@
   <title>Browse | O-GlcNAcAtlas</title>
   <meta name="description" content="Browse curated O-GlcNAcAtlas records by species.">
   <link rel="canonical" href="https://oglcnac.org/atlas/browse/">
+
   <link rel="stylesheet" href="/static/css/app.css?v=20260728-publication1">
 
 </head>
 <body class="site-body section-body atlas-section">
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <header class="site-header">
   <div class="site-header-inner">
     <a class="site-brand" href="/">oglcnac.org</a>
@@ -28,53 +30,49 @@
   </div>
 </header>
 
-<main class="site-main">
-
-  <section>
-    <div class="container">
-      <div class="row justify-content-md-center">
-        <div class="col-md-auto">
-          <h3 class="text-center">O-GlcNAcAtlas Browse</h3>
-          <h5 class="text-center">Browse by Species</h5>
-        </div>
-      </div>
-
-      <div class="species-filter" aria-label="Browse by species">
-        <button type="button" data-species="Human">Human</button>
-        <button type="button" data-species="mouse">Mouse</button>
-        <button type="button" data-species="Rat">Rat</button>
-        <button type="button" data-species="Drosophila">Drosophila</button>
-        <button type="button" data-species="Arabidopsis">Arabidopsis</button>
-        <button type="button" data-species="C. Elegans">C. elegans</button>
-        <button type="button" data-species="Others">Other species</button>
-      </div>
+<main id="main-content" class="site-main"><section class="page-hero page-hero-compact">
+  <div class="container page-hero-inner">
+    <p class="eyebrow">O-GlcNAcAtlas 5.0</p>
+    <h1>Browse Atlas by species</h1>
+    <p class="page-lead">
+      Select a species to explore its curated O-GlcNAc protein and site
+      records.
+    </p>
+    <div class="species-filter" aria-label="Browse by species">
+      <button type="button" data-species="Human">Human</button>
+      <button type="button" data-species="mouse">Mouse</button>
+      <button type="button" data-species="Rat">Rat</button>
+      <button type="button" data-species="Drosophila">Drosophila</button>
+      <button type="button" data-species="Arabidopsis">Arabidopsis</button>
+      <button type="button" data-species="C. Elegans">C. elegans</button>
+      <button type="button" data-species="Others">Other species</button>
     </div>
-  </section>
+  </div>
+</section>
 
-  <hr>
-
-  <!-- Search Results Section -->
-  <section>
-    <div class="container">
-      <ol class="breadcrumb my-4">
-        <li class="breadcrumb-item active">Search Results</li>
-      </ol>
-        <table class="table hover compact" id="search_result">
-            <thead class="thead-inverse">
-                <tr>
-                    <th>Accession</th>
-                    <th>Entry Name</th>
-                    <th>Protein Name</th>
-                    <th>Gene Name</th>
-                    <th>Position in Protein</th>
-                    <th>UniProt Link</th>
-                </tr>
-            </thead>
-            <tbody id="atlas-browse-results"></tbody>
-        </table>
-
+<section class="table-results-section" aria-labelledby="atlas-browse-results-heading">
+  <div class="container">
+    <div class="table-card-header">
+      <span>Species records</span>
+      <h2 id="atlas-browse-results-heading">Browse results</h2>
     </div>
-  </section></main>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="O-GlcNAcAtlas species browse results table">
+      <table class="table results-table" id="search_result">
+        <thead>
+          <tr>
+            <th>Accession</th>
+            <th>Entry Name</th>
+            <th>Protein Name</th>
+            <th>Gene Name</th>
+            <th>Position in Protein</th>
+            <th>UniProt Link</th>
+          </tr>
+        </thead>
+        <tbody id="atlas-browse-results"></tbody>
+      </table>
+    </div>
+  </div>
+</section></main>
 <footer class="footer site-footer">
   <div class="container footer-inner">
     <div>

@@ -33,7 +33,7 @@
         <div class="hq-card">
           <h2>Valid-row preview</h2>
           <p class="hq-help">Select a row to update the spectrum chart. The preview is capped at the first 500 valid rows; all valid rows are still predicted.</p>
-          <div class="hq-table-wrap">
+          <div class="hq-table-wrap table-scroll" tabindex="0" role="region" aria-label="Valid HexNAcQuest input rows">
             <table class="hq-table">
               <thead><tr><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead>
               <tbody id="hexnac-preview-body"></tbody>
@@ -53,7 +53,7 @@
         <div class="hq-card">
           <h2>Skipped rows</h2>
           <p class="hq-help">These rows will not appear in the prediction download.</p>
-          <div class="hq-table-wrap">
+          <div class="hq-table-wrap table-scroll" tabindex="0" role="region" aria-label="Skipped HexNAcQuest input rows">
             <table class="hq-table"><thead><tr><th>CSV row</th><th>Reason</th></tr></thead><tbody id="hexnac-skipped-body"></tbody></table>
           </div>
           <div id="hexnac-skipped-pager" class="hq-pager"></div>
@@ -71,7 +71,7 @@
         </div>
         <div class="hq-card">
           <h2>Prediction results</h2>
-          <div class="hq-table-wrap">
+          <div class="hq-table-wrap table-scroll" tabindex="0" role="region" aria-label="HexNAcQuest prediction results">
             <table class="hq-table"><thead><tr><th>pred_outcome</th><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead><tbody id="hexnac-results-body"></tbody></table>
           </div>
           <div id="hexnac-results-pager" class="hq-pager"></div>

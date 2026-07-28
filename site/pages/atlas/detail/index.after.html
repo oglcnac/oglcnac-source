@@ -85,6 +85,7 @@
   const atlasRecordState = document.createElement("p");
   atlasRecordState.setAttribute("data-record-state", "atlas");
   atlasRecordState.setAttribute("role", "status");
+  atlasRecordState.setAttribute("aria-live", "polite");
   document.querySelector(".atlas-detail-page .detail-hero").appendChild(
     atlasRecordState
   );

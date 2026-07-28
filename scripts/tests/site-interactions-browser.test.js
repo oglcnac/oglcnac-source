@@ -42,7 +42,11 @@ async function serveStatic(request, response) {
     });
     response.end(body);
   } catch (error) {
-    response.writeHead(404).end();
+    const body = await fs.readFile(path.join(STATIC_ROOT, "404.html"));
+    response.writeHead(404, {
+      "Content-Type": "text/html; charset=utf-8",
+    });
+    response.end(body);
   }
 }
 
@@ -79,6 +83,27 @@ function csvRecordCount(csv) {
     }
   }
   return csv.endsWith("\n") ? records - 1 : records;
+}
+
+function rgbChannels(cssColor) {
+  const channels = cssColor.match(/[\d.]+/g);
+  assert.ok(channels && channels.length >= 3, `Unsupported CSS color: ${cssColor}`);
+  return channels.slice(0, 3).map(Number);
+}
+
+function contrastRatio(first, second) {
+  const luminance = (channels) => {
+    const [red, green, blue] = channels.map((value) => {
+      const normalized = value / 255;
+      return normalized <= 0.04045
+        ? normalized / 12.92
+        : ((normalized + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  };
+  const lighter = Math.max(luminance(first), luminance(second));
+  const darker = Math.min(luminance(first), luminance(second));
+  return (lighter + 0.05) / (darker + 0.05);
 }
 
 test.before(async () => {
@@ -533,4 +558,146 @@ test("mobile navigation opens with keyboard-accessible links", async () => {
     page.getByRole("link", { name: "Browse", exact: true }).waitFor(),
   );
   await page.close();
+});
+
+test("unknown routes retain a useful 404 page while legacy detail paths redirect", async () => {
+  const page = await browser.newPage();
+  const response = await page.goto(`${baseUrl}/missing-publication-page`);
+  assert.equal(response.status(), 404);
+  await page.waitForTimeout(100);
+  assert.equal(new URL(page.url()).pathname, "/missing-publication-page");
+  assert.equal(
+    await page.getByRole("heading", { level: 1 }).textContent(),
+    "Resource not found",
+  );
+  await assert.doesNotReject(() =>
+    page.getByRole("link", { name: "Return to oglcnac.org" }).waitFor(),
+  );
+
+  await page.goto(`${baseUrl}/atlas/detail/P18583`);
+  await page.waitForURL("**/atlas/detail/?id=P18583");
+  await page.close();
+});
+
+test("shared focus and reduced-motion styles are observable", async () => {
+  const context = await browser.newContext({
+    reducedMotion: "reduce",
+  });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/`);
+  await page.locator(".site-brand").focus();
+  const focused = await page.locator(".site-brand").evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth,
+      outlineColor: style.outlineColor,
+      boxShadow: style.boxShadow,
+      surfaceColor: getComputedStyle(element.closest(".site-header")).backgroundColor,
+    };
+  });
+  assert.notEqual(focused.outlineStyle, "none");
+  assert.notEqual(focused.outlineWidth, "0px");
+  assert.notEqual(focused.outlineColor, "rgba(0, 0, 0, 0)");
+  assert.notEqual(focused.boxShadow, "none");
+  assert.ok(
+    contrastRatio(
+      rgbChannels(focused.boxShadow),
+      rgbChannels(focused.surfaceColor),
+    ) >= 3,
+    `focus halo lacks 3:1 contrast on a dark surface: ${JSON.stringify(focused)}`,
+  );
+
+  const lightSurfaceFocus = await page.locator(".tool-card").first().evaluate((element) => {
+    element.focus();
+    const style = getComputedStyle(element);
+    return {
+      backgroundColor: style.backgroundColor,
+      outlineColor: style.outlineColor,
+    };
+  });
+  assert.ok(
+    contrastRatio(
+      rgbChannels(lightSurfaceFocus.outlineColor),
+      rgbChannels(lightSurfaceFocus.backgroundColor),
+    ) >= 3,
+    `focus outline lacks 3:1 contrast on a light surface: ${JSON.stringify(lightSurfaceFocus)}`,
+  );
+
+  const motion = await page.locator(".tool-card").first().evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      animationDuration: style.animationDuration,
+      transitionDuration: style.transitionDuration,
+    };
+  });
+  assert.match(motion.animationDuration, /^(0s|0\.001s)$/);
+  assert.match(motion.transitionDuration, /^(0s|0\.001s)(, (0s|0\.001s))*$/);
+  await context.close();
+});
+
+test("PRED-DL hero title stays inside its desktop text column", async () => {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+  await page.goto(`${baseUrl}/pred_dl/`);
+  const bounds = await page.evaluate(() => {
+    const title = document.querySelector(".resource-hero h1");
+    const art = document.querySelector(".resource-hero .resource-art");
+    return {
+      titleRight: title.getBoundingClientRect().right,
+      titleScrollWidth: title.scrollWidth,
+      titleClientWidth: title.clientWidth,
+      artLeft: art.getBoundingClientRect().left,
+    };
+  });
+  assert.ok(
+    bounds.titleScrollWidth <= bounds.titleClientWidth &&
+      bounds.titleRight < bounds.artLeft,
+    `PRED-DL title intrudes into the art column: ${JSON.stringify(bounds)}`,
+  );
+  await page.close();
+});
+
+test("all public content pages reflow without horizontal overflow", async () => {
+  const routes = [
+    "/",
+    "/atlas/",
+    "/atlas/statistics/",
+    "/atlas/search/",
+    "/atlas/browse/",
+    "/atlas/detail/?id=P18583",
+    "/atlas/tutorial/",
+    "/atlas/download/",
+    "/atlas/contact/",
+    "/ogt-pin/",
+    "/ogt-pin/statistics/",
+    "/ogt-pin/search/",
+    "/ogt-pin/detail/?id=Q9H1M0",
+    "/ogt-pin/tutorial/",
+    "/ogt-pin/contact/",
+    "/pred_dl/",
+    "/pred_dl/input_fasta/",
+    "/pred_dl/tutorial/",
+    "/pred_dl/download/",
+    "/pred_dl/contact/",
+    "/hexnac-quest/",
+    "/hexnac-quest/analysis/",
+    "/hexnac-quest/tutorial/",
+    "/hexnac-quest/contact/",
+  ];
+  for (const width of [390, 320]) {
+    const page = await browser.newPage({ viewport: { width, height: 844 } });
+    for (const route of routes) {
+      await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
+      const overflow = await page.evaluate(() => ({
+        viewport: document.documentElement.clientWidth,
+        document: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+      }));
+      assert.ok(
+        overflow.document <= overflow.viewport && overflow.body <= overflow.viewport,
+        `${route} overflows at ${width}px: ${JSON.stringify(overflow)}`,
+      );
+    }
+    await page.close();
+  }
 });

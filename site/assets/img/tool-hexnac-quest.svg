@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">HexNAcQuest conceptual artwork</title>
+  <desc id="desc">Five diagnostic oxonium-ion intensities support GlcNAc or GalNAc classification.</desc>
+  <rect width="640" height="360" fill="#f1ecf8"/>
+  <g stroke="#7655a6" stroke-linecap="round">
+    <path d="M74 265V120m70 145V177m70 88V80m70 185V151m70 114V109" stroke-width="20"/>
+    <path d="M56 266h328" stroke-width="5"/>
+  </g>
+  <g fill="#5b4677" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">
+    <text x="74" y="297">126</text><text x="144" y="297">138</text><text x="214" y="297">144</text><text x="284" y="297">168</text><text x="354" y="297">186</text>
+  </g>
+  <path d="M416 180h62" stroke="#8f7aa9" stroke-width="7" stroke-linecap="round"/>
+  <path d="m463 164 18 16-18 16" fill="none" stroke="#8f7aa9" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/>
+  <rect x="491" y="92" width="104" height="176" rx="22" fill="#7655a6"/>
+  <circle cx="543" cy="144" r="25" fill="#fff" opacity=".18"/>
+  <circle cx="543" cy="144" r="11" fill="#fff"/>
+  <text x="543" y="208" fill="#fff" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle">GlcNAc</text>
+  <text x="543" y="235" fill="#e8dcf5" font-family="Arial, sans-serif" font-size="17" text-anchor="middle">or GalNAc</text>
+</svg>

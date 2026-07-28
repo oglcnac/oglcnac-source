@@ -7,10 +7,12 @@
   <title>Protein Record | O-GlcNAcAtlas</title>
   <meta name="description" content="Inspect protein sequence and curated O-GlcNAcylation evidence for an O-GlcNAcAtlas accession.">
   <link rel="canonical" href="https://oglcnac.org/atlas/detail/">
+
   <link rel="stylesheet" href="/static/css/app.css?v=20260728-publication1">
 
 </head>
 <body class="site-body section-body atlas-section">
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <header class="site-header">
   <div class="site-header-inner">
     <a class="site-brand" href="/">oglcnac.org</a>
@@ -28,34 +30,29 @@
   </div>
 </header>
 
-<main class="site-main">
+<main id="main-content" class="site-main">
 
 
-  <section class="detail-search-strip">
-    <div class="container">
-      <div class="row justify-content-md-center">
-        <form action="/atlas/search/" method="get" class="form-inline" role="form">
-          <div class="form-group mx-sm-3 mb-2">
-
-            <input type="text" required="required" class="form-control" placeholder="Search Term" name="q">
-
-          </div>
-          <div class="form-group mx-sm-3 mb-2">
-            <select class="form-control" name="field">
-
-              <option value="accession">Accession</option>
-              <option value="protein_name">Protein Name</option>
-              <option value="gene_name">Gene Name</option>
-              <option value="peptide_seq">Peptide Sequence</option>
-            </select>
-          </div>
-          <div class="form-group mx-sm-3 mb-2">
-            <button type="submit" class="btn btn-primary mb-2">Search</button>
-          </div>
-        </form>
+<section class="detail-search-strip" aria-label="Search another Atlas record">
+  <div class="container">
+    <form action="/atlas/search/" method="get" class="search-form">
+      <div class="form-field">
+        <label for="atlas-detail-search-term">Search term</label>
+        <input id="atlas-detail-search-term" type="search" required class="form-control" name="q">
       </div>
-    </div>
-  </section>
+      <div class="form-field">
+        <label for="atlas-detail-search-field">Search field</label>
+        <select id="atlas-detail-search-field" class="form-control" name="field">
+          <option value="accession">Accession</option>
+          <option value="protein_name">Protein name</option>
+          <option value="gene_name">Gene name</option>
+          <option value="peptide_seq">Peptide sequence</option>
+        </select>
+      </div>
+      <button type="submit">Search Atlas</button>
+    </form>
+  </div>
+</section>
 <section class="detail-page atlas-detail-page">
   <div class="container">
     <div class="detail-hero">
@@ -69,7 +66,7 @@
         <span>Sequence</span>
         <h2>Protein sequence</h2>
       </div>
-      <pre id="protein-sequence" class="sequence-viewer"></pre>
+      <pre id="protein-sequence" class="sequence-viewer" role="status" aria-live="polite">Loading protein sequence…</pre>
     </div>
 
 <script src="/static/js/static-data.js"></script>
@@ -124,7 +121,7 @@
         <span>Peptides</span>
         <h2>Peptide information</h2>
       </div>
-      <div class="table-scroll">
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas peptide information table">
       <table class="table detail-table" id="detail1">
         <thead class="thead-inverse">
           <tr>
@@ -145,7 +142,7 @@
         <span>Evidence</span>
         <h2>O-GlcNAcylation information</h2>
       </div>
-      <div class="table-scroll">
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas O-GlcNAcylation evidence table">
       <table class="table detail-table" id="detail2">
         <thead class="thead-inverse">
           <tr>
@@ -187,8 +184,8 @@
         <span>Export</span>
         <h2>All curated fields</h2>
       </div>
-      <p class="detail-help">Use the export buttons below to download the complete record fields.</p>
-      <div class="table-scroll">
+      <p class="detail-help">Use the controls below to download the complete record fields.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="All curated Atlas fields table">
       <table class="table detail-table" id="detail3">
         <thead class="thead-inverse">
           <tr>
@@ -315,6 +312,7 @@
   const atlasRecordState = document.createElement("p");
   atlasRecordState.setAttribute("data-record-state", "atlas");
   atlasRecordState.setAttribute("role", "status");
+  atlasRecordState.setAttribute("aria-live", "polite");
   document.querySelector(".atlas-detail-page .detail-hero").appendChild(
     atlasRecordState
   );

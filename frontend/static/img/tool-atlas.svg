@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">O-GlcNAcAtlas conceptual artwork</title>
+  <desc id="desc">A curated protein sequence with highlighted modification sites and evidence records.</desc>
+  <rect width="640" height="360" fill="#eaf3fc"/>
+  <circle cx="516" cy="68" r="124" fill="#d5e8fa"/>
+  <g fill="#fff" stroke="#9fc4e8" stroke-width="3">
+    <rect x="66" y="68" width="430" height="224" rx="24"/>
+    <rect x="94" y="98" width="200" height="18" rx="9"/>
+    <rect x="94" y="140" width="350" height="42" rx="12"/>
+    <rect x="94" y="202" width="350" height="58" rx="12"/>
+  </g>
+  <g fill="#3478bd">
+    <circle cx="151" cy="161" r="11"/>
+    <circle cx="254" cy="161" r="11"/>
+    <circle cx="386" cy="161" r="11"/>
+    <rect x="114" y="220" width="74" height="10" rx="5"/>
+    <rect x="205" y="220" width="112" height="10" rx="5" opacity=".65"/>
+    <rect x="335" y="220" width="82" height="10" rx="5" opacity=".4"/>
+    <rect x="114" y="240" width="128" height="8" rx="4" opacity=".45"/>
+  </g>
+  <path d="M151 150c22-35 49-35 70 0s49 35 70 0 49-35 70 0" fill="none" stroke="#183b5b" stroke-linecap="round" stroke-width="7"/>
+</svg>

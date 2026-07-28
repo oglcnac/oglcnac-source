@@ -1,38 +1,26 @@
 
 
-    <section class="detail-search-strip">
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col-md-auto">
-                    <h3 class="text-center">OGT-PIN Search</h3>
-                    <h5 class="text-center">Database of OGT-interacting proteins</h5>
-                </div>
-            </div>
-            <div class="row justify-content-md-center">
-                <form action="/ogt-pin/search/" method="get" class="form-inline" role="form">
-                    <div class="form-group mx-sm-3 mb-2">
-
-                            <input type="text" required="required" class="form-control" placeholder="Search Term" name="q">
-
-                    </div>
-                    <div class="form-group mx-sm-3 mb-2">
-                        <select class="form-control" name="field">
-
-                            <option value="gene_name_b">Gene name for interactor B</option>
-                            <option value="uuid_b">Unique identifier for interactor B</option>
-                            <option value="gene_name_a">Gene name for interactor A</option>
-                            <option value="uuid_a">Unique identifier for interactor A</option>
-                            <option value="species">Species</option>
-
-                        </select>
-                    </div>
-                    <div class="form-group mx-sm-3 mb-2">
-                        <button type="submit" class="btn btn-primary mb-2">Search</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </section>
+<section class="detail-search-strip" aria-label="Search another OGT-PIN record">
+  <div class="container">
+    <form action="/ogt-pin/search/" method="get" class="search-form">
+      <div class="form-field">
+        <label for="ogt-pin-detail-search-term">Search term</label>
+        <input id="ogt-pin-detail-search-term" type="search" required class="form-control" name="q">
+      </div>
+      <div class="form-field">
+        <label for="ogt-pin-detail-search-field">Search field</label>
+        <select id="ogt-pin-detail-search-field" class="form-control" name="field">
+          <option value="gene_name_b">Gene name for interactor B</option>
+          <option value="uuid_b">Unique identifier for interactor B</option>
+          <option value="gene_name_a">Gene name for interactor A</option>
+          <option value="uuid_a">Unique identifier for interactor A</option>
+          <option value="species">Species</option>
+        </select>
+      </div>
+      <button type="submit">Search OGT-PIN</button>
+    </form>
+  </div>
+</section>
 <section class="detail-page interactome-detail-page">
   <div class="container">
     <div class="detail-hero">
@@ -46,7 +34,7 @@
         <span>Interactome</span>
         <h2>Interaction information</h2>
       </div>
-      <div class="table-scroll">
+      <div class="table-scroll" tabindex="0" role="region" aria-label="OGT-PIN interaction evidence table">
       <table class="table hover compact detail-table" id="interactome">
         <thead class="thead-inverse">
           <tr>

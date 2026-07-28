@@ -1,65 +1,50 @@
+<section class="page-hero page-hero-compact">
+  <div class="container page-hero-inner">
+    <p class="eyebrow">Preparing FASTA input</p>
+    <h1><span class="nowrap">O-GlcNAcPRED-DL</span> tutorial</h1>
+    <p class="page-lead">
+      Select the appropriate species, provide complete FASTA records, and
+      interpret the resulting site scores.
+    </p>
+  </div>
+</section>
 
+<section class="content-section">
+  <div class="container">
+    <article class="panel prose">
+      <h2>1. Select human or mouse</h2>
+      <ul>
+        <li>Choose the species from which the proteins were obtained because a different model was developed for each species.</li>
+        <li>Prediction for proteins from other species is technically possible, but the results should be used with extra caution.</li>
+      </ul>
 
-<div class="container">
-            <h1 align="center">Tutorial</h1>
-            <div>
-                <br>
-            <h3> Please select species: 'human' or 'mouse' </h3>
-                <ul>
-                <li>
-                    For better results, it is recommended to choose appropriate species from which the proteins are, since different models were developed for each species.
-                </li>
-                <li>
-                    Prediction for proteins from other species is technically possible, but the results should be used with extra caution!
-                </li>
+      <h2>2. Provide protein sequences in FASTA format</h2>
+      <ul>
+        <li>Paste a single sequence or upload a FASTA file containing multiple protein sequences.</li>
+        <li>Protein sequences can be up to 8,000 amino acids.</li>
+        <li>Each sequence must include a FASTA header.</li>
+      </ul>
+      <p>
+        Download examples for an
+        <a href="/static/fasta/individual_protein_human.fasta" download>individual human protein</a>,
+        an <a href="/static/fasta/individual_protein_mouse.fasta" download>individual mouse protein</a>,
+        <a href="/static/fasta/multiple_proteins_human.fasta" download>multiple human proteins</a>,
+        or <a href="/static/fasta/multiple_proteins_mouse.fasta" download>multiple mouse proteins</a>.
+      </p>
 
-              </ul>
-            </div>
-            <div>
-                <br>
-            <h3> Paste the protein sequence(s) in fasta format </h3>
-            <ul>
-                <li>
-                    Either a single sequence
-                    (<a href="/static/fasta/individual_protein_human.fasta" download>example for human</a> / <a href="/static/fasta/individual_protein_mouse.fasta" download>example for mouse</a>)
-or a file containing multiple proteins sequences (<a href="/static/fasta/multiple_proteins_human.fasta" download>example for human</a> / <a href="/static/fasta/multiple_proteins_mouse.fasta" download>example for mouse</a>) is acceptable.
-                </li>
-                <li>
-                    There is no limit in the length of a protein sequence (can be up to 8000 A.A.)
-                </li>
-                <li>
-                    Besides the protein sequence, the header must be included into the fasta file.
-                </li>
-            </ul>
-                </div>
-            <div>
+      <h2>3. Submit for prediction</h2>
+      <ul>
+        <li>An individual protein usually takes several seconds to process.</li>
+        <li>A FASTA file containing multiple protein sequences may take longer.</li>
+        <li>Prediction runs locally in the browser; keep the page open until it completes.</li>
+      </ul>
 
-                <br>
-            <h3> Click the 'submit for prediction' button for prediction </h3>
-            <ul>
-            <li>
-                For individual proteins, it usually takes several seconds to get the results.
-            </li>
-            <li>
-                For a fasta file containing multiple protein sequences, it may take longer.
-            </li>
-        </ul>
-        </div>
-        <div>
-            <br>
-            <h3>
-                View the prediction results
-            </h3>
-            <ul>
-            <li>
-                A prediction score is given for each S/T residue.
-            </li>
-            <li>
-                Sites with scores >0.5, >0.95, > 0.99 can be regarded as low confidence, medium confidence, and high confidence, respectively.
-            </li>
-            <li>
-                Results can be downloaded for further analysis if needed.
-            </li>
-        </ul>
-        </div>
-</div>
+      <h2>4. Interpret and export results</h2>
+      <ul>
+        <li>A prediction score is reported for every serine or threonine residue.</li>
+        <li>Scores greater than 0.5, 0.95, and 0.99 can be regarded as low, medium, and high confidence, respectively.</li>
+        <li>Filter the result table, copy visible rows, or download the complete filtered result as CSV.</li>
+      </ul>
+    </article>
+  </div>
+</section>

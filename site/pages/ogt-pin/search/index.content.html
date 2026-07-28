@@ -1,51 +1,40 @@
-
-
-  <section class="search-page-heading">
-    <div class="container">
-      <div class="row justify-content-md-center">
-        <div class="col-md-auto">
-          <p class="section-label text-center">OGT-PIN</p>
-          <h1 class="text-center">Search OGT interactors</h1>
-          <p class="text-center search-subtitle">Database of OGT-interacting proteins</p>
-        </div>
+<section class="search-page-heading">
+  <div class="container">
+    <p class="eyebrow">OGT-PIN</p>
+    <h1>Search OGT interactors</h1>
+    <p class="search-subtitle">
+      Search experimentally identified OGT-interacting proteins and their
+      supporting identifiers.
+    </p>
+    <form action="/ogt-pin/search/" method="get" class="search-form" id="interactome-search-form">
+      <div class="form-field">
+        <label for="ogt-pin-search-term">Search term</label>
+        <input id="ogt-pin-search-term" type="search" required class="form-control" name="q" autocomplete="off">
       </div>
-      <div class="row justify-content-md-center">
-        <form action="/ogt-pin/search/" method="get" class="form-inline" role="form" id="interactome-search-form">
-          <div class="form-group mx-sm-3 mb-2">
-
-            <input type="text" required="required" class="form-control" placeholder="Search Term" name="q">
-
-          </div>
-          <div class="form-group mx-sm-3 mb-2">
-            <select class="form-control" name="field">
-
-              <option value="gene_name_b">Gene name for interactor B</option>
-              <option value="uuid_b">Unique identifier for interactor B</option>
-              <option value="gene_name_a">Gene name for interactor A</option>
-              <option value="uuid_a">Unique identifier for interactor A</option>
-              <option value="species">Species</option>
-
-            </select>
-          </div>
-          <div class="form-group mx-sm-3 mb-2">
-            <button type="submit" class="btn btn-primary mb-2">Search</button>
-          </div>
-        </form>
+      <div class="form-field">
+        <label for="ogt-pin-search-field">Search field</label>
+        <select id="ogt-pin-search-field" class="form-control" name="field">
+          <option value="gene_name_b">Gene name for interactor B</option>
+          <option value="uuid_b">Unique identifier for interactor B</option>
+          <option value="gene_name_a">Gene name for interactor A</option>
+          <option value="uuid_a">Unique identifier for interactor A</option>
+          <option value="species">Species</option>
+        </select>
       </div>
+      <button type="submit">Search OGT-PIN</button>
+    </form>
+  </div>
+</section>
+
+<section class="table-results-section" aria-labelledby="ogt-pin-results-heading">
+  <div class="container">
+    <div class="table-card-header">
+      <span>Results</span>
+      <h2 id="ogt-pin-results-heading">Search results</h2>
     </div>
-  </section>
-
-    <hr>
-
-  <section class="table-results-section">
-    <div class="container">
-      <div class="table-card-header">
-        <span>Results</span>
-        <h2>Search results</h2>
-      </div>
-      <div class="table-scroll">
-      <table class="table hover compact results-table" id="search_result">
-        <thead class="thead-inverse">
+    <div class="table-scroll" tabindex="0" role="region" aria-label="OGT-PIN search results table">
+      <table class="table results-table" id="search_result">
+        <thead>
           <tr>
             <th>Unique identifier for interactor A</th>
             <th>Gene name for interactor A</th>
@@ -57,18 +46,15 @@
         </thead>
         <tbody id="interactome-search-results"></tbody>
       </table>
-      </div>
-
-    <div class="citation-note">
-    <p>If you find this resource helpful, please cite our paper:<br>
-      <i>
-        Ma J., et al.,
-        OGT Protein Interaction Network (OGT-PIN): A Curated Database of Experimentally
-        Identified Interaction Proteins of OGT. Int. J. Mol. Sci. 2021, 22(17), 9620. DOI: <a href="https://doi.org/10.3390/ijms22179620">10.3390/ijms22179620</a>.
-      </i>
-    </p>
     </div>
-
-
-</div>
+    <div class="citation">
+      <h3>Citation</h3>
+      <p>
+        Ma J. et al. OGT Protein Interaction Network (OGT-PIN): A Curated
+        Database of Experimentally Identified Interaction Proteins of OGT.
+        <em>International Journal of Molecular Sciences</em>. 2021, 22(17),
+        9620. <a href="https://doi.org/10.3390/ijms22179620">DOI: 10.3390/ijms22179620</a>.
+      </p>
+    </div>
+  </div>
 </section>

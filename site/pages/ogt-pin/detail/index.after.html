@@ -9,9 +9,10 @@
             "interactome",
             { filename: `${INTERACTOME_UUID_B}-ogt-pin.csv` }
         );
-        const interactomeRecordState = document.createElement("p");
-        interactomeRecordState.setAttribute("data-record-state", "ogt-pin");
-        interactomeRecordState.setAttribute("role", "status");
+  const interactomeRecordState = document.createElement("p");
+  interactomeRecordState.setAttribute("data-record-state", "ogt-pin");
+  interactomeRecordState.setAttribute("role", "status");
+  interactomeRecordState.setAttribute("aria-live", "polite");
         document.querySelector(".interactome-detail-page .detail-hero").appendChild(
             interactomeRecordState
         );

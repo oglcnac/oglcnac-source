@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-labelledby="title desc">
+  <title id="title">Integrated oglcnac.org research suite</title>
+  <desc id="desc">Four connected resources for curated sites, OGT interactions, glycoform analysis, and sequence prediction.</desc>
+  <defs>
+    <linearGradient id="backdrop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102b46"/>
+      <stop offset="1" stop-color="#071827"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#020c15" flood-opacity=".28"/>
+    </filter>
+  </defs>
+  <rect width="960" height="620" rx="38" fill="url(#backdrop)"/>
+  <path d="M480 310 260 174M480 310l220-136M480 310 260 446M480 310l220 136" fill="none" stroke="#aac0d3" stroke-opacity=".42" stroke-width="4"/>
+  <circle cx="480" cy="310" r="114" fill="#fff" filter="url(#shadow)"/>
+  <circle cx="480" cy="310" r="82" fill="#0d2438"/>
+  <path d="M439 302c24-39 58-51 87-30 26 19 22 56 2 78-22 25-61 23-83 4-16-14-19-34-6-52Z" fill="none" stroke="#fff" stroke-width="9"/>
+  <circle cx="455" cy="287" r="8" fill="#6fa8e8"/>
+  <circle cx="512" cy="282" r="8" fill="#21a69a"/>
+  <circle cx="524" cy="337" r="8" fill="#8b6bb7"/>
+  <circle cx="462" cy="346" r="8" fill="#4f7fd1"/>
+  <text x="480" y="414" fill="#fff" font-family="Arial, sans-serif" font-size="19" font-weight="700" text-anchor="middle">oglcnac.org</text>
+  <g filter="url(#shadow)" font-family="Arial, sans-serif">
+    <rect x="84" y="82" width="286" height="150" rx="22" fill="#f8fbff"/>
+    <rect x="84" y="82" width="12" height="150" rx="6" fill="#3478bd"/>
+    <circle cx="151" cy="138" r="28" fill="#dbeafe"/>
+    <path d="m136 139 10 10 21-25" fill="none" stroke="#3478bd" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/>
+    <text x="199" y="132" fill="#102b46" font-size="24" font-weight="700">O-GlcNAcAtlas</text>
+    <text x="199" y="162" fill="#50667a" font-size="17">Curated sites</text>
+    <text x="199" y="187" fill="#50667a" font-size="17">and proteins</text>
+
+    <rect x="590" y="82" width="286" height="150" rx="22" fill="#f8fffd"/>
+    <rect x="864" y="82" width="12" height="150" rx="6" fill="#168a80"/>
+    <circle cx="657" cy="138" r="28" fill="#d8f3ef"/>
+    <circle cx="646" cy="134" r="7" fill="#168a80"/>
+    <circle cx="669" cy="125" r="7" fill="#168a80"/>
+    <circle cx="670" cy="151" r="7" fill="#168a80"/>
+    <path d="m652 132 11-5m-10 11 11 9" stroke="#168a80" stroke-width="4"/>
+    <text x="705" y="132" fill="#102b46" font-size="24" font-weight="700">OGT-PIN</text>
+    <text x="705" y="162" fill="#50667a" font-size="17">Interaction</text>
+    <text x="705" y="187" fill="#50667a" font-size="17">evidence</text>
+
+    <rect x="84" y="388" width="286" height="150" rx="22" fill="#f8f6fc"/>
+    <rect x="84" y="388" width="12" height="150" rx="6" fill="#7655a6"/>
+    <circle cx="151" cy="444" r="28" fill="#eee7f8"/>
+    <path d="M133 454h36M137 446l9-13 10 9 10-20" fill="none" stroke="#7655a6" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+    <text x="199" y="438" fill="#102b46" font-size="24" font-weight="700">HexNAcQuest</text>
+    <text x="199" y="468" fill="#50667a" font-size="17">Glycoform</text>
+    <text x="199" y="493" fill="#50667a" font-size="17">classification</text>
+
+    <rect x="590" y="388" width="286" height="150" rx="22" fill="#f7f9ff"/>
+    <rect x="864" y="388" width="12" height="150" rx="6" fill="#4f70c2"/>
+    <circle cx="657" cy="444" r="28" fill="#e3e9fb"/>
+    <path d="M638 450c11-26 22 15 38-15M641 432h32" fill="none" stroke="#4f70c2" stroke-linecap="round" stroke-width="5"/>
+    <text x="705" y="438" fill="#102b46" font-size="24" font-weight="700">PRED-DL</text>
+    <text x="705" y="468" fill="#50667a" font-size="17">Sequence-based</text>
+    <text x="705" y="493" fill="#50667a" font-size="17">site prediction</text>
+  </g>
+</svg>

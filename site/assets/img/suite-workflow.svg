@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 560" role="img" aria-labelledby="title desc">
+  <title id="title">Integrated O-GlcNAc research workflow</title>
+  <desc id="desc">Experimental evidence, protein sequences, and mass-spectrometry intensities connect to the four oglcnac.org resources and support biological hypotheses.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0 0 8 3 0 6Z" fill="#6d8091"/>
+    </marker>
+  </defs>
+  <rect width="1080" height="560" rx="30" fill="#f5f8fb"/>
+  <g font-family="Arial, sans-serif">
+    <text x="70" y="70" fill="#607286" font-size="18" font-weight="700" letter-spacing="2">RESEARCH INPUTS</text>
+    <text x="430" y="70" fill="#607286" font-size="18" font-weight="700" letter-spacing="2">RESOURCE</text>
+    <text x="842" y="70" fill="#607286" font-size="18" font-weight="700" letter-spacing="2">OUTCOME</text>
+    <g fill="#fff" stroke="#c9d6e1" stroke-width="2">
+      <rect x="70" y="104" width="270" height="104" rx="16"/>
+      <rect x="70" y="228" width="270" height="104" rx="16"/>
+      <rect x="70" y="352" width="270" height="104" rx="16"/>
+    </g>
+    <g fill="#132b40" font-size="22" font-weight="700">
+      <text x="100" y="148">Experimental evidence</text>
+      <text x="100" y="272">Protein sequence</text>
+      <text x="100" y="396">MS/MS intensities</text>
+    </g>
+    <g fill="#607286" font-size="16">
+      <text x="100" y="178">Sites and OGT interactions</text>
+      <text x="100" y="302">Human or mouse FASTA</text>
+      <text x="100" y="426">Five diagnostic oxonium ions</text>
+    </g>
+    <g fill="none" stroke="#6d8091" stroke-width="3" marker-end="url(#arrow)">
+      <path d="M340 140h78"/>
+      <path d="M340 176c42 0 39 77 78 77"/>
+      <path data-flow="protein-to-pred-dl" d="M340 280c42 0 39 59 78 59"/>
+      <path d="M340 404h78"/>
+    </g>
+    <g fill="#fff" stroke-width="3">
+      <rect x="430" y="100" width="280" height="82" rx="16" stroke="#3478bd"/>
+      <rect x="430" y="199" width="280" height="82" rx="16" stroke="#168a80"/>
+      <rect x="430" y="298" width="280" height="82" rx="16" stroke="#4f70c2"/>
+      <rect x="430" y="397" width="280" height="82" rx="16" stroke="#7655a6"/>
+    </g>
+    <g fill="#132b40" font-size="23" font-weight="700">
+      <text x="466" y="150">O-GlcNAcAtlas</text>
+      <text x="466" y="249">OGT-PIN</text>
+      <text x="466" y="348">O-GlcNAcPRED-DL</text>
+      <text x="466" y="447">HexNAcQuest</text>
+    </g>
+    <g fill="none" stroke="#6d8091" stroke-width="3" marker-end="url(#arrow)">
+      <path d="M710 141c71 0 68 98 116 115"/>
+      <path d="M710 240h106"/>
+      <path d="M710 339c71 0 68-66 116-83"/>
+      <path d="M710 438c88 0 81-136 116-167"/>
+    </g>
+    <rect x="830" y="178" width="190" height="170" rx="24" fill="#102b46"/>
+    <circle cx="925" cy="238" r="28" fill="#fff" opacity=".12"/>
+    <path d="m910 238 10 10 21-25" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/>
+    <text x="925" y="294" fill="#fff" font-size="23" font-weight="700" text-anchor="middle">Evidence-informed</text>
+    <text x="925" y="323" fill="#fff" font-size="23" font-weight="700" text-anchor="middle">hypothesis</text>
+  </g>
+</svg>
