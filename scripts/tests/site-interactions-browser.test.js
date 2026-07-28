@@ -783,3 +783,92 @@ test("all public content pages reflow without horizontal overflow", async () => 
     await page.close();
   }
 });
+
+test("mobile page titles remain compact, contained, and separated from adjacent copy", async () => {
+  const routes = [
+    "/",
+    "/atlas/",
+    "/atlas/statistics/",
+    "/atlas/search/",
+    "/atlas/browse/",
+    "/atlas/tutorial/",
+    "/atlas/download/",
+    "/atlas/contact/",
+    "/ogt-pin/",
+    "/ogt-pin/statistics/",
+    "/ogt-pin/search/",
+    "/ogt-pin/tutorial/",
+    "/ogt-pin/contact/",
+    "/pred_dl/",
+    "/pred_dl/input_fasta/",
+    "/pred_dl/tutorial/",
+    "/pred_dl/download/",
+    "/pred_dl/contact/",
+    "/hexnac-quest/",
+    "/hexnac-quest/analysis/",
+    "/hexnac-quest/tutorial/",
+    "/hexnac-quest/contact/",
+  ];
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const result = await page.evaluate(() => {
+      const title = document.querySelector("h1");
+      const bounds = title.getBoundingClientRect();
+      const nowrap = Array.from(title.querySelectorAll(".nowrap")).map((node) => {
+        const child = node.getBoundingClientRect();
+        return {
+          left: Math.round(child.left),
+          right: Math.round(child.right),
+        };
+      });
+      const visibleSiblings = Array.from(title.parentElement.children).filter(
+        (element) =>
+          element !== title &&
+          getComputedStyle(element).display !== "none" &&
+          element.getBoundingClientRect().height > 0,
+      );
+      const collisions = visibleSiblings
+        .map((element) => {
+          const sibling = element.getBoundingClientRect();
+          const overlaps =
+            bounds.left < sibling.right &&
+            bounds.right > sibling.left &&
+            bounds.top < sibling.bottom &&
+            bounds.bottom > sibling.top;
+          return overlaps ? element.tagName.toLowerCase() : null;
+        })
+        .filter(Boolean);
+      return {
+        fontSize: Number.parseFloat(getComputedStyle(title).fontSize),
+        title: {
+          left: Math.round(bounds.left),
+          right: Math.round(bounds.right),
+        },
+        nowrap,
+        collisions,
+      };
+    });
+    assert.ok(
+      result.fontSize <= 40,
+      `${route} mobile H1 is ${result.fontSize}px: ${JSON.stringify(result)}`,
+    );
+    assert.ok(
+      result.title.left >= 0 && result.title.right <= 390,
+      `${route} mobile H1 leaves its viewport: ${JSON.stringify(result)}`,
+    );
+    assert.ok(
+      result.nowrap.every(
+        (bounds) =>
+          bounds.left >= result.title.left && bounds.right <= result.title.right,
+      ),
+      `${route} unbreakable title text leaves its H1: ${JSON.stringify(result)}`,
+    );
+    assert.deepEqual(
+      result.collisions,
+      [],
+      `${route} mobile H1 overlaps adjacent copy: ${JSON.stringify(result)}`,
+    );
+  }
+  await page.close();
+});

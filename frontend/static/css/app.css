@@ -2439,9 +2439,9 @@ a:hover {
 .hq-kicker {
   margin: 0 0 0.65rem;
   color: var(--accent-dark);
-  font-size: 0.76rem;
+  font-size: 0.73rem;
   font-weight: 800;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
@@ -2472,10 +2472,10 @@ a:hover {
 .detail-hero h1 {
   margin: 0;
   color: var(--navy-950);
-  font-size: clamp(2.35rem, 6vw, 4.8rem);
+  font-size: clamp(2.2rem, 4.8vw, 3.9rem);
   font-weight: 780;
-  letter-spacing: -0.045em;
-  line-height: 1.02;
+  letter-spacing: -0.04em;
+  line-height: 1.06;
 }
 
 .page-hero-compact h1,
@@ -2483,7 +2483,7 @@ a:hover {
 .detail-hero h1,
 .page-heading h1,
 .hq-page-heading h1 {
-  font-size: clamp(2.15rem, 5vw, 3.75rem);
+  font-size: clamp(2rem, 4.2vw, 3.3rem);
 }
 
 .page-lead,
@@ -2494,7 +2494,7 @@ a:hover {
   max-width: 760px;
   margin: 1rem auto 0;
   color: #4f6170;
-  font-size: clamp(1.03rem, 2vw, 1.18rem);
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
 }
 
 .content-section,
@@ -2551,7 +2551,7 @@ h4 {
 }
 
 h2 {
-  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-size: clamp(1.55rem, 2.5vw, 2.15rem);
 }
 
 h3 {
@@ -2690,10 +2690,10 @@ button:disabled,
 .home-hero h1 {
   margin: 0;
   color: #fff;
-  font-size: clamp(3.1rem, 7vw, 6.35rem);
+  font-size: clamp(2.8rem, 6vw, 5.2rem);
   font-weight: 790;
-  letter-spacing: -0.06em;
-  line-height: 0.94;
+  letter-spacing: -0.05em;
+  line-height: 1;
 }
 
 .home-hero .hero-copy > p {
@@ -2902,7 +2902,7 @@ figcaption {
 .cta-inner h2 {
   max-width: 690px;
   color: #fff;
-  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  font-size: clamp(1.6rem, 2.6vw, 2.25rem);
 }
 
 .resource-hero {
@@ -2914,11 +2914,11 @@ figcaption {
 }
 
 .resource-hero h1 {
-  font-size: clamp(2.6rem, 6vw, 5rem);
+  font-size: clamp(2.35rem, 5vw, 4.25rem);
 }
 
 .prediction-section .resource-hero h1 {
-  font-size: clamp(2.35rem, 4vw, 3.35rem);
+  font-size: clamp(2.15rem, 3.6vw, 3.05rem);
 }
 
 .resource-hero .page-lead {
@@ -3331,7 +3331,7 @@ th,
 .hq-hero h1 {
   margin: 0;
   color: var(--navy-950);
-  font-size: clamp(2.7rem, 6vw, 5rem);
+  font-size: clamp(2.35rem, 5vw, 4.25rem);
 }
 
 .hq-lead {
@@ -3476,25 +3476,41 @@ th,
   .page-heading h1,
   .search-page-heading h1,
   .detail-hero h1 {
-    font-size: clamp(2.05rem, 11vw, 3rem);
+    font-size: 2rem;
   }
 
   .home-hero h1 {
-    font-size: clamp(3rem, 15vw, 3.65rem);
+    font-size: 2.5rem;
   }
 
   .atlas-section .page-hero h1,
   .atlas-section .resource-hero h1 {
-    font-size: clamp(2rem, 9vw, 2.65rem);
+    font-size: 1.9rem;
   }
 
   .prediction-section .page-hero h1,
   .prediction-section .resource-hero h1 {
-    font-size: clamp(1.75rem, 8.25vw, 2.5rem);
+    font-size: 1.65rem;
   }
 
   .hexnac-section .hq-hero h1 {
-    font-size: clamp(2.15rem, 11.5vw, 3rem);
+    font-size: 2rem;
+  }
+
+  h2,
+  .section-heading h2,
+  .science-grid h2,
+  .workflow-copy h2,
+  .cta-inner h2 {
+    font-size: 1.55rem;
+    line-height: 1.18;
+  }
+
+  .eyebrow,
+  .section-label,
+  .hq-kicker {
+    font-size: 0.7rem;
+    letter-spacing: 0.075em;
   }
 
   .impact-grid,
