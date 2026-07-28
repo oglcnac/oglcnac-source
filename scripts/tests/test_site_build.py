@@ -12,11 +12,14 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from scripts.smoke_static_site import LinkParser as SmokeLinkParser
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 FRONTEND_ROOT = REPOSITORY_ROOT / "frontend"
 BUILD_SCRIPT = REPOSITORY_ROOT / "scripts" / "build_site.py"
 QA_SCRIPT = REPOSITORY_ROOT / "scripts" / "check_site.py"
+STATIC_SMOKE_SCRIPT = REPOSITORY_ROOT / "scripts" / "smoke_static_site.py"
 
 GENERATED_HTML = (
     "404.html",
@@ -681,6 +684,189 @@ class SiteBuildTests(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_generated_site_passes_asset_and_route_audits(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-S",
+                str(QA_SCRIPT),
+                "--audit-assets",
+                "--audit-routes",
+                str(FRONTEND_ROOT),
+            ],
+            cwd=REPOSITORY_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_site_quality_workflow_audits_its_own_changes(self) -> None:
+        workflow = (
+            REPOSITORY_ROOT / ".github/workflows/site-quality.yml"
+        ).read_text(encoding="utf-8")
+
+        self.assertGreaterEqual(
+            workflow.count('      - ".github/workflows/**"'),
+            2,
+            "workflow-only pull requests and pushes must trigger site QA",
+        )
+        self.assertIn("npx playwright install --with-deps", workflow)
+        for browser in ("chromium", "firefox", "webkit"):
+            self.assertIn(f'"{browser}"', workflow)
+
+    def test_static_smoke_is_portable_and_can_audit_a_selected_checkout(self) -> None:
+        smoke = STATIC_SMOKE_SCRIPT.read_text(encoding="utf-8")
+
+        self.assertNotIn("/home/bach/", smoke)
+        self.assertIn('"--static-root"', smoke)
+        self.assertIn("atlas-release-v1.json", smoke)
+        self.assertIn("atlas-sequences-v1.json", smoke)
+
+    def test_static_smoke_srcset_parser_handles_missing_and_multiple_values(self) -> None:
+        parser = SmokeLinkParser()
+        parser.feed(
+            '<img src="/static/img/one.png">'
+            '<source srcset="/static/img/one.png 1x, /static/img/two.png 2x">'
+        )
+
+        self.assertEqual(
+            parser.urls,
+            [
+                "/static/img/one.png",
+                "/static/img/one.png",
+                "/static/img/two.png",
+            ],
+        )
+
+    def test_static_smoke_rejects_a_missing_checkout_before_network_requests(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as fixture_directory:
+            missing = Path(fixture_directory) / "missing"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(STATIC_SMOKE_SCRIPT),
+                    "--base-url",
+                    "https://invalid.example",
+                    "--static-root",
+                    str(missing),
+                ],
+                cwd=REPOSITORY_ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("static root is not a generated site", result.stderr)
+
+    def test_asset_audit_resolves_document_relative_srcset_and_css_urls(self) -> None:
+        with tempfile.TemporaryDirectory() as fixture_directory:
+            fixture_root = Path(fixture_directory)
+            (fixture_root / "nested").mkdir()
+            (fixture_root / "static" / "img").mkdir(parents=True)
+            (fixture_root / "static" / "css").mkdir(parents=True)
+            fixture_root.joinpath("nested", "index.html").write_text(
+                """<!doctype html>
+<html><head><link rel="stylesheet" href="../static/css/site.css"></head>
+<body><img src="../static/img/one.png?version=1"
+srcset="../static/img/one.png 1x, ../static/img/two.png 2x"></body></html>
+"""
+            )
+            fixture_root.joinpath("static", "css", "site.css").write_text(
+                '.hero { background-image: url("../img/two.png#hero"); }\n'
+            )
+            fixture_root.joinpath("static", "img", "one.png").write_bytes(b"one")
+            fixture_root.joinpath("static", "img", "two.png").write_bytes(b"two")
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-S",
+                    str(QA_SCRIPT),
+                    "--audit-assets",
+                    fixture_directory,
+                ],
+                cwd=REPOSITORY_ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_asset_audit_rejects_missing_and_orphaned_public_code_or_media(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as fixture_directory:
+            fixture_root = Path(fixture_directory)
+            (fixture_root / "static" / "js").mkdir(parents=True)
+            (fixture_root / "static" / "img").mkdir(parents=True)
+            fixture_root.joinpath("index.html").write_text(
+                """<!doctype html><html><body>
+<script src="/static/js/missing.js"></script>
+</body></html>
+"""
+            )
+            fixture_root.joinpath("static", "img", "orphan.png").write_bytes(
+                b"orphan"
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-S",
+                    str(QA_SCRIPT),
+                    "--audit-assets",
+                    fixture_directory,
+                ],
+                cwd=REPOSITORY_ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing local asset: static/js/missing.js", result.stderr)
+            self.assertIn("orphaned public asset: static/img/orphan.png", result.stderr)
+
+    def test_route_audit_rejects_configured_pages_missing_from_output(self) -> None:
+        with tempfile.TemporaryDirectory() as fixture_directory:
+            fixture_root = Path(fixture_directory)
+            fixture_root.joinpath("index.html").write_text("<!doctype html>")
+            config = fixture_root / "routes.json"
+            config.write_text(
+                '{"pages": ['
+                '{"route": "/", "output": "index.html"},'
+                '{"route": "/missing/", "output": "missing/index.html"}'
+                "]}\n"
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-S",
+                    str(QA_SCRIPT),
+                    "--audit-routes",
+                    "--site-config",
+                    str(config),
+                    fixture_directory,
+                ],
+                cwd=REPOSITORY_ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(
+                "/missing/: configured output missing/index.html does not exist",
+                result.stderr,
+            )
 
     def test_deploy_rejects_stale_generated_output_before_copying(self) -> None:
         with tempfile.TemporaryDirectory() as source_directory:

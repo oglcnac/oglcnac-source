@@ -74,6 +74,7 @@
     if (delimiter === "\t") {
       return text.replace(/[\t\r\n]+/g, " ");
     }
+    text = text.replace(/\r\n|\r|\n/g, "\r\n");
     if (/[",\r\n]/.test(text)) {
       text = `"${text.replace(/"/g, '""')}"`;
     }
@@ -81,11 +82,12 @@
   }
 
   function rowsToText(headers, rows, delimiter) {
+    const lineEnding = delimiter === "," ? "\r\n" : "\n";
     return [headers, ...rows]
       .map((row) =>
         row.map((cell) => delimitedCell(cell, delimiter)).join(delimiter),
       )
-      .join("\n");
+      .join(lineEnding);
   }
 
   function elementFor(tableOrId) {
@@ -273,7 +275,8 @@
     }
 
     buildSortableHeaders() {
-      Array.from(this.table.querySelectorAll("thead th")).forEach(
+      this.sortHeaders = Array.from(this.table.querySelectorAll("thead th"));
+      this.sortHeaders.forEach(
         (header, index) => {
           const sortButton = button(this.headers[index]);
           sortButton.className = "native-table-sort";
@@ -293,6 +296,34 @@
           header.appendChild(sortButton);
         },
       );
+      this.updateSortHeaders();
+    }
+
+    updateSortHeaders() {
+      this.sortHeaders.forEach((header, index) => {
+        const active = this.sortColumn === index;
+        const direction = active ? this.sortDirection : "none";
+        header.setAttribute(
+          "aria-sort",
+          direction === "asc"
+            ? "ascending"
+            : direction === "desc"
+              ? "descending"
+              : "none",
+        );
+        const sortButton = header.querySelector(".native-table-sort");
+        if (!sortButton) return;
+        if (!active) {
+          sortButton.setAttribute("aria-label", `Sort by ${this.headers[index]}`);
+          return;
+        }
+        const nextDirection =
+          this.sortDirection === "asc" ? "descending" : "ascending";
+        sortButton.setAttribute(
+          "aria-label",
+          `${this.headers[index]}, sorted ${this.sortDirection === "asc" ? "ascending" : "descending"}. Activate to sort ${nextDirection}.`,
+        );
+      });
     }
 
     setRows(rows, options) {
@@ -396,6 +427,7 @@
       this.csvButton.disabled = !this.filteredRows.length;
       this.previousButton.disabled = this.page === 0;
       this.nextButton.disabled = this.page + 1 >= pageCount;
+      this.updateSortHeaders();
     }
 
     async copyVisibleRows() {

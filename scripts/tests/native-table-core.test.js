@@ -61,6 +61,6 @@ test("copies only visible rows while CSV includes the complete filtered result",
   );
   assert.equal(
     tables.rowsToText(headers, filtered, ","),
-    'Accession,Protein name\nP1,"Alpha, beta"\nP2,"Quoted ""protein"""\nP3,"Line\nbreak"',
+    'Accession,Protein name\r\nP1,"Alpha, beta"\r\nP2,"Quoted ""protein"""\r\nP3,"Line\r\nbreak"',
   );
 });

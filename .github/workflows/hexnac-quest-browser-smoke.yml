@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, webkit]
+        browser: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["chromium","firefox","webkit"]' || '["chromium"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -8,23 +8,34 @@ Keep deployments manual and explicit unless there is a clear reason to automate 
 
 ```bash
 git status --short --branch
-npm run smoke:static
-npm run smoke:static:browser
+npm run qa:pr
+npm run test:tables
 npm run test:prediction
 npm run test:hexnac
 ```
 
-Deploy only from a clean source checkout unless you are deliberately testing local edits.
+These commands validate the candidate checkout locally. The production smoke
+suites run after deployment, when the public origin is expected to match this
+source. Deploy only from a clean source checkout unless you are deliberately
+testing local edits.
 
 ## Static Site
 
-Source lives in `frontend/`. Deployment output lives in `/home/bach/oglcnac-static-site` and is pushed to `github.com/oglcnac/oglcnac`.
+Source lives in `frontend/`. Deployment output lives in
+`/home/bach/oglcnac-static-site` and is pushed to
+`github.com/oglcnac/oglcnac`. If server cleanup removed that checkout,
+recreate it exactly as documented in `REBUILD.md`; do not deploy from an ad hoc
+copy.
 
 Deploy manually:
 
 ```bash
 ./scripts/deploy-frontend.sh
 ```
+
+The helper verifies generated output before mirroring `frontend/`, then commits
+and pushes the deploy repository. Record the reviewed source commit and the
+resulting deploy commit so rollback is attributable.
 
 ## Static Prediction Bundle
 
@@ -87,6 +98,22 @@ npm run smoke:static
 npm run smoke:static:browser
 ```
 
+The Python smoke discovers the expected route/asset set from this repository's
+`frontend/` by default. Use `--static-root` only when intentionally checking a
+different deploy checkout.
+
 After 14 clean days, retire the API proxy/backend in a separate, explicitly
 approved operation. DNS and service shutdown are intentionally not part of a
 normal frontend deployment.
+
+## Rollback
+
+Revert the bad deploy commit in `/home/bach/oglcnac-static-site`, push the
+revert, and rerun both smoke suites. Do not reset shared history or copy
+selected generated files by hand. Exact commands and the secret/non-secret
+boundary are in `REBUILD.md`.
+
+Through **2026-08-11**, deployment and rollback must retain the legacy
+prediction backend, API proxy, DNS, Python model sources, and health checks.
+They must not delete or restart those services. External Shiny retirement is
+also outside this workflow.

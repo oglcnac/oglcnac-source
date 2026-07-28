@@ -5,6 +5,8 @@
     "build:site": "python3 scripts/build_site.py",
     "check:site": "python3 scripts/build_site.py --check",
     "qa:runtime": "python3 scripts/check_site.py --forbid-external-runtime frontend",
+    "qa:repository": "npm run check:site && python3 -S scripts/check_site.py --forbid-external-runtime --audit-assets --audit-routes frontend",
+    "qa:pr": "npm run qa:repository && npm run test:site && npm run test:data && npm run test:tables:unit && npm run test:prediction:unit && npm run test:hexnac:unit && node --test scripts/tests/browser-smoke-core.test.js",
     "test:site": "python3 -m unittest scripts.tests.test_site_build -v",
     "test:data": "python3 -m unittest scripts.tests.test_generate_static_data -v && node --test scripts/tests/static-data.test.js",
     "test:tables": "npm run test:tables:unit && npm run test:tables:browser",

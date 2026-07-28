@@ -27,6 +27,7 @@ curl -L -s https://oglcnac.org/ -o /tmp/oglcnac-home.html -w '%{http_code}\n'
 curl -L -s https://api.oglcnac.org/health -o /tmp/oglcnac-api.json -w '%{http_code}\n'
 npm run smoke:static
 npm run smoke:static:browser
+npm run qa:repository
 ```
 
 Expected result:
@@ -42,8 +43,8 @@ smoke tests pass
 
 ```bash
 git status --short --branch
-npm run smoke:static
-npm run smoke:static:browser
+npm run qa:pr
+npm run test:tables
 npm run test:prediction
 npm run test:hexnac
 git add frontend docs scripts README.md package.json package-lock.json
@@ -57,6 +58,7 @@ After deployment:
 ```bash
 curl -L -s https://oglcnac.org/ -o /tmp/oglcnac-home.html -w '%{http_code}\n'
 npm run smoke:static
+npm run smoke:static:browser
 ```
 
 ## Static Prediction Verification
@@ -78,6 +80,26 @@ npm run test:hexnac
 This checks the CSV contract, all 10,000 legacy R reference classifications,
 the complete browser workflow, and the absence of prediction API or
 shinyapps.io requests. The scheduled three-browser workflow runs daily.
+
+## CI And Route/Asset Coverage
+
+Pull requests and ordinary pushes run the repository/unit gate and Chromium
+interaction QA. Scheduled and manually dispatched release audits expand site
+interactions, PRED-DL, HexNAcQuest, and production smoke to Chromium, Firefox,
+and WebKit. CI installs the selected locked Playwright browser with its OS
+dependencies; local WebKit needs
+`npx playwright install --with-deps webkit`.
+
+`npm run qa:repository` is the authoritative pre-commit gate. Public route
+coverage comes from `site/site.json`; the audit rejects a configured route with
+no generated HTML and generated HTML absent from configuration. The internal
+asset graph resolves root/document-relative HTML URLs, queries, fragments,
+`srcset`, CSS URLs, JavaScript static paths, and runtime-selected directories.
+It rejects missing targets and orphaned public CSS, JavaScript, raster, or SVG
+files. `npm run check:site` separately rejects stale generated output.
+
+See `REBUILD.md` for clean-room rebuild, source ownership, vendor/model refresh,
+deploy-checkout recreation, verification, secrets, and rollback.
 
 ## Reference Backend Restart
 

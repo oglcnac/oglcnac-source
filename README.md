@@ -47,6 +47,7 @@ From this repository:
 ```bash
 git status --short --branch
 npm run check:site
+npm run qa:repository
 npm run test:site
 npm run smoke:static
 npm run smoke:static:browser
@@ -58,6 +59,7 @@ and browser prediction parity without contacting the API.
 ## Common Workflows
 
 - Deployment: see `docs/DEPLOYMENT.md`.
+- Full clean-room rebuild: see `docs/REBUILD.md`.
 - Maintenance checklist: see `docs/MAINTENANCE.md`.
 - Data updates: see `docs/DATA-UPDATES.md`.
 - Curator workflow: see `docs/CURATOR-WORKFLOW.md`.

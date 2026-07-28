@@ -8,6 +8,11 @@ const playwright = require("playwright");
 
 const ROOT = path.resolve(__dirname, "../..");
 const STATIC_ROOT = path.join(ROOT, "frontend");
+const requestedBrowserName = process.env.SITE_BROWSER || "chromium";
+const browserType = playwright[requestedBrowserName];
+if (!browserType) {
+  throw new Error(`Unsupported SITE_BROWSER: ${requestedBrowserName}`);
+}
 const MIME_TYPES = {
   ".bin": "application/octet-stream",
   ".css": "text/css; charset=utf-8",
@@ -110,12 +115,16 @@ test.before(async () => {
   server = http.createServer(serveStatic);
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   baseUrl = `http://127.0.0.1:${server.address().port}`;
-  browser = await playwright.chromium.launch({ headless: true });
+  browser = await browserType.launch({ headless: true });
 });
 
 test.after(async () => {
   if (browser) await browser.close();
   if (server) await new Promise((resolve) => server.close(resolve));
+});
+
+test("site interaction QA uses the requested browser engine", () => {
+  assert.equal(browser.browserType().name(), requestedBrowserName);
 });
 
 test("Atlas search preserves every field mapping and bounds broad-result DOM rows", async () => {
@@ -155,7 +164,17 @@ test("Atlas search preserves every field mapping and bounds broad-result DOM row
 test("Atlas browse covers every species, filters, sorts, copies a page, and exports all filtered rows", async () => {
   const context = await browser.newContext({
     acceptDownloads: true,
-    permissions: ["clipboard-read", "clipboard-write"],
+  });
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        readText: async () => window.__oglcnacCopiedText || "",
+        writeText: async (text) => {
+          window.__oglcnacCopiedText = String(text);
+        },
+      },
+    });
   });
   const page = await context.newPage();
   await page.goto(`${baseUrl}/atlas/browse/?species=Human`);
@@ -210,6 +229,31 @@ test("Atlas browse covers every species, filters, sorts, copies a page, and expo
   await fs.unlink(target);
   assert.equal(csvRecordCount(csv) - 1, expected);
   await context.close();
+});
+
+test("native table headers expose the active sort direction", async () => {
+  const page = await browser.newPage();
+  await page.goto(`${baseUrl}/atlas/browse/?species=Human`);
+  await waitForTable(page, "search_result");
+
+  const headers = page.locator("#search_result thead th");
+  assert.deepEqual(
+    await headers.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute("aria-sort")),
+    ),
+    ["none", "none", "none", "none", "none", "none"],
+  );
+
+  const accession = headers.nth(4);
+  const sortButton = accession.locator("button");
+  await sortButton.click();
+  assert.equal(await accession.getAttribute("aria-sort"), "ascending");
+  assert.match(await sortButton.getAttribute("aria-label"), /ascending/i);
+
+  await sortButton.click();
+  assert.equal(await accession.getAttribute("aria-sort"), "descending");
+  assert.match(await sortButton.getAttribute("aria-label"), /descending/i);
+  await page.close();
 });
 
 test("OGT-PIN search preserves every field mapping", async () => {
@@ -687,11 +731,26 @@ test("all public content pages reflow without horizontal overflow", async () => 
   for (const width of [390, 320]) {
     const page = await browser.newPage({ viewport: { width, height: 844 } });
     for (const route of routes) {
-      await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
       const overflow = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
         document: document.documentElement.scrollWidth,
         body: document.body.scrollWidth,
+        offenders: Array.from(document.querySelectorAll("*"))
+          .map((element) => {
+            const bounds = element.getBoundingClientRect();
+            return {
+              element: `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ""}`,
+              right: Math.round(bounds.right),
+              width: Math.round(bounds.width),
+            };
+          })
+          .filter(
+            (entry) =>
+              entry.right > document.documentElement.clientWidth + 1 ||
+              entry.width > document.documentElement.clientWidth + 1,
+          )
+          .slice(0, 8),
       }));
       assert.ok(
         overflow.document <= overflow.viewport && overflow.body <= overflow.viewport,

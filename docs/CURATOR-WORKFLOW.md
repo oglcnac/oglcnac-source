@@ -95,6 +95,10 @@ Release metadata is calculated from the two canonical CSV inputs:
 - unique sites are 33,047 distinct complete
   `(accession, position_in_protein, site_residue)` tuples.
 
+Before distinct counting, every tuple value is trimmed and `site_residue` is
+uppercased. Thus whitespace-only differences and residue case do not create
+new sites; incomplete normalized tuples remain excluded.
+
 Rows with blank or incomplete identifiers remain part of the release record
 count. They are not silently repaired and incomplete tuples do not contribute
 to the unique-site count. The current release has four blank-accession records,
@@ -157,6 +161,7 @@ git diff --stat
 python3 -m unittest scripts.tests.test_generate_static_data -v
 npm run smoke:static
 npm run smoke:static:browser
+npm run qa:repository
 git add frontend/static/dataset frontend/static/data docs
 git commit -m "Update public data bundles"
 git push

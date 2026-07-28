@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 
 
 DEFAULT_BASE_URL = "https://oglcnac.org"
-STATIC_ROOT = Path("/home/bach/oglcnac-static-site")
+DEFAULT_STATIC_ROOT = Path(__file__).resolve().parents[1] / "frontend"
 
 
 class LinkParser(HTMLParser):
@@ -24,6 +24,10 @@ class LinkParser(HTMLParser):
             value = values.get(key)
             if value and value != "#" and not value.startswith(("mailto:", "tel:")):
                 self.urls.append(value)
+        for candidate in values.get("srcset", "").split(","):
+            fields = candidate.strip().split(maxsplit=1)
+            if fields:
+                self.urls.append(fields[0])
 
 
 def request(url, method="GET", data=None, content_type=None, timeout=60):
@@ -35,10 +39,10 @@ def request(url, method="GET", data=None, content_type=None, timeout=60):
         return response.status, response.read()
 
 
-def discover_internal_urls(base_url):
+def discover_internal_urls(base_url, static_root):
     base_host = urlsplit(base_url).netloc
     urls = {"/"}
-    for file in STATIC_ROOT.glob("**/index.html"):
+    for file in static_root.glob("**/index.html"):
         if "/static/" in str(file):
             continue
         parser = LinkParser()
@@ -83,20 +87,35 @@ def check_url(base_url, path, failures, expected_sha256=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Smoke-test the static O-GlcNAcDB website.")
+    parser = argparse.ArgumentParser(description="Smoke-test the static oglcnac.org suite.")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
+    parser.add_argument(
+        "--static-root",
+        type=Path,
+        default=DEFAULT_STATIC_ROOT,
+        help="Checkout used to discover the complete public route and asset set.",
+    )
     args = parser.parse_args()
     base_url = args.base_url.rstrip("/")
+    static_root = args.static_root.resolve()
+    if not (static_root / "index.html").is_file():
+        parser.error(f"static root is not a generated site: {static_root}")
     failures = []
 
     print("PAGES AND ASSETS")
-    for path in discover_internal_urls(base_url):
+    for path in discover_internal_urls(base_url, static_root):
         check_url(base_url, path, failures)
 
     print("\nSTATIC DATA AND PREDICTION ASSETS")
     static_paths = [
         "/static/data/atlas-records.json",
+        "/static/data/atlas-records.json.gz",
+        "/static/data/atlas-release-v1.json",
+        "/static/data/atlas-release-v1.json.gz",
+        "/static/data/atlas-sequences-v1.json",
+        "/static/data/atlas-sequences-v1.json.gz",
         "/static/data/ogt-pin-records.json",
+        "/static/data/ogt-pin-records.json.gz",
         "/static/hexnac-quest/example_input_data.csv",
         "/static/hexnac-quest/vendor/papaparse.min.js",
         "/static/hexnac-quest/v1/model.json",
@@ -108,6 +127,8 @@ def main():
         "/static/js/prediction-worker.js",
         "/static/prediction/vendor/tfjs-2.8.5/tf.min.js",
         "/static/prediction/vendor/tfjs-2.8.5/tf-backend-wasm.min.js",
+        "/static/prediction/vendor/tfjs-2.8.5/tfjs-backend-wasm-simd.wasm",
+        "/static/prediction/vendor/tfjs-2.8.5/tfjs-backend-wasm-threaded-simd.wasm",
         "/static/prediction/vendor/tfjs-2.8.5/tfjs-backend-wasm.wasm",
         "/static/prediction/v1/manifest.json",
     ]

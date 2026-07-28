@@ -57,6 +57,7 @@ git diff --stat frontend/static/data
 python3 -m unittest scripts.tests.test_generate_static_data -v
 npm run smoke:static
 npm run smoke:static:browser
+npm run qa:repository
 ```
 
 Commit the source repo first, then deploy the frontend:
@@ -70,3 +71,8 @@ Commit the source repo first, then deploy the frontend:
 - Do not use archived legacy folders for normal updates.
 - Do not commit source databases unless that is an explicit project decision.
 - Keep generated JSON row counts visible in the command output for review.
+- Unique-site tuple fields are trimmed and residues are uppercased before
+  distinct counting; see `CURATOR-WORKFLOW.md`.
+- If a published update is wrong, revert its source commit, rebuild tracked
+  data/site outputs, rerun verification, and deploy the reviewed revert. Do
+  not hand-edit generated JSON in the deploy checkout.

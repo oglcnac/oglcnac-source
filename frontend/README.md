@@ -10,6 +10,7 @@ dependency-free sources in `../site/`, then rebuild and verify drift:
 npm run build:site
 npm run check:site
 npm run test:site
+npm run qa:repository
 ```
 
 The deploy helper runs `check:site` before copying files and refuses stale
@@ -28,6 +29,15 @@ Dynamic behavior is browser-side:
 - Submitted protein sequences remain in the browser; there is no automatic API
   fallback.
 - Contact pages use mailto links.
+
+Native-table CSV downloads contain the complete filtered result and use RFC
+4180 CRLF record separators, including normalized embedded line breaks.
+Clipboard output contains only the visible page and remains tab-delimited.
+
+The repository asset audit resolves root-relative and document-relative HTML
+references, query/fragment suffixes, `srcset`, CSS URLs, JavaScript static
+references, and runtime directory roots. See `../docs/REBUILD.md` for the
+source/generated ownership boundary.
 
 ## GitHub Pages
 
