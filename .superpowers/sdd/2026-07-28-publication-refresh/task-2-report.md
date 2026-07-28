@@ -208,6 +208,7 @@ checks all passed.
 
 - `1cc8b02624a498e1c2246bc2e2204c30e22fd738` — Replace legacy result table runtime
 - `caf35d21188f28727443f996e8a3462514d0c5e7` — Remove obsolete legacy runtime flags
+- `b73303ca978b3f0b4d6223cf9b4d49b07bcf1865` — Reset table state for replacement results
 
 ## Self-Review
 
@@ -243,3 +244,90 @@ checks all passed.
 3. The optional Python browser-export test requires the repository's separate
    heavy prediction-export environment and could not run under system Python.
    All required PRED-DL browser/model parity suites passed.
+
+## Review Fix Round 1: Replacement Result State
+
+The review found that `NativeTable.setRows()` reset only the current page.
+Secondary filtering, sort direction/column, and page size survived replacement
+Atlas/OGT-PIN searches and PRED-DL predictions, so a valid new result could be
+silently hidden by stale state.
+
+### RED
+
+Before production changes, the new browser regression dirtied the secondary
+filter, page-size, and sorting state, submitted a valid replacement Atlas
+query, and waited for its known result:
+
+```bash
+node --test --test-name-pattern='replacement Atlas' \
+  scripts/tests/site-interactions-browser.test.js
+```
+
+The command exited 1:
+
+```text
+not ok 1 - replacement Atlas, OGT-PIN, and PRED-DL results reset table interaction state
+error: locator.textContent: Timeout 30000ms exceeded.
+  - waiting for locator('#atlas-search-results tr').first()
+duration_ms: 30890.523236
+```
+
+The Atlas data query completed, but the retained
+`WILL-HIDE-REPLACEMENT` table filter suppressed the valid `P18583` row.
+The complete RED output is in
+`/tmp/publication-task2-fix1-red.log`.
+
+### Implementation
+
+- Added `NativeTable.resetState()` to restore the secondary filter, current
+  page, configured default page size and selector, sort column, and sort
+  direction.
+- Added the explicit `preserveState` replacement option to `setRows()`.
+  Replacement data resets state unless preservation is explicitly requested.
+- Atlas search, Atlas species browse, OGT-PIN search, and both PRED-DL clear
+  and result paths explicitly use `preserveState: false`.
+- Added a real-browser regression that dirties state and replaces results on
+  Atlas, OGT-PIN, and PRED-DL. It asserts that known replacement rows are
+  visible and all interaction state is back at its defaults.
+
+### GREEN
+
+The same focused command then exited 0:
+
+```text
+ok 1 - replacement Atlas, OGT-PIN, and PRED-DL results reset table interaction state
+duration_ms: 1796.164739
+tests 1
+pass 1
+fail 0
+```
+
+The complete GREEN output is in
+`/tmp/publication-task2-fix1-green.log`.
+
+### Fix-Round Verification
+
+```bash
+npm run build:site
+npm run check:site
+npm run qa:runtime
+npm run test:site
+npm run test:tables
+npm run test:prediction
+npm run test:hexnac
+git diff --check
+```
+
+Results:
+
+- Generated site: 26 files, current.
+- Runtime audit: passed with no external runtime dependencies.
+- Site/generator: 14 passed.
+- Native tables: 4 unit and 8 Chromium tests passed.
+- PRED-DL: 12 unit and 5 Chromium tests passed, including the golden corpus.
+- HexNAcQuest: 8 unit and 5 Chromium tests passed.
+- Total required tests: 56 passed, 0 failed.
+- `git diff --check`: exit 0.
+
+The fix did not touch the two ledgered Low findings concerning `aria-sort`
+feedback and the LF/CRLF wording.
