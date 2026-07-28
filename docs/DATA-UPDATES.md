@@ -20,6 +20,8 @@ The script writes:
 ```text
 frontend/static/data/atlas-records.json
 frontend/static/data/atlas-records.json.gz
+frontend/static/data/atlas-release-v1.json
+frontend/static/data/atlas-release-v1.json.gz
 frontend/static/data/ogt-pin-records.json
 frontend/static/data/ogt-pin-records.json.gz
 ```
@@ -31,6 +33,14 @@ Keep Atlas dataset labels separate:
 
 The CSV generator also accepts `--atlas-csv` for a combined Atlas file, but that file must already include a correct `ambiguous` column.
 
+The versioned browser sequence bundle is
+`frontend/static/data/atlas-sequences-v1.json`. It is generated from controlled
+local FASTA files with `--atlas-sequence-fasta`, or updated in bounded,
+cached query batches with `--fetch-uniprot-sequences`. See
+`docs/CURATOR-WORKFLOW.md` for the exact count rules, identifier exclusions,
+coverage, provenance, and update commands. Routine builds and tests consume
+tracked JSON and do not contact UniProt.
+
 ## Legacy SQLite Regeneration
 
 ```bash
@@ -41,6 +51,7 @@ python3 frontend/scripts/generate_static_data.py --database /path/to/db.sqlite3
 
 ```bash
 git diff --stat frontend/static/data
+python3 -m unittest scripts.tests.test_generate_static_data -v
 npm run smoke:static
 npm run smoke:static:browser
 ```

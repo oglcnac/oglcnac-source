@@ -101,6 +101,26 @@
     atlasExportTable.setError("Complete records could not be loaded.");
   }
 
+  async function loadAtlasSequence(payload) {
+    let fasta = "";
+    try {
+      fasta = await window.OglcnacStaticData.getAtlasProteinFasta(
+        ATLAS_ACCESSION
+      );
+    } catch (error) {
+      fasta = "";
+    }
+    if (!fasta || ["NA", "N/A"].includes(fasta.trim().toUpperCase())) {
+      document.getElementById("protein-sequence").textContent =
+        "Protein sequence for this entry is not available in the local Atlas snapshot or UniProt. The curated evidence below remains complete.";
+    } else {
+      document.getElementById("protein-sequence").innerHTML = formatSequence(
+        fasta,
+        payload.positions || []
+      );
+    }
+  }
+
   async function loadAtlasDetail() {
     atlasRecordState.dataset.state = "loading";
     atlasRecordState.textContent = "Loading Atlas record…";
@@ -130,30 +150,15 @@
       return;
     }
 
-    let fasta = "";
-    try {
-      fasta = await window.OglcnacStaticData.getCachedUniprotFasta(
-        ATLAS_ACCESSION
-      );
-    } catch (error) {
-      fasta = "";
-    }
-    if (!fasta || ["NA", "N/A"].includes(fasta.trim().toUpperCase())) {
-      document.getElementById("protein-sequence").textContent =
-        "Protein sequence for this entry is not available in UniProt. Please refer to the original paper for details.";
-    } else {
-      document.getElementById("protein-sequence").innerHTML = formatSequence(
-        fasta,
-        payload.positions || []
-      );
-    }
-
     atlasPeptideTable.setRows(payload.records.map(atlasPeptideRow));
     atlasEvidenceTable.setRows(payload.records.map(atlasEvidenceRow));
     atlasExportTable.setRows(payload.records.map(atlasExportRow));
     atlasRecordState.dataset.state = "ready";
     atlasRecordState.textContent =
       `${payload.records.length.toLocaleString()} curated Atlas records loaded.`;
+    document.getElementById("protein-sequence").textContent =
+      "Loading protein sequence from the local Atlas snapshot…";
+    loadAtlasSequence(payload);
   }
 
   loadAtlasDetail();

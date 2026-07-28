@@ -376,6 +376,96 @@ test("known and missing Atlas and OGT-PIN detail records have explicit states", 
   await page.close();
 });
 
+test("Atlas evidence renders completely while a missing local sequence fallback is pending", async () => {
+  const page = await browser.newPage();
+  await page.route("**/static/data/atlas-sequences-v1.json", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        schema_version: 1,
+        coverage: {
+          candidate_accessions: 1,
+          resolved_accessions: 0,
+          missing_accessions: 1,
+          non_uniprot_identifiers: 0,
+          unresolved_identifiers: 0,
+          blank_accession_records: 0,
+        },
+        missing_accessions: ["P18583"],
+        excluded_identifiers: {
+          non_uniprot: [],
+          unresolved: [],
+          blank_accession_record_ids: [],
+        },
+        sequences: {},
+      }),
+    }),
+  );
+  let releaseFallback;
+  const fallbackReleased = new Promise((resolve) => {
+    releaseFallback = resolve;
+  });
+  await page.route("https://rest.uniprot.org/**", async (route) => {
+    await fallbackReleased;
+    await route.abort();
+  });
+
+  await page.goto(`${baseUrl}/atlas/detail/?id=P18583`);
+  let evidence;
+  try {
+    await page.waitForFunction(
+      () => {
+        const table = window.OglcnacTables && window.OglcnacTables.get("detail2");
+        return table && !table.loading;
+      },
+      null,
+      { timeout: 1500 },
+    );
+    evidence = await page.evaluate(() => {
+      const table = window.OglcnacTables.get("detail2");
+      return {
+        totalRows: table.totalRows,
+        recordState: document.querySelector('[data-record-state="atlas"]').dataset
+          .state,
+      };
+    });
+  } finally {
+    releaseFallback();
+  }
+  assert.ok(evidence.totalRows > 0, evidence);
+  assert.equal(evidence.recordState, "ready");
+
+  await assert.doesNotReject(() =>
+    page.getByText(/Protein sequence.*not available/i).waitFor(),
+  );
+  await page.close();
+});
+
+test("Atlas statistics separates current release metrics from historical figures", async () => {
+  const page = await browser.newPage();
+  await page.goto(`${baseUrl}/atlas/statistics/`);
+  await page.locator('[data-atlas-release-state="ready"]').waitFor();
+
+  assert.equal(
+    await page.locator('[data-atlas-metric="total"]').textContent(),
+    "61,035",
+  );
+  assert.equal(
+    await page.locator('[data-atlas-metric="dataset-i"]').textContent(),
+    "46,517",
+  );
+  assert.equal(
+    await page.locator('[data-atlas-metric="dataset-ii"]').textContent(),
+    "14,518",
+  );
+  assert.match(
+    await page.locator("[data-historical-publication-statistics]").textContent(),
+    /historical.*not current live release metrics/i,
+  );
+  await page.close();
+});
+
 test("result surfaces announce empty and data-load error states", async () => {
   const page = await browser.newPage();
   await page.goto(`${baseUrl}/atlas/search/?q=NOT-A-REAL-ACCESSION&field=accession`);

@@ -56,7 +56,7 @@ MAIN_CONTENT_SHA256 = {
     "atlas/download/index.html": "5dc0f2d980738860c8d3dbddab449da47a47be830bd407d29f49c0383850534f",
     "atlas/index.html": "0600b76429d35ebe86ba8534d521f42ad1f8514174d4fc52500ed3414c0ba3d6",
     "atlas/search/index.html": "77c0ee8f7fac0333f9d5eff983438081f6f7187cb41f4c5527c088b86a9d519e",
-    "atlas/statistics/index.html": "de2bc090a412ffaf72945e6df17f52278b54729463ff593bec5302fdb7f5b078",
+    "atlas/statistics/index.html": "daef42eaf2f3e60c14d895665123c53ab94aabcbd10a4bcd4f71699e48b93854",
     "atlas/tutorial/index.html": "1bfb7b2a9965537a0cff99938a0fa89b20bbff09496b77f48f330c86c98dd138",
     "hexnac-quest/analysis/index.html": "664598fdcbc374e58f4290049203ea6dd678fca3bfacd24f4062a516841183e0",
     "hexnac-quest/contact/index.html": "79e17731540b8dd4977acd96bd83a6c7af014c04901f43b03420d32cb1dbbd09",

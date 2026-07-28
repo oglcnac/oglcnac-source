@@ -1,12 +1,61 @@
 
 
+<script src="/static/js/static-data.js"></script>
 <div class="home">
+  <section class="landing-section features" aria-labelledby="current-release-heading">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <p class="section-label">Current live release</p>
+          <h1 id="current-release-heading">O-GlcNAcAtlas 5.0 metrics</h1>
+          <p>
+            These values are derived from the tracked dataset-I and dataset-II
+            release files rather than copied from publication figures.
+          </p>
+          <dl data-atlas-release-state="loading" aria-live="polite">
+            <div>
+              <dt>Total curated records</dt>
+              <dd data-atlas-metric="total">Loading…</dd>
+            </div>
+            <div>
+              <dt>Dataset-I (unambiguous)</dt>
+              <dd data-atlas-metric="dataset-i">Loading…</dd>
+            </div>
+            <div>
+              <dt>Dataset-II (ambiguous)</dt>
+              <dd data-atlas-metric="dataset-ii">Loading…</dd>
+            </div>
+            <div>
+              <dt>Distinct nonblank accessions</dt>
+              <dd data-atlas-metric="proteins">Loading…</dd>
+            </div>
+            <div>
+              <dt>Distinct complete sites</dt>
+              <dd data-atlas-metric="sites">Loading…</dd>
+            </div>
+          </dl>
+          <p class="detail-help">
+            A distinct protein is a trimmed, nonblank accession. A distinct
+            site is a unique complete accession, position-in-protein, and
+            residue tuple; incomplete identifiers remain in the curated record
+            total but are not counted as unique sites.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-historical-publication-statistics>
   <div class="landing-section hero">
     <div class="container">
       <div class="row">
         <div class="col-sm-8">
           <p class="hero-tagline"> </p>
-          <h2 class="hero-title"><b>Basic statistics (1984—Dec. 31, 2024)</b></h2>
+          <h2 class="hero-title"><b>Historical publication statistics (1984—Dec. 31, 2024)</b></h2>
+          <p>
+            These fixed figures accompany prior publications and are
+            historical snapshots, not current live release metrics.
+          </p>
         </div>
       </div>
     </div>
@@ -49,4 +98,29 @@
       </div>
     </div>
   </div>
+  </section>
 </div>
+<script>
+  (async function renderAtlasReleaseMetrics() {
+    const state = document.querySelector("[data-atlas-release-state]");
+    try {
+      const metadata = await window.OglcnacStaticData.loadAtlasRelease();
+      const values = {
+        total: metadata.records.total,
+        "dataset-i": metadata.records.dataset_i_unambiguous,
+        "dataset-ii": metadata.records.dataset_ii_ambiguous,
+        proteins: metadata.unique_counts.proteins,
+        sites: metadata.unique_counts.sites
+      };
+      Object.entries(values).forEach(([metric, value]) => {
+        document.querySelector(`[data-atlas-metric="${metric}"]`).textContent =
+          Number(value).toLocaleString();
+      });
+      state.dataset.atlasReleaseState = "ready";
+    } catch (error) {
+      state.dataset.atlasReleaseState = "error";
+      state.textContent =
+        "Current Atlas release metrics could not be loaded. Please use the download files for exact counts.";
+    }
+  })();
+</script>

@@ -70,6 +70,14 @@
     return loadJson("/static/data/ogt-pin-records.json");
   }
 
+  async function loadAtlasRelease() {
+    return loadJson("/static/data/atlas-release-v1.json");
+  }
+
+  async function loadAtlasSequenceSnapshot() {
+    return loadJson("/static/data/atlas-sequences-v1.json");
+  }
+
   async function searchAtlas(query, field) {
     const q = normalize(query);
     if (!q) {
@@ -149,14 +157,41 @@
     return fasta;
   }
 
+  async function getAtlasProteinFasta(accession) {
+    if (!accession) {
+      return "";
+    }
+    try {
+      const snapshot = await loadAtlasSequenceSnapshot();
+      const sequence = snapshot.sequences && snapshot.sequences[accession];
+      if (sequence) {
+        return `>local|${accession}|O-GlcNAcAtlas sequence snapshot\n${sequence}`;
+      }
+      if (
+        !Array.isArray(snapshot.missing_accessions) ||
+        !snapshot.missing_accessions.includes(accession)
+      ) {
+        return "";
+      }
+    } catch (error) {}
+    try {
+      return await getCachedUniprotFasta(accession);
+    } catch (error) {
+      return "";
+    }
+  }
+
   window.OglcnacStaticData = {
     loadAtlasRecords,
     loadOgtPinRecords,
+    loadAtlasRelease,
+    loadAtlasSequenceSnapshot,
     searchAtlas,
     browseAtlas,
     getAtlasDetail,
     searchOgtPin,
     getOgtPinDetail,
-    getCachedUniprotFasta
+    getCachedUniprotFasta,
+    getAtlasProteinFasta
   };
 })();
