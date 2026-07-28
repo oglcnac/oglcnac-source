@@ -399,6 +399,37 @@ class StaticDataGeneratorTests(unittest.TestCase):
                     0.25,
                 )
 
+    def test_partial_uniprot_batch_provenance_is_rejected(self) -> None:
+        batch_responses = [
+            ("", {}, True),
+            (
+                "",
+                {
+                    "uniprot_release": "2026_02",
+                    "uniprot_release_date": "10-June-2026",
+                    "api_deployment_date": "10-July-2026",
+                },
+                True,
+            ),
+        ]
+        with mock.patch.object(
+            GENERATOR_MODULE,
+            "fetch_uniprot_batch",
+            side_effect=batch_responses,
+        ):
+            with self.assertRaisesRegex(
+                RuntimeError,
+                "Incomplete UniProt batch provenance.*uniprot_release.*batch 1",
+            ):
+                GENERATOR_MODULE.fetch_uniprot_sequences(
+                    {},
+                    {f"ACCESSION-{index:03d}" for index in range(101)},
+                    Path("/unused-cache"),
+                    100,
+                    3,
+                    0.25,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

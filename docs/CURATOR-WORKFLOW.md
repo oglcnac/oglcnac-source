@@ -140,9 +140,10 @@ retries (1–5, default three) with backoff, a delay between uncached batches,
 and response caching. Do not replace it with unbounded per-accession requests.
 FASTA accessions must exactly match an eligible Atlas accession; the generator
 never maps ambiguous, blank, non-UniProt, canonical/isoform, or unresolved
-identifiers by inference. Every cached or fresh batch must report consistent
-UniProt release, release-date, and API-deployment provenance; mixed values stop
-generation instead of being mislabeled as one release.
+identifiers by inference. A single provenance dimension is claimed only when
+every cached or fresh batch reports that dimension with the same value.
+Mixed values or a mixture of labeled and headerless batches stop generation
+instead of being mislabeled as one release.
 
 The snapshot retrieved on July 28, 2026 uses UniProt release `2026_02`
 (released June 10, 2026). It resolves 7,239 of 7,550 eligible accessions

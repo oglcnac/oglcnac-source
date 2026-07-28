@@ -340,7 +340,11 @@ def fetch_uniprot_sequences(
         "uniprot_release_date": set(),
         "api_deployment_date": set(),
     }
+    missing_provenance_batches = {
+        key: [] for key in provenance_values
+    }
     for offset in range(0, len(missing), batch_size):
+        batch_number = offset // batch_size + 1
         batch = missing[offset : offset + batch_size]
         fasta, headers, cached = fetch_uniprot_batch(batch, cache_directory, retries)
         add_fasta_sequences(sequences, fasta, candidates)
@@ -348,13 +352,22 @@ def fetch_uniprot_sequences(
             value = headers.get(key)
             if value:
                 values.add(value)
+            else:
+                missing_provenance_batches[key].append(batch_number)
+            missing_batches = missing_provenance_batches[key]
+            if values and missing_batches:
+                raise RuntimeError(
+                    "Incomplete UniProt batch provenance for "
+                    f"{key}: missing batch "
+                    f"{', '.join(str(number) for number in missing_batches)}"
+                )
             if len(values) > 1:
                 raise RuntimeError(
                     "Inconsistent UniProt batch provenance for "
                     f"{key}: {', '.join(sorted(values))}"
                 )
         print(
-            f"uniprot_batch={offset // batch_size + 1} "
+            f"uniprot_batch={batch_number} "
             f"requested={len(batch)} resolved_total={len(sequences)} "
             f"cached={'yes' if cached else 'no'}"
         )
