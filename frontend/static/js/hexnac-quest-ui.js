@@ -165,14 +165,18 @@
 
   function createWorker() {
     if (worker) worker.terminate();
-    worker = new Worker("/static/js/hexnac-quest-worker.js");
-    worker.onmessage = handleWorkerMessage;
-    worker.onerror = () => {
+    const nextWorker = new Worker("/static/js/hexnac-quest-worker.js");
+    worker = nextWorker;
+    nextWorker.onmessage = (event) => {
+      if (worker === nextWorker) handleWorkerMessage(event);
+    };
+    nextWorker.onerror = () => {
+      if (worker !== nextWorker) return;
       setStatus("error", "HexNAcQuest could not start its browser worker.");
       elements.run.disabled = true;
       elements.cancel.disabled = true;
     };
-    return worker;
+    return nextWorker;
   }
 
   function handleWorkerMessage(event) {
@@ -249,6 +253,8 @@
 
   elements.file.addEventListener("change", async () => {
     const token = ++selectionToken;
+    if (worker) worker.terminate();
+    worker = null;
     resetOutput();
     const file = elements.file.files[0];
     elements.run.disabled = true;

@@ -233,3 +233,47 @@ test("ignores an older file read that finishes after a newer selection", async (
   );
   await page.close();
 });
+
+test(
+  "rejecting a new oversized file terminates and discards an older prediction",
+  { timeout: 60000 },
+  async () => {
+    const page = await browser.newPage();
+    await page.goto(`${baseUrl}/hexnac-quest/analysis/`, {
+      waitUntil: "domcontentloaded",
+    });
+    const largeValidCsv = Buffer.from(
+      `id,f126,f138,f144,f168,f186\n${"row,1,2,3,4,5\n".repeat(250000)}`,
+    );
+    await page.setInputFiles("#hexnac-file", {
+      name: "long-running.csv",
+      mimeType: "text/csv",
+      buffer: largeValidCsv,
+    });
+    await page.waitForFunction(
+      () => document.querySelector("#hexnac-status").dataset.state === "ready",
+      null,
+      { timeout: 30000 },
+    );
+    await page.click("#hexnac-run");
+    await page.setInputFiles("#hexnac-file", {
+      name: "too-large.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.alloc(25 * 1024 * 1024 + 1),
+    });
+    await page.waitForFunction(
+      () =>
+        document.querySelector("#hexnac-status").dataset.state === "error" &&
+        document.querySelector("#hexnac-status").textContent.includes("25 MB"),
+    );
+    await page.waitForTimeout(750);
+    assert.equal(
+      await page.locator("#hexnac-status").getAttribute("data-state"),
+      "error",
+    );
+    assert.equal(await page.locator("#hexnac-results-body tr").count(), 0);
+    assert.equal(await page.locator("#hexnac-results-card").isHidden(), true);
+    assert.equal(await page.locator("#hexnac-run").isDisabled(), true);
+    await page.close();
+  },
+);
