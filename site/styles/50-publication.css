@@ -498,6 +498,8 @@ button:disabled,
 
 .suite-hero-art {
   width: 100%;
+  max-width: 780px;
+  justify-self: end;
   filter: drop-shadow(0 32px 48px rgba(0, 0, 0, 0.24));
 }
 
@@ -651,7 +653,7 @@ button:disabled,
 .concept-figure img {
   display: block;
   width: 100%;
-  padding: 12px;
+  padding: 8px;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);

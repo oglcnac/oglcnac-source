@@ -921,6 +921,40 @@ test("wide desktop layouts use the available canvas", async () => {
   await page.close();
 });
 
+test("homepage illustrations stay balanced on wide desktop screens", async () => {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  await page.goto(`${baseUrl}/`, { waitUntil: "load" });
+  const layout = await page.evaluate(() => {
+    const measure = (selector) => {
+      const rect = document.querySelector(selector).getBoundingClientRect();
+      return {
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
+      };
+    };
+    return {
+      viewport: document.documentElement.clientWidth,
+      hero: measure(".suite-hero-art"),
+      workflow: measure(".workflow-figure img"),
+    };
+  });
+  assert.ok(
+    layout.hero.width <= 780,
+    `homepage hero illustration is visually oversized: ${JSON.stringify(layout.hero)}`,
+  );
+  assert.ok(
+    layout.hero.left >= 0 && layout.hero.right <= layout.viewport,
+    `homepage hero illustration overflows the viewport: ${JSON.stringify(layout.hero)}`,
+  );
+  assert.ok(
+    layout.workflow.left >= 0 && layout.workflow.right <= layout.viewport,
+    `homepage workflow illustration overflows the viewport: ${JSON.stringify(layout.workflow)}`,
+  );
+  await page.close();
+});
+
 test("task-oriented pages expose their primary action above the desktop fold", async () => {
   const checks = {
     "/atlas/search/": ".search-form",
