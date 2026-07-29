@@ -654,6 +654,54 @@ test("desktop section navigation is visible without interaction", async () => {
   await page.close();
 });
 
+test("portal navigation stays fixed while each tool has its own navigation region", async () => {
+  const routes = ["/atlas/", "/ogt-pin/", "/pred_dl/", "/hexnac-quest/"];
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+  await page.goto(`${baseUrl}/`, { waitUntil: "load" });
+  const baseline = await page.evaluate(() => {
+    const { left, right, top, bottom } = document
+      .querySelector(".site-primary-nav")
+      .getBoundingClientRect();
+    return { left, right, top, bottom };
+  });
+
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const layout = await page.evaluate(() => {
+      const rect = (selector) => {
+        const element = document.querySelector(selector);
+        if (!element) throw new Error(`Missing ${selector}`);
+        const { left, right, top, bottom } = element.getBoundingClientRect();
+        return { left, right, top, bottom };
+      };
+      return {
+        portal: rect(".site-primary-nav"),
+        tool: rect(".site-section-nav"),
+        panel: rect(".site-nav-panel"),
+      };
+    });
+
+    assert.ok(
+      Math.abs(layout.portal.left - baseline.left) <= 1 &&
+        Math.abs(layout.portal.right - baseline.right) <= 1 &&
+        Math.abs(layout.portal.top - baseline.top) <= 1 &&
+        Math.abs(layout.portal.bottom - baseline.bottom) <= 1,
+      `${route} shifts the portal navigation from its home-page position`,
+    );
+
+    assert.ok(
+      layout.tool.right <= layout.portal.left - 20,
+      `${route} tool navigation should have a distinct region before portal navigation`,
+    );
+    assert.ok(
+      Math.abs((layout.tool.left + layout.tool.right) / 2 - (layout.panel.left + layout.portal.left - 24) / 2) <= 32,
+      `${route} tool navigation should be centered in its region`,
+    );
+  }
+
+  await page.close();
+});
+
 test("tool home pages expose every resource without opening the header menu", async () => {
   const expected = {
     "/atlas/": [
