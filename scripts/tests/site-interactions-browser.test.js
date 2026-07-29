@@ -916,6 +916,55 @@ test("task-oriented pages expose their primary action above the desktop fold", a
   await page.close();
 });
 
+test("shared title surfaces are compact and leave room for useful content", async () => {
+  const headingChecks = [
+    ["/atlas/", ".resource-hero", 380],
+    ["/ogt-pin/", ".resource-hero", 380],
+    ["/pred_dl/", ".resource-hero", 380],
+    ["/atlas/statistics/", ".page-hero", 250],
+    ["/atlas/browse/?species=Human", ".page-hero", 250],
+    ["/atlas/tutorial/", ".page-hero", 250],
+    ["/ogt-pin/statistics/", ".page-hero", 250],
+    ["/pred_dl/download/", ".page-hero", 250],
+    ["/atlas/search/", ".search-page-heading", 300],
+    ["/ogt-pin/search/", ".search-page-heading", 300],
+    ["/hexnac-quest/analysis/", ".hq-page-heading", 240],
+    ["/hexnac-quest/tutorial/", ".hq-page-heading", 240],
+  ];
+  const usefulContentChecks = [
+    ["/atlas/", ".resource-directory", 450],
+    ["/atlas/statistics/", ".metric-grid", 500],
+    ["/atlas/search/", ".table-results-section", 390],
+    ["/atlas/browse/?species=Human", ".table-results-section", 350],
+    ["/ogt-pin/statistics/", ".evidence-grid", 380],
+    ["/ogt-pin/search/", ".table-results-section", 390],
+    ["/pred_dl/", ".resource-directory", 450],
+    ["/hexnac-quest/analysis/", ".hq-upload-card", 340],
+  ];
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  for (const [route, selector, maxHeight] of headingChecks) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const height = await page.locator(selector).first().evaluate((element) =>
+      Math.round(element.getBoundingClientRect().height),
+    );
+    assert.ok(
+      height <= maxHeight,
+      `${route} title surface is ${height}px tall; expected at most ${maxHeight}px`,
+    );
+  }
+  for (const [route, selector, maxTop] of usefulContentChecks) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const top = await page.locator(selector).first().evaluate((element) =>
+      Math.round(element.getBoundingClientRect().top),
+    );
+    assert.ok(
+      top <= maxTop,
+      `${route} first useful content starts at ${top}px; expected at most ${maxTop}px`,
+    );
+  }
+  await page.close();
+});
+
 test("all public content pages reflow without horizontal overflow", async () => {
   const routes = [
     "/",
