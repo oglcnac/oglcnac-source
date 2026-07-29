@@ -1013,6 +1013,35 @@ test("shared title surfaces are compact and leave room for useful content", asyn
   await page.close();
 });
 
+test("long-form tutorials use a centered wide reading surface on desktop", async () => {
+  const routes = ["/atlas/tutorial/", "/ogt-pin/tutorial/", "/pred_dl/tutorial/"];
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const layout = await page.locator(".panel.prose").evaluate((panel) => {
+      const container = panel.parentElement;
+      const panelBounds = panel.getBoundingClientRect();
+      const containerBounds = container.getBoundingClientRect();
+      return {
+        panelWidth: Math.round(panelBounds.width),
+        panelCenter: Math.round((panelBounds.left + panelBounds.right) / 2),
+        containerCenter: Math.round((containerBounds.left + containerBounds.right) / 2),
+      };
+    });
+    assert.ok(
+      layout.panelWidth >= 1200,
+      `${route} long-form panel is only ${layout.panelWidth}px wide on a wide desktop`,
+    );
+    assert.ok(
+      Math.abs(layout.panelCenter - layout.containerCenter) <= 1,
+      `${route} long-form panel is not centered in its content area`,
+    );
+  }
+
+  await page.close();
+});
+
 test("all public content pages reflow without horizontal overflow", async () => {
   const routes = [
     "/",
