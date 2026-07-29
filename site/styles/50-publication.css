@@ -1032,13 +1032,23 @@ th,
   font-style: normal;
 }
 
-.prediction-input {
-  padding-block: 50px 68px;
+.section-body .prediction-input {
+  padding-block: 24px 48px;
 }
 
-.page-heading {
-  max-width: 850px;
-  margin: 0 auto 34px;
+.prediction-input .page-heading {
+  max-width: 1160px;
+  margin: 0 auto 20px;
+}
+
+.prediction-input .page-heading h1 {
+  font-size: clamp(2rem, 3vw, 2.85rem);
+}
+
+.prediction-input .page-heading > p:not(.section-label) {
+  max-width: 1120px;
+  margin-top: 0.55rem;
+  font-size: 1rem;
 }
 
 .prediction-grid {
@@ -1055,8 +1065,9 @@ th,
   border-color: var(--line);
 }
 
-.prediction-card textarea {
-  min-height: 318px;
+.section-body .prediction-card textarea {
+  height: 230px;
+  min-height: 230px;
 }
 
 .species-control {
@@ -1219,6 +1230,19 @@ th,
 
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .section-body .prediction-input {
+    padding-block: 34px 48px;
+  }
+
+  .prediction-input .page-heading {
+    margin-bottom: 28px;
+  }
+
+  .section-body .prediction-card textarea {
+    height: 300px;
+    min-height: 300px;
   }
 
   .footer-inner,

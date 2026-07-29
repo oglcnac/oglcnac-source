@@ -873,6 +873,49 @@ test("wide desktop layouts use the available canvas", async () => {
   await page.close();
 });
 
+test("task-oriented pages expose their primary action above the desktop fold", async () => {
+  const checks = {
+    "/atlas/search/": ".search-form",
+    "/atlas/browse/": ".species-filter",
+    "/atlas/download/": ".download-grid",
+    "/ogt-pin/search/": ".search-form",
+    "/pred_dl/input_fasta/": ".prediction-grid",
+    "/pred_dl/download/": ".download-grid",
+    "/hexnac-quest/analysis/": ".hq-upload-card",
+  };
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  for (const [route, selector] of Object.entries(checks)) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const bounds = await page.locator(selector).first().evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+      };
+    });
+    assert.ok(
+      bounds.top < 720,
+      `${route} pushes its primary action too far down: ${JSON.stringify(bounds)}`,
+    );
+  }
+
+  await page.goto(`${baseUrl}/pred_dl/input_fasta/`, { waitUntil: "load" });
+  const cards = await page.locator(".prediction-card").evaluateAll((elements) =>
+    elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+      };
+    }),
+  );
+  assert.ok(
+    cards.every(({ top, bottom }) => top >= 0 && bottom <= 1080),
+    `PRED-DL submission cards do not fit in the first desktop viewport: ${JSON.stringify(cards)}`,
+  );
+  await page.close();
+});
+
 test("all public content pages reflow without horizontal overflow", async () => {
   const routes = [
     "/",
