@@ -1069,6 +1069,46 @@ test("tutorial glossaries use compact two-column entries without repeated divide
   await page.close();
 });
 
+test("desktop result tables keep titles, controls, and record counts on one compact row", async () => {
+  const routes = ["/atlas/browse/?species=Human", "/atlas/search/", "/ogt-pin/search/"];
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    await waitForTable(page, "search_result");
+    const layout = await page.evaluate(() => {
+      const bounds = (selector) => {
+        const element = document.querySelector(selector);
+        if (!element) throw new Error(`Missing ${selector}`);
+        const { top, bottom, height } = element.getBoundingClientRect();
+        return { top: Math.round(top), bottom: Math.round(bottom), height: Math.round(height) };
+      };
+      return {
+        header: bounds(".table-card-header"),
+        controls: bounds(".native-table-controls"),
+        status: bounds(".native-table-status"),
+        table: bounds(".table-scroll"),
+      };
+    });
+    const rowTop = Math.min(layout.header.top, layout.controls.top, layout.status.top);
+    const rowBottom = Math.max(
+      layout.header.bottom,
+      layout.controls.bottom,
+      layout.status.bottom,
+    );
+    assert.ok(
+      rowBottom - rowTop <= 52,
+      `${route} table controls occupy ${rowBottom - rowTop}px instead of one compact row`,
+    );
+    assert.ok(
+      layout.table.top - rowBottom <= 18,
+      `${route} leaves ${layout.table.top - rowBottom}px between its controls and table`,
+    );
+  }
+
+  await page.close();
+});
+
 test("all public content pages reflow without horizontal overflow", async () => {
   const routes = [
     "/",

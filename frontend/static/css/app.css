@@ -3216,6 +3216,105 @@ th,
   gap: 10px;
 }
 
+/* Keep data-table actions close to their results on wide screens. The same
+   structure is used by Atlas, OGT-PIN, and the prediction result table. */
+@media (min-width: 1280px) {
+  .section-body .table-results-section {
+    padding-block: 16px;
+  }
+
+  .section-body .table-results-section > .container,
+  .section-body .results-card {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    grid-template-areas:
+      "header controls status"
+      "table table table"
+      "pagination pagination pagination";
+    align-items: center;
+    column-gap: 16px;
+    row-gap: 12px;
+  }
+
+  .section-body .table-results-section > .container > .table-card-header,
+  .section-body .results-card > .table-card-header {
+    display: flex;
+    grid-area: header;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .section-body .table-results-section > .container > .table-card-header span,
+  .section-body .results-card > .table-card-header span {
+    display: inline;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+  }
+
+  .section-body .table-results-section > .container > .table-card-header h2,
+  .section-body .results-card > .table-card-header h2 {
+    margin: 0;
+    font-size: 1.18rem;
+  }
+
+  .section-body .table-results-section > .container > .native-table-controls,
+  .section-body .results-card > .native-table-controls {
+    display: grid;
+    grid-area: controls;
+    grid-template-columns: minmax(180px, 1fr) max-content;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .section-body .native-table-filter {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .section-body .native-table-filter input {
+    flex: 1 1 180px;
+    min-width: 0;
+    min-height: 40px;
+  }
+
+  .section-body .native-table-actions {
+    flex-wrap: nowrap;
+  }
+
+  .section-body .native-table-actions button {
+    min-height: 40px;
+    padding: 0.45rem 0.7rem;
+    white-space: nowrap;
+  }
+
+  .section-body .table-results-section > .container > .native-table-status,
+  .section-body .results-card > .native-table-status {
+    grid-area: status;
+    min-height: 0;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .section-body .table-results-section > .container > .table-scroll,
+  .section-body .results-card > .table-scroll {
+    grid-area: table;
+  }
+
+  .section-body .table-results-section > .container > .native-table-pagination,
+  .section-body .results-card > .native-table-pagination {
+    grid-area: pagination;
+    margin: 0;
+  }
+}
+
 .native-table-status,
 .hq-status,
 [data-record-state] {
