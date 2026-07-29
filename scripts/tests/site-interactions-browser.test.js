@@ -1042,6 +1042,33 @@ test("long-form tutorials use a centered wide reading surface on desktop", async
   await page.close();
 });
 
+test("tutorial glossaries use compact two-column entries without repeated dividers", async () => {
+  const routes = ["/atlas/tutorial/", "/ogt-pin/tutorial/"];
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const glossary = await page.locator(".terms-list").evaluate((list) => {
+      const entry = list.querySelector("li");
+      const styles = getComputedStyle(list);
+      const bounds = list.getBoundingClientRect();
+      return {
+        columns: styles.gridTemplateColumns.split(" ").length,
+        height: Math.round(bounds.height),
+        dividerWidth: getComputedStyle(entry).borderBottomWidth,
+      };
+    });
+    assert.equal(glossary.columns, 2, `${route} glossary should use two desktop columns`);
+    assert.equal(glossary.dividerWidth, "0px", `${route} glossary should not repeat row dividers`);
+    assert.ok(
+      glossary.height <= 650,
+      `${route} glossary remains too tall at ${glossary.height}px`,
+    );
+  }
+
+  await page.close();
+});
+
 test("all public content pages reflow without horizontal overflow", async () => {
   const routes = [
     "/",

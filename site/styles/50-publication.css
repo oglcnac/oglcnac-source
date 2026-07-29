@@ -343,6 +343,15 @@ h3 {
   margin-top: 2.8rem;
 }
 
+.panel.prose h2:not(:first-child) {
+  margin-top: 2rem;
+}
+
+.panel.prose > ul:not(.terms-list) li + li,
+.panel.prose > ol li + li {
+  margin-top: 0.5rem;
+}
+
 .prose li + li,
 .terms-list li + li {
   margin-top: 0.75rem;
@@ -1011,6 +1020,22 @@ th,
   margin: 0;
 }
 
+/* Glossaries are reference material. On desktop, a compact two-column
+   arrangement removes the long stack of repeated horizontal dividers. */
+.panel.prose .terms-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.1rem 1.75rem;
+  margin-top: 0.25rem;
+}
+
+.panel.prose .terms-list li,
+.panel.prose .terms-list li + li {
+  margin-top: 0;
+  padding: 0.42rem 0;
+  border-bottom: 0;
+}
+
 .download-grid,
 .contact-grid,
 .resource-links {
@@ -1257,6 +1282,11 @@ th,
   .search-form,
   .form-inline {
     grid-template-columns: 1fr;
+  }
+
+  .panel.prose .terms-list {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 
   .metric-grid {
