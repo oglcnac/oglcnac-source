@@ -1088,6 +1088,7 @@ test("desktop result tables keep titles, controls, and record counts on one comp
         controls: bounds(".native-table-controls"),
         status: bounds(".native-table-status"),
         table: bounds(".table-scroll"),
+        overflow: document.documentElement.scrollWidth - window.innerWidth,
       };
     });
     const rowTop = Math.min(layout.header.top, layout.controls.top, layout.status.top);
@@ -1104,6 +1105,7 @@ test("desktop result tables keep titles, controls, and record counts on one comp
       layout.table.top - rowBottom <= 18,
       `${route} leaves ${layout.table.top - rowBottom}px between its controls and table`,
     );
+    assert.equal(layout.overflow, 0, `${route} introduces desktop horizontal overflow`);
   }
 
   await page.close();

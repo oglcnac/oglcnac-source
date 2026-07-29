@@ -3236,6 +3236,14 @@ th,
     row-gap: 12px;
   }
 
+  .section-body .table-results-section > .container:has(> .citation) {
+    grid-template-areas:
+      "header controls status"
+      "table table table"
+      "pagination pagination pagination"
+      "citation citation citation";
+  }
+
   .section-body .table-results-section > .container > .table-card-header,
   .section-body .results-card > .table-card-header {
     display: flex;
@@ -3311,6 +3319,11 @@ th,
   .section-body .table-results-section > .container > .native-table-pagination,
   .section-body .results-card > .native-table-pagination {
     grid-area: pagination;
+    margin: 0;
+  }
+
+  .section-body .table-results-section > .container > .citation {
+    grid-area: citation;
     margin: 0;
   }
 }
