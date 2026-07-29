@@ -13,6 +13,7 @@ const strict = process.env.SCREENSHOT_STRICT !== "0";
 const captureMode = process.env.SCREENSHOT_MODE || "audit";
 
 const viewports = [
+  ["wide", { width: 1920, height: 1080 }],
   ["desktop", { width: 1440, height: 1100 }],
   ["mobile", { width: 390, height: 844 }],
 ];

@@ -803,6 +803,76 @@ test("PRED-DL hero title stays inside its desktop text column", async () => {
   await page.close();
 });
 
+test("PRED-DL species controls stay compact on desktop", async () => {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  await page.goto(`${baseUrl}/pred_dl/input_fasta/`);
+  const controls = await page
+    .locator('.species-control input[type="radio"]')
+    .evaluateAll((elements) =>
+      elements.map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return {
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+        };
+      }),
+    );
+  assert.ok(
+    controls.every(({ width, height }) => width <= 24 && height <= 24),
+    `PRED-DL radio controls are oversized: ${JSON.stringify(controls)}`,
+  );
+  await page.close();
+});
+
+test("wide desktop layouts use the available canvas", async () => {
+  const routes = [
+    "/",
+    "/atlas/",
+    "/atlas/statistics/",
+    "/atlas/search/",
+    "/atlas/browse/",
+    "/atlas/tutorial/",
+    "/atlas/download/",
+    "/atlas/contact/",
+    "/ogt-pin/",
+    "/ogt-pin/statistics/",
+    "/ogt-pin/search/",
+    "/ogt-pin/tutorial/",
+    "/ogt-pin/contact/",
+    "/pred_dl/",
+    "/pred_dl/input_fasta/",
+    "/pred_dl/tutorial/",
+    "/pred_dl/download/",
+    "/pred_dl/contact/",
+    "/hexnac-quest/",
+    "/hexnac-quest/analysis/",
+    "/hexnac-quest/tutorial/",
+    "/hexnac-quest/contact/",
+  ];
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
+    const layout = await page.evaluate(() => {
+      const candidates = Array.from(
+        document.querySelectorAll(
+          "main > section > .container, main > section > .hq-container, .home-hero .hero-content",
+        ),
+      ).filter((element) => element.getBoundingClientRect().width > 0);
+      return {
+        viewport: document.documentElement.clientWidth,
+        widest: Math.round(
+          Math.max(...candidates.map((element) => element.getBoundingClientRect().width)),
+        ),
+      };
+    });
+    assert.ok(
+      layout.widest >= 1500,
+      `${route} only uses ${layout.widest}px of a ${layout.viewport}px desktop canvas`,
+    );
+  }
+  await page.close();
+});
+
 test("all public content pages reflow without horizontal overflow", async () => {
   const routes = [
     "/",

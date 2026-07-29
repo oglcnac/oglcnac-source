@@ -18,6 +18,8 @@
   --success: #14705c;
   --shadow: 0 18px 52px rgba(12, 37, 57, 0.09);
   --radius: 16px;
+  --content-max: 1680px;
+  --shell-gutter: clamp(20px, 3.5vw, 68px);
 }
 
 html {
@@ -113,9 +115,13 @@ a:hover {
 
 .container,
 .hq-container {
-  width: min(100% - 40px, 1180px);
-  max-width: 1180px;
+  width: min(calc(100% - (2 * var(--shell-gutter))), var(--content-max));
+  max-width: var(--content-max);
   margin-inline: auto;
+}
+
+.section-body .container {
+  max-width: var(--content-max);
 }
 
 .site-main {
@@ -130,7 +136,7 @@ a:hover {
 }
 
 .site-header-inner {
-  width: min(100% - 40px, 1240px);
+  width: min(calc(100% - (2 * var(--shell-gutter))), 1760px);
   min-height: 68px;
 }
 
@@ -263,7 +269,7 @@ a:hover {
 }
 
 .section-body .site-main > section:not(.prediction-input):not(.prediction-results) > .container {
-  max-width: 1180px;
+  max-width: var(--content-max);
 }
 
 .panel-narrow {
@@ -414,7 +420,7 @@ button:disabled,
 
 .home-hero .hero-content {
   display: grid;
-  width: min(100% - 40px, 1180px);
+  width: min(calc(100% - (2 * var(--shell-gutter))), var(--content-max));
   grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.05fr);
   gap: 54px;
   align-items: center;
@@ -785,7 +791,7 @@ figcaption {
   font-weight: 750;
 }
 
-input,
+input:not([type="radio"]):not([type="checkbox"]),
 select,
 textarea,
 .section-body .form-control,
@@ -1057,6 +1063,18 @@ th,
   border-color: var(--line);
 }
 
+.species-control input[type="radio"],
+.species-control input[type="checkbox"] {
+  width: 1rem;
+  min-width: 1rem;
+  height: 1rem;
+  min-height: 0;
+  margin: 0 0.4rem 0 0;
+  padding: 0;
+  accent-color: var(--accent);
+  vertical-align: -0.1em;
+}
+
 .prediction-status-card {
   border-radius: 12px;
 }
@@ -1215,7 +1233,7 @@ th,
   .hq-container,
   .site-header-inner,
   .home-hero .hero-content {
-    width: min(100% - 28px, 1180px);
+    width: calc(100% - 28px);
   }
 
   .page-hero,
