@@ -1025,13 +1025,15 @@ test("long-form tutorials use a centered wide reading surface on desktop", async
       const containerBounds = container.getBoundingClientRect();
       return {
         panelWidth: Math.round(panelBounds.width),
+        containerWidth: Math.round(containerBounds.width),
         panelCenter: Math.round((panelBounds.left + panelBounds.right) / 2),
         containerCenter: Math.round((containerBounds.left + containerBounds.right) / 2),
       };
     });
-    assert.ok(
-      layout.panelWidth >= 1200,
-      `${route} long-form panel is only ${layout.panelWidth}px wide on a wide desktop`,
+    assert.equal(
+      layout.panelWidth,
+      layout.containerWidth,
+      `${route} long-form panel should match the shared content width`,
     );
     assert.ok(
       Math.abs(layout.panelCenter - layout.containerCenter) <= 1,
