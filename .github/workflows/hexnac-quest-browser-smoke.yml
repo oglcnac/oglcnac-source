@@ -3,19 +3,19 @@ name: HexNAcQuest browser smoke
 on:
   push:
     paths:
-      - "frontend/hexnac-quest/**"
-      - "frontend/static/hexnac-quest/**"
-      - "frontend/static/js/hexnac-quest-*.js"
-      - "frontend/static/css/app.css"
+      - "site/pages/hexnac-quest/**"
+      - "site/styles/**"
+      - "public/static/hexnac-quest/**"
+      - "public/static/js/hexnac-quest-*.js"
       - "scripts/tests/hexnac-quest-*.test.js"
       - "package.json"
       - "package-lock.json"
   pull_request:
     paths:
-      - "frontend/hexnac-quest/**"
-      - "frontend/static/hexnac-quest/**"
-      - "frontend/static/js/hexnac-quest-*.js"
-      - "frontend/static/css/app.css"
+      - "site/pages/hexnac-quest/**"
+      - "site/styles/**"
+      - "public/static/hexnac-quest/**"
+      - "public/static/js/hexnac-quest-*.js"
       - "scripts/tests/hexnac-quest-*.test.js"
       - "package.json"
       - "package-lock.json"

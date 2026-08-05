@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 global.window = {};
-const tables = require("../../frontend/static/js/table-utils.js");
+const tables = require("../../public/static/js/table-utils.js");
 delete global.window;
 
 test("exports the dependency-free native table state API", () => {

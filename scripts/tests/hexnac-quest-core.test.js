@@ -3,13 +3,13 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const hexnac = require("../../frontend/static/js/hexnac-quest-core.js");
-const manifest = require("../../frontend/static/hexnac-quest/v1/model.json");
+const hexnac = require("../../public/static/js/hexnac-quest-core.js");
+const manifest = require("../../public/static/hexnac-quest/v1/model.json");
 
 const fixtures = path.join(__dirname, "fixtures");
 const examplePath = path.join(
   __dirname,
-  "../../frontend/static/hexnac-quest/example_input_data.csv",
+  "../../public/static/hexnac-quest/example_input_data.csv",
 );
 
 test("applies the exported logistic model and the strict decision boundary", () => {

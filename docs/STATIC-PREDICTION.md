@@ -33,9 +33,9 @@ position, residue, three-decimal score, confidence label, and row order.
 TensorFlow.js 2.8.5 and its WASM binaries are self-hosted. The versioned export
 manifest records source and generated-asset SHA-256 checksums.
 
-## Transition
+## Runtime status
 
-The browser predictor was deployed on 2026-07-28. The legacy API remains
-available through 2026-08-11 for observation, but the website never contacts
-it. After 14 clean days, API retirement can be performed as a separate
-explicitly approved infrastructure change.
+The browser predictor replaced the legacy API in 2026. The old HTTP service,
+proxy, container configuration, and runtime secrets are not part of this
+repository and must not be recreated. Browser tests explicitly block the old
+API origin and require inference to succeed from local static assets alone.

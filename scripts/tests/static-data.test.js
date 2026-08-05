@@ -5,7 +5,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const SOURCE = fs.readFileSync(
-  path.resolve(__dirname, "../../frontend/static/js/static-data.js"),
+  path.resolve(__dirname, "../../public/static/js/static-data.js"),
   "utf8",
 );
 

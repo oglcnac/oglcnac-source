@@ -13,8 +13,8 @@ from urllib.error import URLError
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-GENERATOR = REPOSITORY_ROOT / "frontend" / "scripts" / "generate_static_data.py"
-DATASET_ROOT = REPOSITORY_ROOT / "frontend" / "static" / "dataset"
+GENERATOR = REPOSITORY_ROOT / "scripts" / "generate_static_data.py"
+DATASET_ROOT = REPOSITORY_ROOT / "public" / "static" / "dataset"
 GENERATOR_SPEC = importlib.util.spec_from_file_location("static_data_generator", GENERATOR)
 GENERATOR_MODULE = importlib.util.module_from_spec(GENERATOR_SPEC)
 assert GENERATOR_SPEC.loader is not None

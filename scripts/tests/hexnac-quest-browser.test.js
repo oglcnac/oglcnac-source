@@ -6,7 +6,7 @@ const fs = require("node:fs/promises");
 const playwright = require("playwright");
 
 const ROOT = path.resolve(__dirname, "../..");
-const STATIC_ROOT = path.join(ROOT, "frontend");
+const STATIC_ROOT = path.join(ROOT, "dist");
 const browserName = process.env.HEXNAC_BROWSER || "chromium";
 const browserType = playwright[browserName];
 const MIME_TYPES = {

@@ -7,14 +7,14 @@ The selected CSV remains on the visitor's device.
 ## Source layout
 
 ```text
-frontend/hexnac-quest/                     Public pages
-frontend/static/js/hexnac-quest-core.js    Model and CSV contract
-frontend/static/js/hexnac-quest-worker.js  Background parsing/prediction
-frontend/static/js/hexnac-quest-ui.js      Browser UI
-frontend/static/hexnac-quest/v1/model.json Versioned model manifest
-frontend/static/hexnac-quest/vendor/        Pinned Papa Parse runtime/license
-frontend/static/hexnac-quest/tutorial/      Migrated tutorial images
-scripts/tests/hexnac-quest-*.test.js        Unit and browser parity tests
+site/pages/hexnac-quest/                    Authored public pages
+public/static/js/hexnac-quest-core.js       Model and CSV contract
+public/static/js/hexnac-quest-worker.js     Background parsing/prediction
+public/static/js/hexnac-quest-ui.js         Browser UI
+public/static/hexnac-quest/v1/model.json    Versioned model manifest
+public/static/hexnac-quest/vendor/           Pinned parser runtime/license
+public/static/hexnac-quest/tutorial/         Migrated tutorial images
+scripts/tests/hexnac-quest-*.test.js         Unit and browser parity tests
 ```
 
 The original 250 MB `model1.rda` and Shiny application are intentionally not
@@ -57,15 +57,9 @@ If the model is ever replaced, use a new versioned manifest directory. Record
 the source-model checksum, generate an independent reference fixture, and make
 all unit and browser parity checks pass before deployment.
 
-## Legacy application retirement
+## Legacy application status
 
-The old shinyapps.io applications were named `o-glcnac-quest` and
-`HexNAcQuest` under account `oglcnac`. They may be archived only after the
-static production workflow passes. Use the recoverable rsconnect operation:
-
-```r
-rsconnect::terminateApp("o-glcnac-quest", account = "oglcnac", server = "shinyapps.io")
-rsconnect::terminateApp("HexNAcQuest", account = "oglcnac", server = "shinyapps.io")
-```
-
-Do not permanently delete them as part of routine website deployment.
+The former shinyapps.io applications are not a dependency, backup, or
+deployment target. Their scientific contract is preserved by the model
+checksum, coefficients, canonical fixture, and exact parity tests in this
+repository. Do not recreate an R/Shiny runtime for routine website operation.

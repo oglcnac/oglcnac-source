@@ -5,7 +5,8 @@ on:
     paths:
       - ".github/workflows/**"
       - "site/**"
-      - "frontend/**"
+      - "public/**"
+      - "prediction-reference/**"
       - "scripts/**"
       - "docs/**"
       - "package.json"
@@ -14,7 +15,8 @@ on:
     paths:
       - ".github/workflows/**"
       - "site/**"
-      - "frontend/**"
+      - "public/**"
+      - "prediction-reference/**"
       - "scripts/**"
       - "docs/**"
       - "package.json"

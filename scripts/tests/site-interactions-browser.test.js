@@ -7,7 +7,7 @@ const path = require("node:path");
 const playwright = require("playwright");
 
 const ROOT = path.resolve(__dirname, "../..");
-const STATIC_ROOT = path.join(ROOT, "frontend");
+const STATIC_ROOT = path.join(ROOT, "dist");
 const requestedBrowserName = process.env.SITE_BROWSER || "chromium";
 const browserType = playwright[requestedBrowserName];
 if (!browserType) {

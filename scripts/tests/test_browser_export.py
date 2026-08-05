@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "prediction-service"))
+sys.path.insert(0, str(ROOT / "prediction-reference"))
 
 from tools.export_browser_predictor import (  # noqa: E402
     export_aaindex,
@@ -74,7 +74,7 @@ class BrowserExportTests(unittest.TestCase):
         for species, filename, fallback, last_token in cases:
             source = (
                 ROOT
-                / "prediction-service/prediction_model/word2vec"
+                / "prediction-reference/prediction_model/word2vec"
                 / filename
             )
             with self.subTest(species=species), tempfile.TemporaryDirectory() as directory:
@@ -94,7 +94,7 @@ class BrowserExportTests(unittest.TestCase):
     def test_aaindex_export_contains_the_species_specific_29_properties(self):
         source = (
             ROOT
-            / "prediction-service/prediction_model/AAindex/AAindex_normalized.txt"
+            / "prediction-reference/prediction_model/AAindex/AAindex_normalized.txt"
         )
         with tempfile.TemporaryDirectory() as directory:
             metadata = export_aaindex(source, Path(directory))
@@ -109,12 +109,12 @@ class BrowserExportTests(unittest.TestCase):
         )
 
     def test_model_export_writes_a_loadable_static_manifest_and_weight_shards(self):
-        source = ROOT / "prediction-service/prediction_model/model"
+        source = ROOT / "prediction-reference/prediction_model/model"
         with tempfile.TemporaryDirectory() as directory:
             stale_path = Path(directory) / "hm_M1/stale.bin"
             stale_path.parent.mkdir(parents=True)
             stale_path.write_bytes(b"obsolete")
-            service_path = str(ROOT / "prediction-service")
+            service_path = str(ROOT / "prediction-reference")
             sys.path.remove(service_path)
             try:
                 exported = export_models(
@@ -152,7 +152,7 @@ class BrowserExportTests(unittest.TestCase):
         self.assertTrue(all(size > 0 for size in shard_sizes))
 
     def test_bundle_manifest_uses_versioned_relative_static_asset_paths(self):
-        model_root = ROOT / "prediction-service/prediction_model"
+        model_root = ROOT / "prediction-reference/prediction_model"
         with tempfile.TemporaryDirectory() as directory:
             destination = Path(directory) / "bundle"
             destination.mkdir()

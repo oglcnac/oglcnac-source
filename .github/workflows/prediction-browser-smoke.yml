@@ -3,19 +3,19 @@ name: Prediction browser smoke
 on:
   push:
     paths:
-      - "frontend/pred_dl/**"
-      - "frontend/static/js/prediction-*.js"
-      - "frontend/static/prediction/**"
-      - "prediction-service/tools/**"
+      - "site/pages/pred_dl/**"
+      - "public/static/js/prediction-*.js"
+      - "public/static/prediction/**"
+      - "prediction-reference/**"
       - "scripts/tests/**"
       - "package.json"
       - "package-lock.json"
   pull_request:
     paths:
-      - "frontend/pred_dl/**"
-      - "frontend/static/js/prediction-*.js"
-      - "frontend/static/prediction/**"
-      - "prediction-service/tools/**"
+      - "site/pages/pred_dl/**"
+      - "public/static/js/prediction-*.js"
+      - "public/static/prediction/**"
+      - "prediction-reference/**"
       - "scripts/tests/**"
       - "package.json"
       - "package-lock.json"

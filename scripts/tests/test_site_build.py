@@ -16,7 +16,7 @@ from scripts.smoke_static_site import LinkParser as SmokeLinkParser
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-FRONTEND_ROOT = REPOSITORY_ROOT / "frontend"
+FRONTEND_ROOT = REPOSITORY_ROOT / "dist"
 BUILD_SCRIPT = REPOSITORY_ROOT / "scripts" / "build_site.py"
 QA_SCRIPT = REPOSITORY_ROOT / "scripts" / "check_site.py"
 STATIC_SMOKE_SCRIPT = REPOSITORY_ROOT / "scripts" / "smoke_static_site.py"
@@ -256,7 +256,7 @@ class SiteBuildTests(unittest.TestCase):
             self.assertIn("Generated output is stale", check_result.stderr)
             self.assertIn("index.html", check_result.stderr)
 
-    def test_check_reports_obsolete_owned_output_and_ignores_unrelated_files(
+    def test_check_reports_every_unexpected_output_file(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as output_directory:
@@ -281,12 +281,12 @@ class SiteBuildTests(unittest.TestCase):
             self.assertIn("Generated output is stale", check_result.stderr)
             self.assertIn("retired/index.html", check_result.stderr)
             for path in unrelated_paths:
-                self.assertNotIn(
+                self.assertIn(
                     path.relative_to(output_root).as_posix(),
                     check_result.stderr,
                 )
 
-    def test_build_removes_only_obsolete_owned_outputs(self) -> None:
+    def test_build_refuses_to_delete_unowned_output_files(self) -> None:
         with tempfile.TemporaryDirectory() as output_directory:
             build_result = run_build("--output-root", output_directory)
             self.assertEqual(build_result.returncode, 0, build_result.stderr)
@@ -305,8 +305,9 @@ class SiteBuildTests(unittest.TestCase):
 
             rebuild_result = run_build("--output-root", output_directory)
 
-            self.assertEqual(rebuild_result.returncode, 0, rebuild_result.stderr)
-            self.assertFalse(obsolete.exists())
+            self.assertNotEqual(rebuild_result.returncode, 0)
+            self.assertIn("Refusing to remove unowned files", rebuild_result.stderr)
+            self.assertTrue(obsolete.exists())
             for path in unrelated_paths:
                 self.assertTrue(path.is_file(), path)
 
@@ -326,8 +327,6 @@ class SiteBuildTests(unittest.TestCase):
             retired_output = (
                 Path(output_directory) / "static" / "img" / "tool-atlas.svg"
             )
-            unrelated = Path(output_directory) / "static" / "img" / "curator.svg"
-            unrelated.write_text("<svg/>")
             retired_source.unlink()
 
             check_result = run_build(
@@ -348,21 +347,22 @@ class SiteBuildTests(unittest.TestCase):
             )
             self.assertEqual(rebuild_result.returncode, 0, rebuild_result.stderr)
             self.assertFalse(retired_output.exists())
-            self.assertTrue(unrelated.is_file())
 
-    def test_tracked_generated_outputs_are_current(self) -> None:
+    def test_generated_outputs_are_disposable_and_source_inputs_are_tracked(self) -> None:
         check_result = run_build("--check")
         self.assertEqual(check_result.returncode, 0, check_result.stderr)
 
         tracked = subprocess.run(
-            ["git", "ls-files", "--", "frontend"],
+            ["git", "ls-files", "--", "public", "site"],
             cwd=REPOSITORY_ROOT,
             text=True,
             capture_output=True,
             check=True,
         ).stdout.splitlines()
-        for output in GENERATED_OUTPUTS:
-            self.assertIn(f"frontend/{output}", tracked)
+        self.assertFalse((REPOSITORY_ROOT / "frontend").exists())
+        self.assertTrue((REPOSITORY_ROOT / "public/static/data/atlas-records.json").is_file())
+        self.assertIn("site/site.json", tracked)
+        self.assertNotIn("dist/index.html", tracked)
 
     def test_generated_route_set_is_preserved(self) -> None:
         actual = tuple(
@@ -960,56 +960,96 @@ srcset="../static/img/one.png 1x, ../static/img/two.png 2x"></body></html>
                 result.stderr,
             )
 
-    def test_deploy_rejects_stale_generated_output_before_copying(self) -> None:
-        with tempfile.TemporaryDirectory() as source_directory:
-            source_root = Path(source_directory)
-            build_result = run_build("--output-root", source_directory)
-            self.assertEqual(build_result.returncode, 0, build_result.stderr)
-            (source_root / "index.html").write_text(
-                (source_root / "index.html").read_text() + "\n<!-- stale -->\n"
+    def test_deploy_and_rollback_use_disposable_checkouts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            seed = root / "seed"
+            remote = root / "pages.git"
+            checkout = root / "verification"
+            seed.mkdir()
+            subprocess.run(
+                ["git", "init"],
+                cwd=seed,
+                check=True,
+                capture_output=True,
             )
-            environment = os.environ.copy()
-            environment["SOURCE_DIR"] = source_directory
-            environment["DEPLOY_DIR"] = str(source_root / "missing-deploy")
+            seed.joinpath("legacy.txt").write_text("generated deployment fixture\n")
+            subprocess.run(["git", "add", "."], cwd=seed, check=True)
+            git_environment = os.environ.copy()
+            git_environment.update(
+                {
+                    "GIT_AUTHOR_NAME": "Site QA",
+                    "GIT_AUTHOR_EMAIL": "site-qa@example.invalid",
+                    "GIT_COMMITTER_NAME": "Site QA",
+                    "GIT_COMMITTER_EMAIL": "site-qa@example.invalid",
+                    "SKIP_SOURCE_STATE_CHECK": "1",
+                    "DEPLOY_REPOSITORY_URL": str(remote),
+                }
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "Seed deployment"],
+                cwd=seed,
+                env=git_environment,
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(
+                ["git", "branch", "-M", "master"],
+                cwd=seed,
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(
+                ["git", "clone", "--bare", str(seed), str(remote)],
+                check=True,
+                capture_output=True,
+            )
 
             deploy_result = subprocess.run(
                 [str(REPOSITORY_ROOT / "scripts" / "deploy-frontend.sh")],
                 cwd=REPOSITORY_ROOT,
-                env=environment,
+                env=git_environment,
                 text=True,
                 capture_output=True,
                 check=False,
             )
+            self.assertEqual(deploy_result.returncode, 0, deploy_result.stderr)
+            subprocess.run(
+                ["git", "clone", str(remote), str(checkout)],
+                check=True,
+                capture_output=True,
+            )
+            self.assertTrue((checkout / "index.html").is_file())
+            self.assertTrue((checkout / "static/data/atlas-records.json").is_file())
+            self.assertFalse((checkout / "legacy.txt").exists())
+            deployed_commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=checkout,
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout.strip()
+            deployment_message = subprocess.run(
+                ["git", "log", "-1", "--format=%B"],
+                cwd=checkout,
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout
+            self.assertIn("Source-Commit:", deployment_message)
 
-            self.assertNotEqual(deploy_result.returncode, 0)
-            self.assertIn("Generated output is stale", deploy_result.stderr)
-            self.assertNotIn("not a git repository", deploy_result.stderr)
-
-    def test_deploy_rejects_obsolete_owned_output_before_copying(self) -> None:
-        with tempfile.TemporaryDirectory() as source_directory:
-            source_root = Path(source_directory)
-            build_result = run_build("--output-root", source_directory)
-            self.assertEqual(build_result.returncode, 0, build_result.stderr)
-            obsolete = source_root / "retired" / "index.html"
-            obsolete.parent.mkdir()
-            obsolete.write_bytes((source_root / "index.html").read_bytes())
-            environment = os.environ.copy()
-            environment["SOURCE_DIR"] = source_directory
-            environment["DEPLOY_DIR"] = str(source_root / "missing-deploy")
-
-            deploy_result = subprocess.run(
-                [str(REPOSITORY_ROOT / "scripts" / "deploy-frontend.sh")],
+            rollback_result = subprocess.run(
+                [
+                    str(REPOSITORY_ROOT / "scripts" / "rollback-frontend.sh"),
+                    deployed_commit,
+                ],
                 cwd=REPOSITORY_ROOT,
-                env=environment,
+                env=git_environment,
                 text=True,
                 capture_output=True,
                 check=False,
             )
-
-            self.assertNotEqual(deploy_result.returncode, 0)
-            self.assertIn("Generated output is stale", deploy_result.stderr)
-            self.assertIn("retired/index.html", deploy_result.stderr)
-            self.assertNotIn("not a git repository", deploy_result.stderr)
+            self.assertEqual(rollback_result.returncode, 0, rollback_result.stderr)
 
 
 if __name__ == "__main__":

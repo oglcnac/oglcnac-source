@@ -218,7 +218,7 @@ def parse_arguments(arguments: Iterable[str]) -> argparse.Namespace:
         "root",
         nargs="?",
         type=Path,
-        default=Path(__file__).resolve().parents[1] / "frontend",
+        default=Path(__file__).resolve().parents[1] / "dist",
         help="Frontend root to inspect.",
     )
     return parser.parse_args(arguments)

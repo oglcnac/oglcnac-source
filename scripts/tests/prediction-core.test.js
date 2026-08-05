@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const prediction = require("../../frontend/static/js/prediction-core.js");
+const prediction = require("../../public/static/js/prediction-core.js");
 
 test("parses FASTA identifiers and normalizes sequences to uppercase", () => {
   assert.deepEqual(

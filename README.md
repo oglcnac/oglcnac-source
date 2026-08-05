@@ -1,76 +1,77 @@
 # O-GlcNAc Source
 
-This is the source monorepo for the public O-GlcNAc website and the retained
-prediction reference service.
-Use this repository for new development.
+This repository is the single authoritative source for the complete public
+website at [oglcnac.org](https://oglcnac.org/). A clean clone contains every
+page, dataset, browser runtime, model, image, and build/deployment script needed
+to rebuild the site. Production has no application server or database.
 
-Production is intentionally simple:
+Atlas, OGT-PIN, PRED-DL, and HexNAcQuest run entirely in the browser. PRED-DL
+uses the bundled TensorFlow.js/WASM runtime and models; HexNAcQuest uses its
+bundled JavaScript model. User sequences and CSV files are not uploaded.
 
-- `site/` contains the dependency-free templates, page fragments, metadata,
-  and modular CSS sources.
-- `frontend/` is the tracked generated website deployed to GitHub Pages.
-- `prediction-service/` is the Python reference implementation used to export
-  and verify the static browser predictor.
-- `ops/api-proxy/` retains the old prediction API during its transition period.
-- `/home/bach/oglcnac-static-site` is the generated GitHub Pages deploy checkout.
-
-The generated deploy checkout is pushed to `github.com/oglcnac/oglcnac`.
-This source repository is pushed to `github.com/oglcnac/oglcnac-source`.
-
-## Layout
+## Repository layout
 
 ```text
-site/                  Build-time templates, page content, metadata, and CSS
-frontend/              Tracked generated website for GitHub Pages
-prediction-service/    FastAPI O-GlcNAcPRED-DL backend
-ops/api-proxy/         Linode API-only proxy for api.oglcnac.org
-scripts/               Local deployment helpers
-docs/                  Operational notes
+site/                    Authored templates, page content, metadata, and CSS
+public/                  Tracked datasets and other public static assets
+prediction-reference/   Offline Python reference/export code for PRED-DL
+scripts/                 Build, test, deployment, and data-generation tools
+docs/                    Maintenance and recovery documentation
+dist/                    Generated complete site (ignored; never authoritative)
 ```
 
-## Public Services
+The `oglcnac/oglcnac` GitHub repository is a generated GitHub Pages artifact.
+It is populated from a temporary clone during deployment; it is not edited and
+does not need a permanent server checkout. The separate
+[`YaoxiangLi/oglcnac`](https://github.com/YaoxiangLi/oglcnac) R package is an
+optional curator tool, not a website deployment dependency.
 
-```text
-https://oglcnac.org/              Static frontend on GitHub Pages
-https://api.oglcnac.org/health    Legacy prediction API during transition
-```
-
-Atlas, OGT-PIN, PRED-DL, and HexNAcQuest run fully in the browser from
-versioned static assets. PRED-DL uses TensorFlow.js with the WASM backend;
-HexNAcQuest uses an exact JavaScript representation of its published logistic
-model. Protein sequences and HexNAcQuest CSV files do not leave the browser.
-
-## Daily Checks
-
-From this repository:
+## Build and verify
 
 ```bash
-git status --short --branch
-npm run check:site
+npm ci
+npm run build:site
 npm run qa:repository
 npm run test:site
-npm run smoke:static
-npm run smoke:static:browser
 ```
 
-The smoke tests check every public page, static data, static prediction assets,
-and browser prediction parity without contacting the API.
+`npm run build:site` combines `site/` and `public/` into a reproducible `dist/`
+tree. The builder rejects source collisions, symlinks, unowned output, and
+unexpected output drift.
 
-## Common Workflows
+For the complete gates, run:
 
-- Deployment: see `docs/DEPLOYMENT.md`.
-- Full clean-room rebuild: see `docs/REBUILD.md`.
-- Maintenance checklist: see `docs/MAINTENANCE.md`.
-- Data updates: see `docs/DATA-UPDATES.md`.
-- Curator workflow: see `docs/CURATOR-WORKFLOW.md`.
-- Frontend source notes: see `frontend/README.md`.
-- Static prediction architecture and transition: see `docs/STATIC-PREDICTION.md`.
-- Static HexNAcQuest architecture and model contract: see `docs/HEXNAC-QUEST.md`.
-- Prediction export/reference-service notes: see `prediction-service/README.md`.
+```bash
+npm run qa:pr
+npm run test:tables:browser
+npm run test:prediction:browser
+npm run test:hexnac:browser
+```
 
-## Do Not Commit
+## Deploy
 
-- Secrets or local runtime files such as `prediction-service/.env`.
-- Generated visual review screenshots.
-- Python caches, logs, or local virtual environments.
-- Files from archived legacy folders unless doing explicit historical recovery.
+Commit and push the reviewed source first, then run:
+
+```bash
+./scripts/deploy-frontend.sh
+```
+
+The helper verifies the source commit, builds and audits a temporary artifact,
+clones `github.com/oglcnac/oglcnac` into a temporary directory, publishes the
+artifact, records the source SHA in the deploy commit, and removes the clone.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and
+[docs/REBUILD.md](docs/REBUILD.md).
+
+## Operational guides
+
+- [Frontend ownership](docs/FRONTEND.md)
+- [Deployment and rollback](docs/DEPLOYMENT.md)
+- [Clean-room rebuild](docs/REBUILD.md)
+- [Maintenance checklist](docs/MAINTENANCE.md)
+- [Curator workflow](docs/CURATOR-WORKFLOW.md)
+- [Data updates](docs/DATA-UPDATES.md)
+- [Static PRED-DL](docs/STATIC-PREDICTION.md)
+- [Static HexNAcQuest](docs/HEXNAC-QUEST.md)
+
+Never commit secrets, `.env` files, caches, virtual environments, screenshots,
+or a generated `dist/` directory.

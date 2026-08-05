@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 
 
 DEFAULT_BASE_URL = "https://oglcnac.org"
-DEFAULT_STATIC_ROOT = Path(__file__).resolve().parents[1] / "frontend"
+DEFAULT_STATIC_ROOT = Path(__file__).resolve().parents[1] / "dist"
 
 
 class LinkParser(HTMLParser):

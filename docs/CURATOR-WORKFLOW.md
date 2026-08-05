@@ -5,7 +5,7 @@ kept only for legacy recovery.
 
 ## Source Files
 
-Keep public release CSV files in `frontend/static/dataset/`:
+Keep public release CSV files in `public/static/dataset/`:
 
 ```text
 Atlas 5.0_unambiguous sites_20251208.csv   Atlas dataset-I
@@ -23,7 +23,9 @@ public release.
 
 ## Validate With The R Package
 
-The R package lives in `/home/bach/oglcnac-r`.
+The optional curator R package is maintained separately at
+`https://github.com/YaoxiangLi/oglcnac`. Clone or install it wherever convenient;
+the website build does not depend on a permanent local checkout.
 
 GUI workflow:
 
@@ -60,21 +62,21 @@ should be fixed before publishing.
 From `/home/bach/oglcnac-source`:
 
 ```bash
-python3 frontend/scripts/generate_static_data.py \
-  --atlas-unambiguous-csv "frontend/static/dataset/Atlas 5.0_unambiguous sites_20251208.csv" \
-  --atlas-ambiguous-csv "frontend/static/dataset/Atlas 5.0_ambiguous sites_20251208.csv" \
-  --ogt-pin-csv frontend/static/dataset/ogt-pin-records.csv
+python3 scripts/generate_static_data.py \
+  --atlas-unambiguous-csv "public/static/dataset/Atlas 5.0_unambiguous sites_20251208.csv" \
+  --atlas-ambiguous-csv "public/static/dataset/Atlas 5.0_ambiguous sites_20251208.csv" \
+  --ogt-pin-csv public/static/dataset/ogt-pin-records.csv
 ```
 
 This writes:
 
 ```text
-frontend/static/data/atlas-records.json
-frontend/static/data/atlas-records.json.gz
-frontend/static/data/atlas-release-v1.json
-frontend/static/data/atlas-release-v1.json.gz
-frontend/static/data/ogt-pin-records.json
-frontend/static/data/ogt-pin-records.json.gz
+public/static/data/atlas-records.json
+public/static/data/atlas-records.json.gz
+public/static/data/atlas-release-v1.json
+public/static/data/atlas-release-v1.json.gz
+public/static/data/ogt-pin-records.json
+public/static/data/ogt-pin-records.json.gz
 ```
 
 Expected current row counts:
@@ -119,10 +121,10 @@ eligibility metadata to a newer release.
 For a controlled local FASTA input:
 
 ```bash
-python3 frontend/scripts/generate_static_data.py \
-  --atlas-unambiguous-csv "frontend/static/dataset/Atlas 5.0_unambiguous sites_20251208.csv" \
-  --atlas-ambiguous-csv "frontend/static/dataset/Atlas 5.0_ambiguous sites_20251208.csv" \
-  --ogt-pin-csv frontend/static/dataset/ogt-pin-records.csv \
+python3 scripts/generate_static_data.py \
+  --atlas-unambiguous-csv "public/static/dataset/Atlas 5.0_unambiguous sites_20251208.csv" \
+  --atlas-ambiguous-csv "public/static/dataset/Atlas 5.0_ambiguous sites_20251208.csv" \
+  --ogt-pin-csv public/static/dataset/ogt-pin-records.csv \
   --atlas-sequence-fasta /path/to/uniprot-batch.fasta \
   --sequence-retrieved-date YYYY-MM-DD \
   --sequence-source-release UNIPROT_RELEASE
@@ -131,10 +133,10 @@ python3 frontend/scripts/generate_static_data.py \
 To query the official UniProt REST service for missing eligible accessions:
 
 ```bash
-python3 frontend/scripts/generate_static_data.py \
-  --atlas-unambiguous-csv "frontend/static/dataset/Atlas 5.0_unambiguous sites_20251208.csv" \
-  --atlas-ambiguous-csv "frontend/static/dataset/Atlas 5.0_ambiguous sites_20251208.csv" \
-  --ogt-pin-csv frontend/static/dataset/ogt-pin-records.csv \
+python3 scripts/generate_static_data.py \
+  --atlas-unambiguous-csv "public/static/dataset/Atlas 5.0_unambiguous sites_20251208.csv" \
+  --atlas-ambiguous-csv "public/static/dataset/Atlas 5.0_ambiguous sites_20251208.csv" \
+  --ogt-pin-csv public/static/dataset/ogt-pin-records.csv \
   --fetch-uniprot-sequences \
   --uniprot-cache-dir /path/to/persistent/uniprot-cache
 ```
@@ -162,7 +164,7 @@ python3 -m unittest scripts.tests.test_generate_static_data -v
 npm run smoke:static
 npm run smoke:static:browser
 npm run qa:repository
-git add frontend/static/dataset frontend/static/data docs
+git add public/static/dataset public/static/data docs
 git commit -m "Update public data bundles"
 git push
 ./scripts/deploy-frontend.sh
@@ -172,6 +174,5 @@ After deployment:
 
 ```bash
 curl -L -s https://oglcnac.org/ -o /tmp/oglcnac-home.html -w '%{http_code}\n'
-curl -L -s https://api.oglcnac.org/health -o /tmp/oglcnac-api.json -w '%{http_code}\n'
 npm run smoke:static
 ```
