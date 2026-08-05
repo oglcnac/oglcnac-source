@@ -41,8 +41,10 @@ No permanent deployment checkout is required or supported. Never edit the
 Pages repository to make a source change.
 
 Useful optional environment variables are `DEPLOY_REPOSITORY_URL`,
-`DEPLOY_BRANCH`, and `COMMIT_MESSAGE`. `SKIP_SOURCE_STATE_CHECK=1` exists only
-for isolated integration tests and must not be used for production.
+`DEPLOY_BRANCH`, `COMMIT_MESSAGE`, `DEPLOY_GIT_NAME`, and `DEPLOY_GIT_EMAIL`.
+By default the temporary deploy commit uses the source repository's local Git
+identity. `SKIP_SOURCE_STATE_CHECK=1` exists only for isolated integration
+tests and must not be used for production.
 
 ## Verify production
 

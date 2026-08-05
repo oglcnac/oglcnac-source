@@ -6,6 +6,13 @@ REPOSITORY_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DEPLOY_REPOSITORY_URL="${DEPLOY_REPOSITORY_URL:-https://github.com/oglcnac/oglcnac.git}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-master}"
 COMMIT_MESSAGE="${COMMIT_MESSAGE:-Deploy frontend from oglcnac-source}"
+DEPLOY_GIT_NAME="${DEPLOY_GIT_NAME:-$(git -C "$REPOSITORY_ROOT" config user.name || true)}"
+DEPLOY_GIT_EMAIL="${DEPLOY_GIT_EMAIL:-$(git -C "$REPOSITORY_ROOT" config user.email || true)}"
+
+if [ -z "$DEPLOY_GIT_NAME" ] || [ -z "$DEPLOY_GIT_EMAIL" ]; then
+  echo "Configure git user.name and user.email in the source repository before deployment." >&2
+  exit 1
+fi
 
 if [ "${SKIP_SOURCE_STATE_CHECK:-0}" != "1" ]; then
   if [ -n "$(git -C "$REPOSITORY_ROOT" status --porcelain --untracked-files=normal)" ]; then
@@ -36,6 +43,8 @@ python3 -S "$REPOSITORY_ROOT/scripts/check_site.py" \
   "$BUILD_DIRECTORY"
 
 git clone --quiet --branch "$DEPLOY_BRANCH" "$DEPLOY_REPOSITORY_URL" "$DEPLOY_DIRECTORY"
+git -C "$DEPLOY_DIRECTORY" config user.name "$DEPLOY_GIT_NAME"
+git -C "$DEPLOY_DIRECTORY" config user.email "$DEPLOY_GIT_EMAIL"
 rsync -a --delete --exclude '.git' "$BUILD_DIRECTORY/" "$DEPLOY_DIRECTORY/"
 
 if [ -n "$(git -C "$DEPLOY_DIRECTORY" status --porcelain)" ]; then
