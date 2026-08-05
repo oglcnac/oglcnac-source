@@ -240,7 +240,7 @@
       "output": "hexnac-quest/index.html",
       "route": "/hexnac-quest/",
       "title": "HexNAcQuest | oglcnac.org",
-      "description": "Distinguish O-GlcNAc and O-GalNAc from oxonium-ion intensities with a private, browser-based model.",
+      "description": "Distinguish O-GlcNAc and O-GalNAc from diagnostic oxonium-ion intensities with HexNAcQuest.",
       "section": "hexnac-quest",
       "body_class": "site-body section-body hexnac-section",
       "main_class": "site-main"
@@ -249,7 +249,7 @@
       "output": "hexnac-quest/analysis/index.html",
       "route": "/hexnac-quest/analysis/",
       "title": "Analysis | HexNAcQuest",
-      "description": "Run HexNAcQuest locally in your browser from a CSV file.",
+      "description": "Classify compatible oxonium-ion intensity data as GlcNAc or GalNAc.",
       "section": "hexnac-quest",
       "body_class": "site-body section-body hexnac-section",
       "main_class": "site-main",

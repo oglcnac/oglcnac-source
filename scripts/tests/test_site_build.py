@@ -429,9 +429,9 @@ class SiteBuildTests(unittest.TestCase):
                 "contributed equally",
             ),
             "hexnac-quest/index.html": (
-                "shinyapps.io",
-                "prediction api",
-                "save the result as csv",
+                "diagnostic oxonium-ion intensities",
+                "published logistic regression model",
+                "your data stays on your device",
             ),
         }
         for relative_path, facts in expected_facts.items():
@@ -443,6 +443,23 @@ class SiteBuildTests(unittest.TestCase):
                 )
                 for fact in facts:
                     self.assertIn(fact.casefold(), text)
+
+    def test_hexnac_public_copy_excludes_migration_and_runtime_jargon(self) -> None:
+        forbidden_phrases = (
+            "shinyapps.io",
+            "original shiny",
+            "prediction api",
+            "browser worker",
+            "static website files",
+            "migration",
+        )
+        for relative_path in GENERATED_HTML:
+            if not relative_path.startswith("hexnac-quest/"):
+                continue
+            with self.subTest(page=relative_path):
+                text = (FRONTEND_ROOT / relative_path).read_text().casefold()
+                for phrase in forbidden_phrases:
+                    self.assertNotIn(phrase, text)
 
     def test_shared_shell_has_metadata_and_semantic_landmarks(self) -> None:
         for relative_path in GENERATED_HTML:

@@ -172,7 +172,7 @@
     };
     nextWorker.onerror = () => {
       if (worker !== nextWorker) return;
-      setStatus("error", "HexNAcQuest could not start its browser worker.");
+      setStatus("error", "HexNAcQuest could not start the analysis. Reload the page and try again.");
       elements.run.disabled = true;
       elements.cancel.disabled = true;
     };
@@ -268,7 +268,7 @@
       setStatus("error", "The selected CSV is larger than the 25 MB limit.");
       return;
     }
-    setStatus("parsing", "Reading and validating the CSV in your browser…");
+    setStatus("parsing", "Reading and validating the selected CSV…");
     const selectionWorker = createWorker();
     const buffer = await file.arrayBuffer();
     if (token !== selectionToken || worker !== selectionWorker) return;
@@ -282,7 +282,7 @@
     elements.run.disabled = true;
     elements.cancel.disabled = false;
     elements.download.disabled = true;
-    setStatus("predicting", "Running HexNAcQuest locally in your browser…");
+    setStatus("predicting", "Classifying spectra with HexNAcQuest…");
     worker.postMessage({ type: "predict" });
   });
 
