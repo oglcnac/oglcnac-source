@@ -221,6 +221,8 @@ mark {
 
 @media (max-width: 1279px) {
   .site-header-inner {
+    position: relative;
+    flex-wrap: wrap;
     align-items: flex-start;
     padding: 14px 0;
   }
@@ -230,12 +232,19 @@ mark {
   }
 
   .site-nav-disclosure {
-    position: relative;
+    position: static;
     display: flex;
     justify-content: flex-end;
   }
 
+  .site-nav-disclosure[open] {
+    flex: 1 0 100%;
+  }
+
   .site-nav-disclosure > summary {
+    position: absolute;
+    top: 14px;
+    right: 0;
     display: block;
     padding: 0.35rem 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.45);
@@ -260,12 +269,11 @@ mark {
   }
 
   .site-nav-panel {
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
+    position: static;
     display: grid;
-    width: min(340px, calc(100vw - 32px));
+    width: 100%;
     max-height: calc(100vh - 96px);
+    margin-top: 10px;
     padding: 12px;
     overflow-y: auto;
     align-items: stretch;

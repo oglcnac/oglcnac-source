@@ -56,8 +56,9 @@ test("visual audit covers every configured route and required dynamic state", ()
   for (const state of requiredStates) assert.ok(names.includes(state), state);
 });
 
-test("visual audit locks wide, desktop, and mobile viewports and contact sheets", () => {
+test("visual audit locks 4K, wide, desktop, and mobile viewports and contact sheets", () => {
   assert.deepEqual(viewports, [
+    ["4k", { width: 3840, height: 2160 }],
     ["wide", { width: 1920, height: 1080 }],
     ["desktop", { width: 1440, height: 1100 }],
     ["mobile", { width: 390, height: 844 }],

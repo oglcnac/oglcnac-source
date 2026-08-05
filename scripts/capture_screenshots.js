@@ -13,6 +13,7 @@ const strict = process.env.SCREENSHOT_STRICT !== "0";
 const captureMode = process.env.SCREENSHOT_MODE || "audit";
 
 const viewports = [
+  ["4k", { width: 3840, height: 2160 }],
   ["wide", { width: 1920, height: 1080 }],
   ["desktop", { width: 1440, height: 1100 }],
   ["mobile", { width: 390, height: 844 }],
@@ -34,7 +35,7 @@ const waitForSelector = (selector) => async (page) => {
 };
 
 const captures = [
-  { group: "suite", route: "/", name: "home" },
+  { group: "suite", route: "/", name: "home", aboveFold: ".hero-actions" },
   {
     group: "suite",
     route: "/",
@@ -49,18 +50,20 @@ const captures = [
   },
   { group: "suite", route: "/404.html", name: "not-found" },
 
-  { group: "atlas", route: "/atlas/", name: "atlas-home" },
+  { group: "atlas", route: "/atlas/", name: "atlas-home", aboveFold: ".resource-hero .button-row" },
   {
     group: "atlas",
     route: "/atlas/statistics/",
     name: "atlas-statistics",
+    aboveFold: ".metric-grid",
     ready: waitForSelector('[data-atlas-release-state="ready"]'),
   },
-  { group: "atlas", route: "/atlas/search/", name: "atlas-search" },
+  { group: "atlas", route: "/atlas/search/", name: "atlas-search", aboveFold: ".search-form" },
   {
     group: "atlas",
     route: "/atlas/search/?q=P18583&field=accession",
     name: "atlas-search-results",
+    aboveFold: ".native-table-controls",
     ready: waitForTable("search_result"),
   },
   {
@@ -86,6 +89,7 @@ const captures = [
     group: "atlas",
     route: "/atlas/browse/?species=Human",
     name: "atlas-browse-results",
+    aboveFold: ".species-filter",
     ready: waitForTable("search_result"),
   },
   {
@@ -104,17 +108,18 @@ const captures = [
   { group: "atlas", route: "/atlas/download/", name: "atlas-download" },
   { group: "atlas", route: "/atlas/contact/", name: "atlas-contact" },
 
-  { group: "ogt-pin", route: "/ogt-pin/", name: "ogt-pin-home" },
+  { group: "ogt-pin", route: "/ogt-pin/", name: "ogt-pin-home", aboveFold: ".resource-hero .button-row" },
   {
     group: "ogt-pin",
     route: "/ogt-pin/statistics/",
     name: "ogt-pin-statistics",
   },
-  { group: "ogt-pin", route: "/ogt-pin/search/", name: "ogt-pin-search" },
+  { group: "ogt-pin", route: "/ogt-pin/search/", name: "ogt-pin-search", aboveFold: ".search-form" },
   {
     group: "ogt-pin",
     route: "/ogt-pin/search/?q=Q9H1M0&field=uuid_b",
     name: "ogt-pin-search-results",
+    aboveFold: ".native-table-controls",
     ready: waitForTable("search_result"),
   },
   {
@@ -154,16 +159,18 @@ const captures = [
   { group: "ogt-pin", route: "/ogt-pin/tutorial/", name: "ogt-pin-tutorial" },
   { group: "ogt-pin", route: "/ogt-pin/contact/", name: "ogt-pin-contact" },
 
-  { group: "pred-dl", route: "/pred_dl/", name: "pred-dl-home" },
+  { group: "pred-dl", route: "/pred_dl/", name: "pred-dl-home", aboveFold: ".resource-hero .button-row" },
   {
     group: "pred-dl",
     route: "/pred_dl/input_fasta/",
     name: "pred-dl-input",
+    aboveFold: ".prediction-grid",
   },
   {
     group: "pred-dl",
     route: "/pred_dl/input_fasta/",
     name: "pred-dl-result",
+    aboveFold: ".results-card",
     act: async (page) => {
       await page.fill("#message", ">SEQ1\nAAAAAAAAAAAAAASAAAAAAAAAAAAAA");
       await page.click('#prediction-text-form button[type="submit"]');
@@ -191,16 +198,18 @@ const captures = [
   { group: "pred-dl", route: "/pred_dl/download/", name: "pred-dl-download" },
   { group: "pred-dl", route: "/pred_dl/contact/", name: "pred-dl-contact" },
 
-  { group: "hexnac", route: "/hexnac-quest/", name: "hexnac-home" },
+  { group: "hexnac", route: "/hexnac-quest/", name: "hexnac-home", aboveFold: ".hq-hero .hq-actions" },
   {
     group: "hexnac",
     route: "/hexnac-quest/analysis/",
     name: "hexnac-analysis",
+    aboveFold: "#hexnac-file",
   },
   {
     group: "hexnac",
     route: "/hexnac-quest/analysis/",
     name: "hexnac-result",
+    aboveFold: ".hq-summary-grid",
     act: async (page) => {
       await page.setInputFiles("#hexnac-file", {
         name: "visual-audit.csv",
@@ -314,22 +323,79 @@ async function captureState(
     await page.waitForTimeout(100);
     title = await page.title();
     h1 = (await page.locator("h1").first().textContent().catch(() => "")).trim();
-    metrics = await page.evaluate(() => ({
-      viewportWidth: document.documentElement.clientWidth,
-      documentWidth: document.documentElement.scrollWidth,
-      documentHeight: document.documentElement.scrollHeight,
-      bodyWidth: document.body.scrollWidth,
-      h1Count: document.querySelectorAll("h1").length,
-      navigationOpen: document
-        .querySelector(".site-nav-disclosure")
-        ?.hasAttribute("open"),
-      skipLinkVisible: (() => {
-        const link = document.querySelector(".skip-link");
-        if (!link) return false;
-        const bounds = link.getBoundingClientRect();
-        return bounds.bottom > 0 && bounds.top < window.innerHeight;
-      })(),
-    }));
+    metrics = await page.evaluate((aboveFoldSelector) => {
+      const isVisible = (element) => {
+        const style = getComputedStyle(element);
+        const bounds = element.getBoundingClientRect();
+        return style.display !== "none" && style.visibility !== "hidden" &&
+          Number(style.opacity) !== 0 && bounds.width > 1 && bounds.height > 1;
+      };
+      const selector = "h1,h2,h3,p,li,a,button,label,legend,th,td,figcaption";
+      const candidates = Array.from(document.querySelectorAll(selector)).filter(
+        (element) => isVisible(element) && !element.matches(".skip-link") &&
+          !element.closest(".visually-hidden") &&
+          getComputedStyle(element).display !== "inline",
+      );
+      const clippedText = candidates.filter((element) => {
+        const style = getComputedStyle(element);
+        if (["auto", "scroll"].includes(style.overflowX) ||
+            ["auto", "scroll"].includes(style.overflowY)) return false;
+        return element.scrollWidth > element.clientWidth + 6 ||
+          element.scrollHeight > element.clientHeight + 6;
+      }).slice(0, 12).map((element) => ({
+        tag: element.tagName.toLowerCase(),
+        text: (element.textContent || "").trim().slice(0, 80),
+      }));
+      const collisions = [];
+      for (let firstIndex = 0; firstIndex < candidates.length; firstIndex += 1) {
+        const first = candidates[firstIndex];
+        const firstBounds = first.getBoundingClientRect();
+        for (let secondIndex = firstIndex + 1; secondIndex < candidates.length; secondIndex += 1) {
+          const second = candidates[secondIndex];
+          if (first.contains(second) || second.contains(first) ||
+              (first.closest("table") && first.closest("table") === second.closest("table"))) continue;
+          const firstNavigationPanel = first.closest(".site-nav-panel");
+          const secondNavigationPanel = second.closest(".site-nav-panel");
+          if (firstNavigationPanel !== secondNavigationPanel &&
+              (firstNavigationPanel || secondNavigationPanel)) continue;
+          const secondBounds = second.getBoundingClientRect();
+          const overlapWidth = Math.min(firstBounds.right, secondBounds.right) -
+            Math.max(firstBounds.left, secondBounds.left);
+          const overlapHeight = Math.min(firstBounds.bottom, secondBounds.bottom) -
+            Math.max(firstBounds.top, secondBounds.top);
+          if (overlapWidth > 2 && overlapHeight > 2) {
+            collisions.push([
+              `${first.tagName.toLowerCase()}:${(first.textContent || "").trim().slice(0, 45)}`,
+              `${second.tagName.toLowerCase()}:${(second.textContent || "").trim().slice(0, 45)}`,
+            ]);
+            if (collisions.length >= 12) break;
+          }
+        }
+        if (collisions.length >= 12) break;
+      }
+      const foldTarget = aboveFoldSelector ? document.querySelector(aboveFoldSelector) : null;
+      const h1 = document.querySelector("h1");
+      return {
+        viewportWidth: document.documentElement.clientWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        documentHeight: document.documentElement.scrollHeight,
+        bodyWidth: document.body.scrollWidth,
+        h1Count: document.querySelectorAll("h1").length,
+        h1FontSize: h1 ? Number.parseFloat(getComputedStyle(h1).fontSize) : 0,
+        clippedText,
+        collisions,
+        aboveFoldTop: foldTarget ? Math.round(foldTarget.getBoundingClientRect().top) : null,
+        navigationOpen: document
+          .querySelector(".site-nav-disclosure")
+          ?.hasAttribute("open"),
+        skipLinkVisible: (() => {
+          const link = document.querySelector(".skip-link");
+          if (!link) return false;
+          const bounds = link.getBoundingClientRect();
+          return bounds.bottom > 0 && bounds.top < window.innerHeight;
+        })(),
+      };
+    }, capture.aboveFold || null);
     if (
       metrics.documentWidth > metrics.viewportWidth ||
       metrics.bodyWidth > metrics.viewportWidth
@@ -337,6 +403,16 @@ async function captureState(
       status = `overflow ${metrics.documentWidth}/${metrics.bodyWidth}`;
     }
     if (metrics.h1Count !== 1) status = `h1 count ${metrics.h1Count}`;
+    if (metrics.h1FontSize > 84) status = `oversized h1 ${metrics.h1FontSize}px`;
+    if (metrics.clippedText.length) status = `clipped text ${metrics.clippedText.length}`;
+    if (metrics.collisions.length) status = `text collision ${metrics.collisions.length}`;
+    if (
+      viewportName === "wide" &&
+      capture.aboveFold &&
+      (metrics.aboveFoldTop === null || metrics.aboveFoldTop > 720)
+    ) {
+      status = `primary content below fold ${metrics.aboveFoldTop}`;
+    }
     if (metrics.skipLinkVisible) status = "skip link visible without focus";
     if (
       viewportName === "mobile" &&

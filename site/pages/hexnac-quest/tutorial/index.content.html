@@ -16,10 +16,12 @@ scan_101,37564.4248,27138.75293,32261.40771,15646.51221,20015.9458</pre>
       </ol>
 
       <h2>Multiple files or enriched samples</h2>
+      <div class="hq-tutorial-grid">
       <div class="hq-tutorial-step"><img src="/static/hexnac-quest/tutorial/Fig1.jpg" alt="MSConvertGUI settings for conversion to mzML"><div><h3>1. Convert data</h3><p>Select the raw file and output folder, choose mzML, and start conversion. You may first create a scan-number list from peptide-spectrum matches to restrict extraction.</p></div></div>
       <div class="hq-tutorial-step"><img src="/static/hexnac-quest/tutorial/Fig2.jpg" alt="Example scan-number worksheet filtered for HexNAc modification"><div><h3>2. Select spectra</h3><p>If using a scan filter, place the scan number in the first worksheet column and retain HexNAc-modified peptide-spectrum matches.</p></div></div>
       <div class="hq-tutorial-step"><img src="/static/hexnac-quest/tutorial/code.png" alt="Example R code for extracting characteristic fragment intensities"><div><h3>3. Sum characteristic peaks</h3><p>For each selected spectrum, sum signal in the chosen tolerance around m/z 126, 138, 144, 168, and 186. Apply the larger-glycan filters required by your experiment.</p></div></div>
       <div class="hq-tutorial-step"><img src="/static/hexnac-quest/tutorial/Fig3.jpg" alt="Example HexNAcQuest input CSV"><div><h3>4. Export CSV</h3><p>Put the scan identifier in <code>id</code>, retain the five required intensity columns, and export a comma-separated file.</p></div></div>
       <div class="hq-tutorial-step"><img src="/static/hexnac-quest/tutorial/Fig4.jpg" alt="Selecting a HexNAcQuest CSV file"><div><h3>5. Analyze</h3><p>Select the CSV on the <a href="/hexnac-quest/analysis/">analysis page</a>, review valid and skipped rows, and run prediction.</p></div></div>
       <div class="hq-tutorial-step"><img src="/static/hexnac-quest/tutorial/Fig5.jpg" alt="HexNAcQuest prediction result example"><div><h3>6. Save results</h3><p>Review the GlcNAc/GalNAc summary and download the prediction CSV. The original intensity text and row order are preserved for valid rows.</p></div></div>
+      </div>
     </div></section>

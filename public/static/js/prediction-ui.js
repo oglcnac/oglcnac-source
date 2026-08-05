@@ -50,6 +50,7 @@
     const box = document.getElementById("prediction-error");
     box.textContent = message;
     box.style.display = "block";
+    box.scrollIntoView({ block: "nearest" });
   }
 
   function clearPredictionError() {
@@ -67,8 +68,10 @@
         record.score,
         record.confidence,
       ]);
-    document.getElementById("prediction-results-card").style.display = "block";
+    const resultsCard = document.getElementById("prediction-results-card");
+    resultsCard.style.display = "block";
     resultsTable.setRows(rows, { preserveState: false });
+    resultsCard.scrollIntoView({ block: "start" });
   }
 
   function clearPredictionResults() {

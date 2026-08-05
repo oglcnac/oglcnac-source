@@ -28,6 +28,24 @@
       </div>
     </section>
 
+    <section id="hexnac-results-card" class="hq-section hq-results-section" hidden>
+      <div class="hq-container">
+        <div class="hq-summary-grid" aria-label="Prediction summary">
+          <div><span data-summary="total">0</span><strong>Predicted</strong></div>
+          <div><span data-summary="skipped">0</span><strong>Skipped</strong></div>
+          <div><span data-summary="glcnac">0</span><strong>GlcNAc</strong></div>
+          <div><span data-summary="galnac">0</span><strong>GalNAc</strong></div>
+        </div>
+        <div class="hq-card">
+          <h2>Prediction results</h2>
+          <div class="hq-table-wrap table-scroll" tabindex="0" role="region" aria-label="HexNAcQuest prediction results">
+            <table class="hq-table"><thead><tr><th>pred_outcome</th><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead><tbody id="hexnac-results-body"></tbody></table>
+          </div>
+          <div id="hexnac-results-pager" class="hq-pager"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="hexnac-preview-card" class="hq-section" hidden>
       <div class="hq-container hq-grid-2 hq-analysis-grid">
         <div class="hq-card">
@@ -57,24 +75,6 @@
             <table class="hq-table"><thead><tr><th>CSV row</th><th>Reason</th></tr></thead><tbody id="hexnac-skipped-body"></tbody></table>
           </div>
           <div id="hexnac-skipped-pager" class="hq-pager"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="hexnac-results-card" class="hq-section" hidden>
-      <div class="hq-container">
-        <div class="hq-summary-grid" aria-label="Prediction summary">
-          <div><span data-summary="total">0</span><strong>Predicted</strong></div>
-          <div><span data-summary="skipped">0</span><strong>Skipped</strong></div>
-          <div><span data-summary="glcnac">0</span><strong>GlcNAc</strong></div>
-          <div><span data-summary="galnac">0</span><strong>GalNAc</strong></div>
-        </div>
-        <div class="hq-card">
-          <h2>Prediction results</h2>
-          <div class="hq-table-wrap table-scroll" tabindex="0" role="region" aria-label="HexNAcQuest prediction results">
-            <table class="hq-table"><thead><tr><th>pred_outcome</th><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead><tbody id="hexnac-results-body"></tbody></table>
-          </div>
-          <div id="hexnac-results-pager" class="hq-pager"></div>
         </div>
       </div>
     </section>
