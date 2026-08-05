@@ -426,7 +426,7 @@ class SiteBuildTests(unittest.TestCase):
             "pred_dl/index.html": (
                 "improved sensitivity and accuracy",
                 "physiology and disease",
-                "contributed equally",
+                "predictions should prioritize experimental work",
             ),
             "hexnac-quest/index.html": (
                 "diagnostic oxonium-ion intensities",
@@ -460,6 +460,45 @@ class SiteBuildTests(unittest.TestCase):
                 text = (FRONTEND_ROOT / relative_path).read_text().casefold()
                 for phrase in forbidden_phrases:
                     self.assertNotIn(phrase, text)
+
+    def test_publication_citations_show_full_authorship_consistently(self) -> None:
+        expected_dois = {
+            "10.1093/glycob/cwab003",
+            "10.1016/j.jmb.2025.169033",
+            "10.3390/ijms22179620",
+            "10.1021/acs.jproteome.3c00458",
+            "10.1021/jasms.2c00172",
+            "10.1007/978-1-0716-4007-4_5",
+        }
+        seen_dois: set[str] = set()
+        citations: list[str] = []
+        for relative_path in GENERATED_HTML:
+            html = (FRONTEND_ROOT / relative_path).read_text()
+            citations.extend(
+                re.findall(
+                    r'<p class="publication-citation">(.*?)</p>',
+                    html,
+                    re.DOTALL,
+                )
+            )
+
+        self.assertEqual(len(citations), 9)
+        for citation in citations:
+            normalized = re.sub(r"\s+", " ", citation).strip()
+            self.assertIn("Yaoxiang Li", normalized)
+            self.assertNotRegex(
+                normalized.casefold(),
+                r"\bet al\.|contributed equally|corresponding author",
+            )
+            self.assertRegex(normalized, r"<em>[^<]+</em>\. 20\d{2};")
+            doi_match = re.search(
+                r'href="https://doi\.org/([^"]+)">doi:\1</a>\.',
+                normalized,
+            )
+            self.assertIsNotNone(doi_match, normalized)
+            seen_dois.add(doi_match.group(1))
+
+        self.assertEqual(seen_dois, expected_dois)
 
     def test_shared_shell_has_metadata_and_semantic_landmarks(self) -> None:
         for relative_path in GENERATED_HTML:
