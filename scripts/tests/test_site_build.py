@@ -1038,6 +1038,8 @@ srcset="../static/img/one.png 1x, ../static/img/two.png 2x"></body></html>
                     "GIT_AUTHOR_EMAIL": "site-qa@example.invalid",
                     "GIT_COMMITTER_NAME": "Site QA",
                     "GIT_COMMITTER_EMAIL": "site-qa@example.invalid",
+                    "DEPLOY_GIT_NAME": "Yaoxiang Li",
+                    "DEPLOY_GIT_EMAIL": "liyaoxiang@outlook.com",
                     "SKIP_SOURCE_STATE_CHECK": "1",
                     "DEPLOY_REPOSITORY_URL": str(remote),
                 }
