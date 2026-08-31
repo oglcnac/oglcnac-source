@@ -22,6 +22,16 @@ async function wcagViolations(page) {
   return results.violations.map((violation) => ({ id: violation.id, impact: violation.impact, targets: violation.nodes.map((node) => node.target) }));
 }
 
+async function waitForRouteReady(page, route) {
+  await page.waitForLoadState("networkidle");
+  if (route === "/atlas/statistics/") {
+    await page.waitForSelector('[data-atlas-release-state="ready"]');
+  }
+  if (route === "/ogt-pin/statistics/") {
+    await page.waitForFunction(() => document.querySelector("#ogt-summary-metrics")?.textContent.includes("3,757"));
+  }
+}
+
 async function serve(request, response) {
   const requestPath = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
   let file = path.join(STATIC_ROOT, requestPath);
@@ -43,23 +53,27 @@ for (const viewport of viewports) {
       const context = await browser.newContext({ viewport });
       const page = await context.newPage();
       await page.goto(baseUrl + route, { waitUntil: "domcontentloaded" });
+      await waitForRouteReady(page, route);
       assert.deepEqual(await wcagViolations(page), []);
       await context.close();
     });
   }
 }
 
-test("Workbench result and error states have no WCAG 2.2 A/AA violations", { timeout: 180000 }, async () => {
-  const context = await browser.newContext({ viewport: viewports[0] });
-  const page = await context.newPage();
-  await page.goto(baseUrl + "/analysis/", { waitUntil: "domcontentloaded" });
-  await page.click("#workbench-sample");
-  await page.click('#workbench-form button[type="submit"]');
-  await page.waitForSelector("#workbench-table tbody tr", { timeout: 120000 });
-  assert.deepEqual(await wcagViolations(page), []);
-  await page.fill("#workbench-fasta", ">invalid\nABCZ");
-  await page.click('#workbench-form button[type="submit"]');
-  await page.waitForSelector("#workbench-error:not([hidden])");
-  assert.deepEqual(await wcagViolations(page), []);
-  await context.close();
-});
+for (const viewport of viewports) {
+  test(`Workbench result and error states have no WCAG 2.2 A/AA violations at ${viewport.name} width`, { timeout: 180000 }, async () => {
+    const context = await browser.newContext({ viewport });
+    const page = await context.newPage();
+    await page.goto(baseUrl + "/analysis/", { waitUntil: "domcontentloaded" });
+    await waitForRouteReady(page, "/analysis/");
+    await page.click("#workbench-sample");
+    await page.click('#workbench-form button[type="submit"]');
+    await page.waitForSelector("#workbench-table tbody tr", { timeout: 120000 });
+    assert.deepEqual(await wcagViolations(page), []);
+    await page.fill("#workbench-fasta", ">invalid\nABCZ");
+    await page.click('#workbench-form button[type="submit"]');
+    await page.waitForSelector("#workbench-error:not([hidden])");
+    assert.deepEqual(await wcagViolations(page), []);
+    await context.close();
+  });
+}

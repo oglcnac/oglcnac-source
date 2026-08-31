@@ -89,3 +89,16 @@ test("cancellation cannot be reversed by an in-flight evidence load", { timeout:
   assert.match(await page.locator("#workbench-error").textContent(), /cancelled/i);
   await page.close();
 });
+
+test("accepts a UniProt isoform accession without collapsing it to the canonical accession", { timeout: 180000 }, async () => {
+  const page = await browser.newPage();
+  await page.goto(`${baseUrl}/analysis/`, { waitUntil: "domcontentloaded" });
+  await page.click("#workbench-sample");
+  const sample = await page.inputValue("#workbench-fasta");
+  await page.fill("#workbench-fasta", sample.replace("Q96EH5", "Q96EH5-2"));
+  await page.click('#workbench-form button[type="submit"]');
+  await page.waitForSelector("#workbench-table tbody tr", { timeout: 120000 });
+  assert.match(await page.locator("#workbench-table tbody tr").first().textContent(), /Q96EH5-2/);
+  assert.doesNotMatch(await page.locator("#workbench-table tbody tr").first().textContent(), /verified against tracked sequence/);
+  await page.close();
+});
