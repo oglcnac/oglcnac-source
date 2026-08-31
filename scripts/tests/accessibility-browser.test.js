@@ -12,6 +12,15 @@ const routes = require(path.join(ROOT, "site/site.json")).pages.map((page) => pa
 const MIME = { ".css": "text/css", ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png" };
 let server; let browser; let baseUrl;
 const browserName = process.env.ACCESSIBILITY_BROWSER || "chromium";
+const viewports = [
+  { name: "desktop", width: 1440, height: 1100 },
+  { name: "mobile", width: 390, height: 844 },
+];
+
+async function wcagViolations(page) {
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  return results.violations.map((violation) => ({ id: violation.id, impact: violation.impact, targets: violation.nodes.map((node) => node.target) }));
+}
 
 async function serve(request, response) {
   const requestPath = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
@@ -28,14 +37,29 @@ test.before(async () => {
 });
 test.after(async () => { if (browser) await browser.close(); if (server) await new Promise((resolve) => server.close(resolve)); });
 
-for (const route of routes) {
-  test(`${route} has no serious or critical WCAG 2.2 AA violations`, async () => {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } });
-    const page = await context.newPage();
-    await page.goto(baseUrl + route, { waitUntil: "domcontentloaded" });
-    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
-    const violations = results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
-    assert.deepEqual(violations.map((violation) => ({ id: violation.id, impact: violation.impact, targets: violation.nodes.map((node) => node.target) })), []);
-    await context.close();
-  });
+for (const viewport of viewports) {
+  for (const route of routes) {
+    test(`${route} has no WCAG 2.2 A/AA violations at ${viewport.name} width`, async () => {
+      const context = await browser.newContext({ viewport });
+      const page = await context.newPage();
+      await page.goto(baseUrl + route, { waitUntil: "domcontentloaded" });
+      assert.deepEqual(await wcagViolations(page), []);
+      await context.close();
+    });
+  }
 }
+
+test("Workbench result and error states have no WCAG 2.2 A/AA violations", { timeout: 180000 }, async () => {
+  const context = await browser.newContext({ viewport: viewports[0] });
+  const page = await context.newPage();
+  await page.goto(baseUrl + "/analysis/", { waitUntil: "domcontentloaded" });
+  await page.click("#workbench-sample");
+  await page.click('#workbench-form button[type="submit"]');
+  await page.waitForSelector("#workbench-table tbody tr", { timeout: 120000 });
+  assert.deepEqual(await wcagViolations(page), []);
+  await page.fill("#workbench-fasta", ">invalid\nABCZ");
+  await page.click('#workbench-form button[type="submit"]');
+  await page.waitForSelector("#workbench-error:not([hidden])");
+  assert.deepEqual(await wcagViolations(page), []);
+  await context.close();
+});

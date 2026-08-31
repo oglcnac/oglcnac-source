@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import subprocess
 import sys
 import unittest
@@ -48,6 +49,27 @@ class PredictionV2ProtocolTests(unittest.TestCase):
             "models/model-card.md",
             "parity/browser-python.json",
         }.issubset(required))
+
+    def test_release_gate_rejects_nonempty_placeholder_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            release_root = Path(directory)
+            (release_root / "protocol.json").write_text((V2 / "protocol.json").read_text())
+            checklist_text = (V2 / "release-checklist.json").read_text()
+            (release_root / "release-checklist.json").write_text(checklist_text)
+            checklist = json.loads(checklist_text)
+            for relative in checklist["required_artifacts"]:
+                path = release_root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("placeholder\n")
+            result = subprocess.run(
+                [sys.executable, str(V2 / "tools" / "check_release.py"), "--root", str(release_root), "--today", "2028-01-01"],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+            )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("invalid", result.stderr.casefold())
+        self.assertNotIn("release gates passed", result.stdout.casefold())
 
 
 if __name__ == "__main__":

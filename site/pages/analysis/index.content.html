@@ -16,13 +16,13 @@
     <div class="button-row"><button type="submit">Run integrated analysis</button><button id="workbench-cancel" type="button" disabled>Cancel</button></div>
     <p class="form-note">UniProt accessions in FASTA headers enable evidence matching. Other identifiers still receive predictions.</p>
   </form>
-  <aside class="panel workbench-guide"><p class="eyebrow">Result layers</p><h2>One table, distinct evidence</h2><ol><li><strong>Prediction</strong> reports the published model probability.</li><li><strong>Atlas</strong> reports exact accession-and-position matches.</li><li><strong>OGT-PIN</strong> reports protein-level OGT interaction evidence.</li></ol><p>No composite score is calculated.</p><a href="/citations/">Citations and interpretation context</a></aside>
+  <aside class="panel workbench-guide"><p class="eyebrow">Result layers</p><h2>One table, distinct evidence</h2><ol><li><strong>Prediction</strong> reports the published model score.</li><li><strong>Atlas</strong> reports exact accession, species, residue, and position matches.</li><li><strong>OGT-PIN</strong> reports accession-and-species OGT interaction evidence.</li></ol><p>No composite score is calculated.</p><a href="/citations/">Citations and interpretation context</a></aside>
   <div id="workbench-status" class="alert" role="status" aria-live="polite" hidden></div>
   <div id="workbench-error" class="alert alert-danger" role="alert" hidden></div>
 </div></section>
 <section id="workbench-results" class="content-section" hidden><div class="container"><div class="panel">
-  <div class="workbench-results-head"><div><p class="eyebrow">Integrated results</p><h2>Candidate sites and evidence</h2><p id="workbench-summary"></p></div><div class="button-row"><button id="workbench-csv" type="button">Download CSV</button><button id="workbench-json" type="button">Download JSON</button></div></div>
+  <div class="workbench-results-head"><div><p class="eyebrow">Integrated results</p><h2>Candidate sites and evidence</h2><p id="workbench-summary"></p></div><div class="button-row"><button id="workbench-csv" type="button">Download all CSV</button><button id="workbench-json" type="button">Download all JSON</button></div></div>
   <div id="workbench-site-map" class="workbench-site-map" aria-label="Per-protein candidate site map"></div>
-  <label for="workbench-filter">Filter results</label><input id="workbench-filter" type="search" placeholder="Protein, position, evidence, or confidence">
-  <div class="table-scroll" tabindex="0" role="region" aria-label="Workbench results"><table id="workbench-table"><thead><tr><th>Protein</th><th>Species</th><th>Length</th><th>Site</th><th>Window</th><th>Probability</th><th>Confidence</th><th>Model</th><th>Atlas</th><th>Atlas records</th><th>PMIDs</th><th>OGT-PIN</th><th>Evidence</th></tr></thead><tbody></tbody></table></div>
+  <label for="workbench-filter">Filter results</label><input id="workbench-filter" type="search" placeholder="Protein, position, evidence, or confidence"><p id="workbench-filter-status" class="form-note" aria-live="polite"></p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Workbench results"><table id="workbench-table"><thead><tr><th>Protein</th><th>Species</th><th>Length</th><th>Sequence check</th><th>Site</th><th>Window</th><th>Prediction score</th><th>Confidence</th><th>Model</th><th>Atlas</th><th>Atlas records</th><th>PMIDs</th><th>OGT-PIN</th><th>Evidence</th></tr></thead><tbody></tbody></table></div>
 </div></div></section>

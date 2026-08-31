@@ -522,10 +522,13 @@ class SiteBuildTests(unittest.TestCase):
         header = (FRONTEND_ROOT / "analysis/index.html").read_text()
         self.assertIn('class="site-workbench-link"', header)
         self.assertIn('aria-current="page"', header)
+        self.assertIn('href="https://junfengmalab.org/"', header)
         licenses = (FRONTEND_ROOT / "licenses/index.html").read_text()
         self.assertIn("Apache License 2.0", licenses)
         self.assertIn("Creative Commons Attribution 4.0", licenses)
         self.assertIn("third-party", licenses.casefold())
+        self.assertIn("TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION", (REPOSITORY_ROOT / "LICENSE").read_text())
+        self.assertIn("Yaoxiang Li", (REPOSITORY_ROOT / "NOTICE").read_text())
         for relative_path in GENERATED_HTML:
             html = (FRONTEND_ROOT / relative_path).read_text().casefold()
             for forbidden in (

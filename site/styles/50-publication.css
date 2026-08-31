@@ -1986,9 +1986,13 @@ th,
   border-bottom: 0;
 }
 
-.workbench-intro {
-  padding: 20px 0 14px;
+.section-body .workbench-intro {
+  padding: 10px 0 8px;
   background: linear-gradient(135deg, #fff, var(--accent-soft));
+}
+
+.section-body .site-main > section.workbench-intro > .workbench-intro-grid {
+  padding: 16px 20px;
 }
 
 .workbench-intro-grid {
@@ -2000,12 +2004,14 @@ th,
 
 .workbench-intro h1 {
   margin: 0;
-  font-size: clamp(2rem, 3vw, 3rem);
+  font-size: clamp(2rem, 2.5vw, 2.5rem);
 }
 
 .workbench-intro .page-lead {
   max-width: 920px;
+  margin-top: 0.25rem;
   margin-inline: 0;
+  line-height: 1.45;
 }
 
 .workbench-model-note {
@@ -2048,8 +2054,12 @@ th,
 .workbench-form {
   display: grid;
   grid-template-columns: 170px minmax(0, 1fr);
-  gap: 9px 14px;
+  gap: 6px 14px;
   align-items: center;
+}
+
+.workbench-form.panel {
+  padding: 18px;
 }
 
 .workbench-form-head,
@@ -2062,6 +2072,17 @@ th,
 .workbench-form textarea {
   min-height: 150px;
   resize: vertical;
+}
+
+.workbench-form .form-note {
+  margin: 3px 0 0;
+}
+
+@media (min-width: 1200px) {
+  .workbench-form textarea {
+    height: 105px;
+    min-height: 90px;
+  }
 }
 
 .workbench-form :where(textarea, select, input[type="file"]),
