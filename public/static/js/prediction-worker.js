@@ -212,6 +212,7 @@ async function runPrediction(message) {
         id: candidate.id,
         position: candidate.position,
         residue: candidate.residue,
+        window: candidate.window,
         score,
         confidence: self.OglcnacPredictionCore.confidenceForScore(score),
       });

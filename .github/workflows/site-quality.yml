@@ -7,20 +7,30 @@ on:
       - "site/**"
       - "public/**"
       - "prediction-reference/**"
+      - "prediction-v2/**"
       - "scripts/**"
       - "docs/**"
       - "package.json"
       - "package-lock.json"
+      - "LICENSE"
+      - "CONTENT-LICENSE.md"
+      - "THIRD-PARTY-NOTICES.md"
+      - "NOTICE"
   pull_request:
     paths:
       - ".github/workflows/**"
       - "site/**"
       - "public/**"
       - "prediction-reference/**"
+      - "prediction-v2/**"
       - "scripts/**"
       - "docs/**"
       - "package.json"
       - "package-lock.json"
+      - "LICENSE"
+      - "CONTENT-LICENSE.md"
+      - "THIRD-PARTY-NOTICES.md"
+      - "NOTICE"
   schedule:
     - cron: "0 10 * * *"
   workflow_dispatch:
@@ -56,6 +66,12 @@ jobs:
       - run: npm run test:tables:browser
         env:
           SITE_BROWSER: ${{ matrix.browser }}
+      - run: npm run test:workbench:browser
+        env:
+          WORKBENCH_BROWSER: ${{ matrix.browser }}
+      - run: npm run test:accessibility:browser
+        env:
+          ACCESSIBILITY_BROWSER: ${{ matrix.browser }}
 
   production-smoke:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

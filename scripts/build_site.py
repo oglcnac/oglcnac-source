@@ -115,6 +115,7 @@ def render_header(
         {
             "HOME_CURRENT": ' aria-current="page"' if route == "/" else "",
             "PRIMARY_LINKS": "".join(primary_links),
+            "WORKBENCH_CURRENT": ' aria-current="page"' if route == "/analysis/" else "",
             "SECTION_NAV": section_navigation,
         },
         "header.html",

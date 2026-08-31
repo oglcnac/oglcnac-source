@@ -23,6 +23,7 @@ STATIC_SMOKE_SCRIPT = REPOSITORY_ROOT / "scripts" / "smoke_static_site.py"
 
 GENERATED_HTML = (
     "404.html",
+    "analysis/index.html",
     "atlas/browse/index.html",
     "atlas/contact/index.html",
     "atlas/detail/index.html",
@@ -36,6 +37,8 @@ GENERATED_HTML = (
     "hexnac-quest/index.html",
     "hexnac-quest/tutorial/index.html",
     "index.html",
+    "citations/index.html",
+    "licenses/index.html",
     "ogt-pin/contact/index.html",
     "ogt-pin/detail/index.html",
     "ogt-pin/index.html",
@@ -46,6 +49,7 @@ GENERATED_HTML = (
     "pred_dl/download/index.html",
     "pred_dl/index.html",
     "pred_dl/input_fasta/index.html",
+    "pred_dl/model-card/index.html",
     "pred_dl/tutorial/index.html",
 )
 
@@ -482,7 +486,7 @@ class SiteBuildTests(unittest.TestCase):
                 )
             )
 
-        self.assertEqual(len(citations), 9)
+        self.assertEqual(len(citations), 6)
         for citation in citations:
             normalized = re.sub(r"\s+", " ", citation).strip()
             self.assertIn("Yaoxiang Li", normalized)
@@ -499,6 +503,41 @@ class SiteBuildTests(unittest.TestCase):
             seen_dois.add(doi_match.group(1))
 
         self.assertEqual(seen_dois, expected_dois)
+
+    def test_citations_are_canonical_and_reached_from_every_tool(self) -> None:
+        citations_html = (FRONTEND_ROOT / "citations/index.html").read_text()
+        self.assertEqual(citations_html.count('class="publication-citation"'), 6)
+        for relative_path in (
+            "atlas/index.html",
+            "ogt-pin/index.html",
+            "pred_dl/index.html",
+            "hexnac-quest/index.html",
+        ):
+            with self.subTest(page=relative_path):
+                html = (FRONTEND_ROOT / relative_path).read_text()
+                self.assertIn('href="/citations/"', html)
+                self.assertNotIn('class="publication-citation"', html)
+
+    def test_public_site_exposes_workbench_licenses_and_no_tracking_runtime(self) -> None:
+        header = (FRONTEND_ROOT / "analysis/index.html").read_text()
+        self.assertIn('class="site-workbench-link"', header)
+        self.assertIn('aria-current="page"', header)
+        self.assertIn('href="https://junfengmalab.org/"', header)
+        licenses = (FRONTEND_ROOT / "licenses/index.html").read_text()
+        self.assertIn("Apache License 2.0", licenses)
+        self.assertIn("Creative Commons Attribution 4.0", licenses)
+        self.assertIn("third-party", licenses.casefold())
+        self.assertIn("TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION", (REPOSITORY_ROOT / "LICENSE").read_text())
+        self.assertIn("Yaoxiang Li", (REPOSITORY_ROOT / "NOTICE").read_text())
+        for relative_path in GENERATED_HTML:
+            html = (FRONTEND_ROOT / relative_path).read_text().casefold()
+            for forbidden in (
+                "cloudflareinsights.com",
+                "/cdn-cgi/rum",
+                "google-analytics.com",
+                "googletagmanager.com",
+            ):
+                self.assertNotIn(forbidden, html, relative_path)
 
     def test_shared_shell_has_metadata_and_semantic_landmarks(self) -> None:
         for relative_path in GENERATED_HTML:

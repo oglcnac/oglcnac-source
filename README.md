@@ -5,7 +5,7 @@ website at [oglcnac.org](https://oglcnac.org/). A clean clone contains every
 page, dataset, browser runtime, model, image, and build/deployment script needed
 to rebuild the site. Production has no application server or database.
 
-Atlas, OGT-PIN, PRED-DL, and HexNAcQuest run entirely in the browser. PRED-DL
+Atlas, OGT-PIN, PRED-DL, HexNAcQuest, and the integrated Workbench run entirely in the browser. PRED-DL
 uses the bundled TensorFlow.js/WASM runtime and models; HexNAcQuest uses its
 bundled JavaScript model. User sequences and CSV files are not uploaded.
 
@@ -15,6 +15,7 @@ bundled JavaScript model. User sequences and CSV files are not uploaded.
 site/                    Authored templates, page content, metadata, and CSS
 public/                  Tracked datasets and other public static assets
 prediction-reference/   Offline Python reference/export code for PRED-DL
+prediction-v2/          Prospective v2 protocol and fail-closed release gate
 scripts/                 Build, test, deployment, and data-generation tools
 docs/                    Maintenance and recovery documentation
 dist/                    Generated complete site (ignored; never authoritative)
@@ -45,7 +46,9 @@ For the complete gates, run:
 npm run qa:pr
 npm run test:tables:browser
 npm run test:prediction:browser
+npm run test:workbench:browser
 npm run test:hexnac:browser
+npm run test:accessibility:browser
 ```
 
 ## Deploy
@@ -72,6 +75,8 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and
 - [Data updates](docs/DATA-UPDATES.md)
 - [Static PRED-DL](docs/STATIC-PREDICTION.md)
 - [Static HexNAcQuest](docs/HEXNAC-QUEST.md)
+- [Integrated Workbench](docs/WORKBENCH.md)
+- [NAR Web Server readiness](docs/NAR-WEB-SERVER-READINESS.md)
 
 Never commit secrets, `.env` files, caches, virtual environments, screenshots,
 or a generated `dist/` directory.

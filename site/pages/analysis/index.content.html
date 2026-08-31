@@ -1,0 +1,28 @@
+<section class="workbench-intro">
+  <div class="container workbench-intro-grid">
+    <div><p class="eyebrow">Integrated browser analysis</p><h1>O-GlcNAc Workbench</h1>
+      <p class="page-lead">Predict candidate sites, then compare each result with curated O-GlcNAcAtlas and OGT-PIN evidence—without uploading your sequence.</p></div>
+    <div class="workbench-model-note"><strong>Current predictor</strong><span>O-GlcNAcPRED-DL 1.0 · human and mouse</span><small>Predictions prioritize experiments; they are not experimental evidence.</small></div>
+  </div>
+</section>
+<section class="content-section"><div class="container workbench-shell">
+  <form id="workbench-form" class="panel workbench-form">
+    <div class="workbench-form-head"><div><p class="eyebrow">Input</p><h2>Protein sequence</h2></div><button class="button button-secondary" id="workbench-sample" type="button">Load sample</button></div>
+    <label for="workbench-species">Species model</label>
+    <select id="workbench-species" name="species"><option value="human">Human</option><option value="mouse">Mouse</option></select>
+    <label for="workbench-fasta">Paste one or more FASTA records</label>
+    <textarea id="workbench-fasta" name="fasta" rows="9" maxlength="200000" required spellcheck="false" placeholder=">sp|P18583|SON_HUMAN&#10;MSEQUENCE..."></textarea>
+    <label for="workbench-file">Or choose a FASTA file</label><input id="workbench-file" type="file" accept=".fasta,.fa,.faa,.txt">
+    <div class="button-row"><button type="submit">Run integrated analysis</button><button id="workbench-cancel" type="button" disabled>Cancel</button></div>
+    <p class="form-note">UniProt accessions in FASTA headers enable evidence matching. Other identifiers still receive predictions.</p>
+  </form>
+  <aside class="panel workbench-guide"><p class="eyebrow">Result layers</p><h2>One table, distinct evidence</h2><ol><li><strong>Prediction</strong> reports the published model score.</li><li><strong>Atlas</strong> reports exact accession, species, residue, and position matches.</li><li><strong>OGT-PIN</strong> reports accession-and-species OGT interaction evidence.</li></ol><p>No composite score is calculated.</p><a href="/citations/">Citations and interpretation context</a></aside>
+  <div id="workbench-status" class="alert" role="status" aria-live="polite" hidden></div>
+  <div id="workbench-error" class="alert alert-danger" role="alert" hidden></div>
+</div></section>
+<section id="workbench-results" class="content-section" hidden><div class="container"><div class="panel">
+  <div class="workbench-results-head"><div><p class="eyebrow">Integrated results</p><h2>Candidate sites and evidence</h2><p id="workbench-summary"></p></div><div class="button-row"><button id="workbench-csv" type="button">Download all CSV</button><button id="workbench-json" type="button">Download all JSON</button></div></div>
+  <div id="workbench-site-map" class="workbench-site-map" aria-label="Per-protein candidate site map"></div>
+  <label for="workbench-filter">Filter results</label><input id="workbench-filter" type="search" placeholder="Protein, position, evidence, or confidence"><p id="workbench-filter-status" class="form-note" aria-live="polite"></p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Workbench results"><table id="workbench-table"><thead><tr><th>Protein</th><th>Species</th><th>Length</th><th>Sequence check</th><th>Site</th><th>Window</th><th>Prediction score</th><th>Confidence</th><th>Model</th><th>Atlas</th><th>Atlas records</th><th>PMIDs</th><th>OGT-PIN</th><th>Evidence</th></tr></thead><tbody></tbody></table></div>
+</div></div></section>

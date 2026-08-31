@@ -7,6 +7,9 @@ and OGT-PIN query bundled JSON. PRED-DL performs TensorFlow.js/WASM inference in
 a Web Worker. HexNAcQuest parses CSV and scores it in a Web Worker. There are no
 production server processes to restart.
 
+The O-GlcNAc Workbench reuses the PRED-DL worker and joins its result locally
+to the tracked Atlas and OGT-PIN JSON. It does not create a composite score.
+
 ## Before editing
 
 ```bash
@@ -52,7 +55,16 @@ npm run test:hexnac:unit
 npm run test:hexnac:browser
 ```
 
+For Workbench or OGT-PIN summary changes:
+
+```bash
+npm run test:workbench:unit
+npm run test:workbench:browser
+npm run test:ogt-network:unit
+```
+
 Before every release, run the applicable focused checks plus `npm run qa:pr`.
+Run `npm run test:accessibility:browser` for WCAG 2.2 AA checks.
 Use `npm run screenshots` for a deliberate visual review after layout changes;
 screenshots are review artifacts and are not committed.
 

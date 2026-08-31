@@ -1,0 +1,16 @@
+{
+  "release_name": "O-GlcNAcPRED-DL 2.0",
+  "current_state": "blocked_until_prospective_corpus_freeze_and_validation",
+  "required_artifacts": [
+    "corpus/manifest.json",
+    "corpus/records.csv",
+    "splits/assignments.csv",
+    "benchmarks/metrics.json",
+    "benchmarks/bootstrap-confidence-intervals.json",
+    "benchmarks/comparators.json",
+    "calibration/report.json",
+    "models/model-card.md",
+    "models/browser/manifest.json",
+    "parity/browser-python.json"
+  ]
+}

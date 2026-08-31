@@ -23,16 +23,20 @@ const pages = [
   '/pred_dl/',
   '/pred_dl/input_fasta/',
   '/pred_dl/tutorial/',
+  '/pred_dl/model-card/',
   '/pred_dl/download/',
   '/pred_dl/contact/',
   '/hexnac-quest/',
   '/hexnac-quest/analysis/',
   '/hexnac-quest/tutorial/',
   '/hexnac-quest/contact/',
+  '/analysis/',
+  '/citations/',
+  '/licenses/',
 ];
 
 function isIgnoredRequest(url) {
-  return url.includes('/cdn-cgi/rum') || url.includes('favicon');
+  return url.includes('favicon');
 }
 
 (async () => {
@@ -41,6 +45,7 @@ function isIgnoredRequest(url) {
   const failedResponses = [];
   const apiDataRequests = [];
   const predictionApiRequests = [];
+  const trackingRequests = [];
   const browserType = playwright[browserName];
   if (!browserType) throw new Error(`Unsupported SMOKE_BROWSER: ${browserName}`);
   const browser = await browserType.launch({ headless: true });
@@ -82,6 +87,9 @@ function isIgnoredRequest(url) {
     }
     if (request.url().includes('api.oglcnac.org')) {
       predictionApiRequests.push(request.url());
+    }
+    if (/cloudflareinsights\.com|\/cdn-cgi\/rum|google-analytics\.com|googletagmanager\.com/i.test(request.url())) {
+      trackingRequests.push(request.url());
     }
   });
 
@@ -193,6 +201,9 @@ function isIgnoredRequest(url) {
 
   if (apiDataRequests.length) {
     throw new Error(`Atlas/OGT-PIN made /api/data requests: ${apiDataRequests.join(', ')}`);
+  }
+  if (trackingRequests.length) {
+    throw new Error(`Production tracking requests are forbidden: ${trackingRequests.join(', ')}`);
   }
 
   await browser.close();

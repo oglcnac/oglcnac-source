@@ -15,6 +15,7 @@
   ],
   "sections": {
     "home": [],
+    "analysis": [],
     "atlas": [
       ["O-GlcNAcAtlas", "/atlas/"],
       ["Statistics", "/atlas/statistics/"],
@@ -35,6 +36,7 @@
       ["O-GlcNAcPRED-DL", "/pred_dl/"],
       ["Prediction", "/pred_dl/input_fasta/"],
       ["Tutorial", "/pred_dl/tutorial/"],
+      ["Model card", "/pred_dl/model-card/"],
       ["Download", "/pred_dl/download/"],
       ["Contact", "/pred_dl/contact/"]
     ],
@@ -64,6 +66,39 @@
       "section": "home",
       "body_class": "site-body",
       "main_class": "home-page"
+    },
+    {
+      "output": "analysis/index.html",
+      "route": "/analysis/",
+      "title": "O-GlcNAc Workbench | oglcnac.org",
+      "description": "Predict candidate O-GlcNAc sites and compare them with curated Atlas and OGT-PIN evidence in your browser.",
+      "section": "analysis",
+      "body_class": "site-body section-body workbench-section prediction-section",
+      "main_class": "site-main",
+      "head_scripts": [
+        "/static/js/prediction-core.js",
+        "/static/js/static-data.js",
+        "/static/js/workbench-core.js",
+        "/static/js/workbench-ui.js"
+      ]
+    },
+    {
+      "output": "citations/index.html",
+      "route": "/citations/",
+      "title": "Citations | oglcnac.org",
+      "description": "Canonical publication citations for the oglcnac.org resource suite.",
+      "section": "home",
+      "body_class": "site-body section-body",
+      "main_class": "site-main"
+    },
+    {
+      "output": "licenses/index.html",
+      "route": "/licenses/",
+      "title": "Licenses and Privacy | oglcnac.org",
+      "description": "Licenses, third-party notices, privacy, and usage terms for oglcnac.org.",
+      "section": "home",
+      "body_class": "site-body section-body",
+      "main_class": "site-main"
     },
     {
       "output": "atlas/index.html",
@@ -153,7 +188,11 @@
       "description": "Review OGT-PIN interaction statistics and publication figures.",
       "section": "ogt-pin",
       "body_class": "site-body section-body interactome-section",
-      "main_class": "site-main"
+      "main_class": "site-main",
+      "head_scripts": [
+        "/static/js/static-data.js",
+        "/static/js/ogt-network-summary.js"
+      ]
     },
     {
       "output": "ogt-pin/search/index.html",
@@ -214,6 +253,15 @@
       "route": "/pred_dl/tutorial/",
       "title": "Tutorial | O-GlcNAcPRED-DL",
       "description": "Learn how to prepare FASTA input and interpret O-GlcNAcPRED-DL predictions.",
+      "section": "pred-dl",
+      "body_class": "site-body section-body prediction-section",
+      "main_class": "site-main"
+    },
+    {
+      "output": "pred_dl/model-card/index.html",
+      "route": "/pred_dl/model-card/",
+      "title": "Model Card | O-GlcNAcPRED-DL",
+      "description": "Version, scope, inputs, outputs, limitations, and validation context for the deployed O-GlcNAcPRED-DL model.",
       "section": "pred-dl",
       "body_class": "site-body section-body prediction-section",
       "main_class": "site-main"
