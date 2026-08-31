@@ -81,14 +81,25 @@ EVIDENCE_ASSET_SHA256 = {
 }
 
 MARKDOWN_LINK_PATTERN = re.compile(r"(?<!!)\[([^]]+)\]\(([^()\s]+)\)")
+NAR_STATUS_PATTERN = re.compile(
+    r"<!--\s*nar-status:\s*([a-z][a-z0-9_]*)=([a-z0-9_.-]+)\s*-->",
+    re.IGNORECASE,
+)
 
 
 def normalized_markdown(text: str) -> str:
-    return re.sub(r"\s+", " ", re.sub(r"[*`_]", "", text)).strip()
+    return re.sub(r"\s+", " ", re.sub(r"[*`_>]", "", text)).strip()
 
 
 def markdown_links(text: str) -> tuple[tuple[str, str], ...]:
     return tuple(MARKDOWN_LINK_PATTERN.findall(text))
+
+
+def nar_statuses(text: str) -> dict[str, str]:
+    return {
+        key.casefold(): value.casefold()
+        for key, value in NAR_STATUS_PATTERN.findall(text)
+    }
 
 
 def local_markdown_target(document: Path, target: str) -> Path | None:
@@ -119,14 +130,6 @@ def markdown_section(text: str, heading: str) -> str | None:
     return None
 
 
-def inquiry_letter_body(text: str) -> str:
-    greeting = re.search(r"^Dear\b.*,$", text, re.MULTILINE)
-    signature = re.search(r"^Sincerely,\s*$", text, re.MULTILINE)
-    if greeting is None or signature is None or signature.start() <= greeting.end():
-        return text
-    return text[greeting.end() : signature.start()]
-
-
 def prohibits_terms(text: str, action: str, terms: tuple[str, ...]) -> bool:
     clause = re.search(
         rf"\b(?:must|shall)\s+not\s+{re.escape(action)}\b(?P<objects>[^.]*)",
@@ -149,11 +152,24 @@ def states_no_results(text: str) -> bool:
     )
 
 
-def makes_current_pred_dl_v2_availability_claim(text: str) -> bool:
+# These are targeted tripwires for representative high-risk claims, not general
+# natural-language classifiers. Structured nar-status markers lock the durable
+# document states independently of these patterns.
+def contains_targeted_current_pred_dl_v2_claim(text: str) -> bool:
     v2_pattern = r"\b(?:O-GlcNAc)?PRED[- ]DL\s+2\.0\b"
     for sentence in re.split(r"(?<=[.!?])\s+", normalized_markdown(text)):
         if not re.search(v2_pattern, sentence, re.IGNORECASE):
             continue
+        if re.search(
+            rf"\bcurrent\s+(?:public\s+)?(?:predictor|model|version)\b"
+            rf"[^.!?]{{0,50}}{v2_pattern}"
+            rf"|{v2_pattern}[^.!?]{{0,50}}"
+            r"\b(?:is|remains)\s+the\s+current\s+(?:public\s+)?"
+            r"(?:predictor|model|version)\b",
+            sentence,
+            re.IGNORECASE,
+        ):
+            return True
         for match in re.finditer(
             r"\b(?:is|are|was|were|has been|have been|remains|now)\b"
             r"[^.!?]{0,50}\b(?:publicly\s+available|released|available)\b",
@@ -167,19 +183,54 @@ def makes_current_pred_dl_v2_availability_claim(text: str) -> bool:
     return False
 
 
-def makes_completed_benchmark_results_claim(text: str) -> bool:
+def contains_targeted_prospective_result_claim(text: str) -> bool:
+    normalized = normalized_markdown(text)
     for match in re.finditer(
-        r"\b(?:benchmark(?:\s+results?)?|results?)\b[^.!?]{0,80}"
+        r"\b(?:benchmark\s+results?|results?)\b[^.!?]{0,80}"
         r"\b(?:is|are|was|were|has|have|remains)\b[^.!?]{0,50}"
         r"\b(?:complete|completed)\b"
-        r"|\b(?:complete|completed)\b[^.!?]{0,80}"
-        r"\b(?:benchmark(?:\s+results?)?|results?)\b",
-        normalized_markdown(text),
+        r"|\b(?:we|the\s+(?:study|benchmark|evaluation|analysis))\b"
+        r"[^.!?]{0,60}\bcompleted\b[^.!?]{0,80}\bresults?\b",
+        normalized,
         re.IGNORECASE,
     ):
         if not re.search(
             r"\b(?:no|not|never|without)\b", match.group(), re.IGNORECASE
         ):
+            return True
+    v2_pattern = r"\b(?:O-GlcNAc)?PRED[- ]DL\s+2\.0\b"
+    metric_pattern = r"\b(?:AUPRC|AUROC|MCC|F1|Brier|ECE)\b"
+    numeric_result = (
+        rf"{v2_pattern}[^.!?]{{0,100}}"
+        r"\b(?:outperformed|improved|achieved|attained|scored|yielded|obtained)\b"
+        rf"[^.!?]{{0,80}}(?:\b\d+(?:\.\d+)?\b[^.!?]{{0,30}})?{metric_pattern}"
+        rf"|{metric_pattern}[^.!?]{{0,80}}\b(?:was|is)\b[^.!?]{{0,40}}"
+        rf"\b\d+(?:\.\d+)?\b[^.!?]{{0,40}}{v2_pattern}"
+    )
+    generic_finding = (
+        r"\b(?:the\s+)?(?:study|benchmark|evaluation|analysis)\b[^.!?]{0,60}"
+        r"\b(?:found|observed|showed|demonstrated|outperformed|achieved)\b"
+    )
+    return bool(
+        re.search(numeric_result, normalized, re.IGNORECASE)
+        or re.search(generic_finding, normalized, re.IGNORECASE)
+    )
+
+
+def contains_permissive_tracking_clause(text: str) -> bool:
+    tracking_term = (
+        r"(?:Cloudflare\s+(?:Browser\s+)?Insights(?:/RUM)?|/cdn-cgi/rum|"
+        r"Google\s+Analytics|Google\s+Tag\s+Manager|tracking\s+cookies?|"
+        r"fingerprinting|user-agent\s+profiling|hidden\s+telemetry)"
+    )
+    for match in re.finditer(
+        r"\b(?:may|can|will|is\s+permitted\s+to|is\s+allowed\s+to)\b"
+        r"[^.!?]{0,50}\b(?:use|enable|collect|add)\b"
+        rf"[^.!?]{{0,80}}{tracking_term}",
+        normalized_markdown(text),
+        re.IGNORECASE,
+    ):
+        if not re.search(r"\b(?:not|never)\b", match.group(), re.IGNORECASE):
             return True
     return False
 
@@ -593,8 +644,14 @@ class SiteBuildTests(unittest.TestCase):
         inquiry_path = nar_documents["inquiry"]
         inquiry_raw = inquiry_path.read_text(encoding="utf-8")
         inquiry = normalized_markdown(inquiry_raw)
-        inquiry_body = inquiry_letter_body(inquiry_raw)
+        inquiry_status = nar_statuses(inquiry_raw)
         inquiry_links = {target for _, target in markdown_links(inquiry_raw)}
+        self.assertEqual(
+            inquiry_status.get("document_role"),
+            "internal_formal_suitability_proposal_draft",
+        )
+        self.assertEqual(inquiry_status.get("submission"), "unsent")
+        self.assertEqual(inquiry_status.get("results"), "none")
         self.assertIn(
             "https://academic.oup.com/nar/pages/submission_webserver",
             inquiry_links,
@@ -609,6 +666,12 @@ class SiteBuildTests(unittest.TestCase):
             with self.subTest(inquiry_label=label):
                 self.assertRegex(inquiry, pattern)
         self.assertRegex(inquiry, r"\bINTERNAL\b.*\bUNSENT\b.*\bNOT SUBMITTED\b")
+        self.assertRegex(
+            inquiry,
+            r"\binternal draft\b[^.]{0,100}\bformal one-page suitability proposal\b",
+        )
+        self.assertRegex(inquiry, r"\binstructions checked\b[^.]{0,30}\b2026-08-31\b")
+        self.assertRegex(inquiry, r"\bno more than one page\b")
         self.assertRegex(inquiry, r"\bconfirm\s+authorship\s*,?\s+affiliations\b")
         self.assertRegex(inquiry, r"\bmaintain\w*\b[^.]{0,80}\bfive\s+years?\b")
         self.assertRegex(inquiry, r"\badvise\b[^?]*\b(?:two-year|eligib)\w*")
@@ -630,10 +693,26 @@ class SiteBuildTests(unittest.TestCase):
                 self.assertRegex(inquiry, rf"\bPMID\s+{pmid}\b")
         self.assertRegex(inquiry, r"\barticle date\s+2025-02-21\b")
         self.assertRegex(inquiry, r"\bissue publication\s+2025-08-01\b")
-        self.assertFalse(makes_current_pred_dl_v2_availability_claim(inquiry_body))
-        self.assertFalse(makes_completed_benchmark_results_claim(inquiry_body))
+        self.assertRegex(
+            inquiry,
+            r"\bupdate or resubmission\b[^.]{0,160}\bNAR or elsewhere\b",
+        )
+        self.assertFalse(contains_targeted_current_pred_dl_v2_claim(inquiry_raw))
+        self.assertFalse(contains_targeted_prospective_result_claim(inquiry_raw))
 
         protocol_raw = nar_documents["protocol"].read_text(encoding="utf-8")
+        protocol_markers = nar_statuses(protocol_raw)
+        self.assertEqual(
+            protocol_markers.get("document_role"), "prospective_methods_only"
+        )
+        self.assertEqual(protocol_markers.get("results"), "none")
+        self.assertEqual(protocol_markers.get("public_predictor"), "pred-dl_1.0")
+        self.assertEqual(
+            protocol_markers.get("comprehensive_release_gate"),
+            "pending_implementation_and_test",
+        )
+        self.assertFalse(contains_targeted_current_pred_dl_v2_claim(protocol_raw))
+        self.assertFalse(contains_targeted_prospective_result_claim(protocol_raw))
         protocol_status = markdown_section(protocol_raw, "Status and scope")
         self.assertIsNotNone(protocol_status)
         assert protocol_status is not None
@@ -690,6 +769,37 @@ class SiteBuildTests(unittest.TestCase):
             r"(?i)\bambiguous sites\b.*\bdistinct analysis stratum\b",
         )
         self.assertRegex(labels, r"\bunlabeled\b.*\bpositive-unlabeled\b")
+        self.assertRegex(
+            labels,
+            r"\bprobability\b[^.]{0,120}\brecorded as a positive\b"
+            r"[^.]{0,120}\bfrozen Atlas ascertainment\b",
+        )
+        self.assertRegex(
+            labels,
+            r"\bnot\b[^.]{0,80}\bbiological modification probability\b",
+        )
+        publication_dates = markdown_section(
+            protocol_raw, "2.3 Canonical publication-date rule"
+        )
+        self.assertIsNotNone(publication_dates)
+        assert publication_dates is not None
+        publication_dates = normalized_markdown(publication_dates)
+        self.assertRegex(
+            publication_dates,
+            r"\bearliest verifiable\b[^.]{0,100}"
+            r"\b(?:public article|first-online|ePub)\b",
+        )
+        self.assertRegex(
+            publication_dates,
+            r"\bfallback\b[^.]{0,80}\bissue date\b[^.]{0,80}"
+            r"\bPubMed publication date\b",
+        )
+        self.assertRegex(
+            publication_dates, r"\bsame-day\b[^.]{0,120}\bdeterministic\b"
+        )
+        self.assertRegex(
+            publication_dates, r"(?i)\brecord\b[^.]{0,100}\bsource\b"
+        )
         leakage = normalized_markdown(leakage)
         for group in ("PMID", "protein accession", "sequence cluster"):
             with self.subTest(leakage_group=group):
@@ -707,6 +817,14 @@ class SiteBuildTests(unittest.TestCase):
         ):
             with self.subTest(metric=metric):
                 self.assertIn(metric.casefold(), metrics.casefold())
+        self.assertRegex(
+            metrics,
+            r"\bannotation-probability calibration\b[^.]{0,160}\bestimand\b",
+        )
+        self.assertRegex(
+            metrics,
+            r"\bnever\b[^.]{0,100}\bbiological calibration\b",
+        )
         comparators = normalized_markdown(comparators)
         self.assertRegex(
             comparators,
@@ -719,7 +837,7 @@ class SiteBuildTests(unittest.TestCase):
         parity = normalized_markdown(parity)
         self.assertRegex(parity, r"\bbrowser and Python implementations must\b")
         self.assertRegex(parity, r"\bsame frozen corpus hash\b")
-        self.assertRegex(parity, r"\bfails closed\b.*\bblocks public v2 release\b")
+        self.assertRegex(parity, r"\bblocking criterion\b.*\bblocks public v2 release\b")
         case_rows = re.findall(r"(?m)^\|\s*[A-Z]\.\s*", use_cases)
         self.assertEqual(len(case_rows), 3)
         self.assertRegex(
@@ -729,6 +847,44 @@ class SiteBuildTests(unittest.TestCase):
         self.assertRegex(
             normalized_markdown(usability),
             r"\bObtain consent before data collection\b",
+        )
+        usability = normalized_markdown(usability)
+        self.assertRegex(usability, r"\bfixed sample\b[^.]{0,60}\b24\b")
+        self.assertRegex(usability, r"\bthree fixed tasks per interface\b")
+        self.assertRegex(usability, r"\bcounterbalanced\b[^.]{0,80}\border\b")
+        self.assertRegex(
+            usability,
+            r"\bno optional stopping\b[^.]{0,120}\bno replacement\b"
+            r"[^.]{0,80}\boutcomes\b",
+        )
+        self.assertRegex(
+            usability,
+            r"\bparticipant-level critical-error-free outcome\b",
+        )
+        self.assertRegex(usability, r"\bparticipant-level median time\b")
+        self.assertRegex(
+            usability,
+            r"\bincomplete task\b[^.]{0,180}\b15 minutes\b",
+        )
+        self.assertRegex(
+            usability,
+            r"\bpower and sensitivity plan\b[^.]{0,160}\bbefore recruitment\b",
+        )
+
+        release_decision = markdown_section(
+            protocol_raw, "9. Artifacts, reporting, and release decision"
+        )
+        self.assertIsNotNone(release_decision)
+        assert release_decision is not None
+        release_decision = normalized_markdown(release_decision)
+        self.assertRegex(
+            release_decision,
+            r"\bcurrent check_?release\.py\b[^.]{0,100}\bnecessary\b"
+            r"[^.]{0,80}\binsufficient\b[^.]{0,80}\bpartial automated check\b",
+        )
+        self.assertRegex(
+            release_decision,
+            r"\bimplement and test one comprehensive executable gate\b",
         )
 
         adoption_raw = nar_documents["adoption"].read_text(encoding="utf-8")
@@ -749,6 +905,7 @@ class SiteBuildTests(unittest.TestCase):
         assert readiness_gate is not None
         self.assertTrue(states_no_adoption_results(adoption_boundary))
         self.assertTrue(states_no_invented_adoption_counts(adoption_raw))
+        self.assertFalse(contains_permissive_tracking_clause(adoption_raw))
         self.assertTrue(
             prohibits_terms(
                 prohibited,
@@ -780,11 +937,49 @@ class SiteBuildTests(unittest.TestCase):
             normalized_markdown(readiness_gate),
             r"\binternal\s+readiness gate\s*,?\s+not an NAR rule\b",
         )
+        provider_metadata = markdown_section(
+            adoption_raw, "Hosting-provider operational metadata"
+        )
+        self.assertIsNotNone(provider_metadata)
+        assert provider_metadata is not None
+        provider_metadata = normalized_markdown(provider_metadata)
+        self.assertRegex(
+            provider_metadata,
+            r"\bsite adds no client analytics or tracking\b",
+        )
+        self.assertRegex(
+            provider_metadata,
+            r"\bhosting(?:\s+provider)?(?:/CDN| and CDN)?\b[^.]{0,120}"
+            r"\bnetwork and security metadata\b",
+        )
+        self.assertRegex(
+            provider_metadata,
+            r"\bnot used by the project\b[^.]{0,100}"
+            r"\buser profiling or adoption counts\b",
+        )
+        self.assertRegex(
+            provider_metadata,
+            r"(?i)\bverify the current deployment separately\b[^.]{0,200}"
+            r"\bbefore the proposal\b",
+        )
 
         readiness_path = (
             REPOSITORY_ROOT / "docs" / "NAR-WEB-SERVER-READINESS.md"
         )
         readiness_raw = readiness_path.read_text(encoding="utf-8")
+        readiness_markers = nar_statuses(readiness_raw)
+        self.assertEqual(
+            readiness_markers.get("formal_proposal"),
+            "blocked_pending_independent_validation_and_team_approvals",
+        )
+        self.assertEqual(
+            readiness_markers.get("manuscript"),
+            "blocked_pending_editor_invitation_or_approval",
+        )
+        self.assertEqual(
+            readiness_markers.get("comprehensive_release_gate"),
+            "pending_implementation_and_test",
+        )
         readiness_links = {target for _, target in markdown_links(readiness_raw)}
         for document in nar_documents.values():
             target = document.name
@@ -805,10 +1000,53 @@ class SiteBuildTests(unittest.TestCase):
                 "From November 2026",
                 "Through 2027-01-31",
                 "February–April 2027",
-                "After validation and confirmed eligibility",
+                "After independent validation and team approvals",
+                "Only after editor invitation or approval",
             )
         ]
         self.assertEqual(positions, sorted(positions))
+        readiness_sequence = normalized_markdown(readiness_sequence)
+        november_row = re.search(
+            r"\|\s*From November 2026\s*\|\s*([^|]+)\|",
+            readiness_sequence,
+        )
+        prefreeze_row = re.search(
+            r"\|\s*Through 2027-01-31\s*\|\s*([^|]+)\|",
+            readiness_sequence,
+        )
+        proposal_row = re.search(
+            r"\|\s*After independent validation and team approvals\s*\|"
+            r"\s*([^|]+)\|",
+            readiness_sequence,
+        )
+        self.assertIsNotNone(november_row)
+        self.assertIsNotNone(prefreeze_row)
+        self.assertIsNotNone(proposal_row)
+        assert november_row is not None
+        assert prefreeze_row is not None
+        assert proposal_row is not None
+        self.assertRegex(november_row.group(1), r"\bprepare only\b")
+        self.assertRegex(november_row.group(1), r"\bDo not send\b")
+        self.assertRegex(
+            prefreeze_row.group(1),
+            r"\bBefore 2027-01-31\b[^.]{0,100}\bselection rules\b"
+            r"[^.]{0,100}\bnever select\b",
+        )
+        self.assertRegex(
+            proposal_row.group(1),
+            r"\bone formal suitability proposal\b[^|]{0,160}\bby email\b",
+        )
+
+        root_readme = (REPOSITORY_ROOT / "README.md").read_text(encoding="utf-8")
+        v2_readme = (
+            REPOSITORY_ROOT / "prediction-v2" / "README.md"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("fail-closed release gate", root_readme.casefold())
+        self.assertRegex(
+            normalized_markdown(v2_readme),
+            r"\bpartial automated check\b[^.]{0,100}\bnecessary\b"
+            r"[^.]{0,80}\binsufficient\b",
+        )
 
     def test_nar_document_helpers_reject_counterexamples(self) -> None:
         self.assertFalse(states_no_results("The benchmark reports results."))
@@ -824,32 +1062,53 @@ class SiteBuildTests(unittest.TestCase):
             states_no_adoption_results("No entries or counts are invented.")
         )
         self.assertTrue(
-            makes_current_pred_dl_v2_availability_claim(
+            contains_targeted_current_pred_dl_v2_claim(
                 "PRED-DL 2.0 is now publicly available."
             )
         )
         self.assertTrue(
-            makes_completed_benchmark_results_claim(
+            contains_targeted_current_pred_dl_v2_claim(
+                "The current public predictor is O-GlcNAcPRED-DL 2.0."
+            )
+        )
+        self.assertTrue(
+            contains_targeted_prospective_result_claim(
                 "PRED-DL 2.0 remains prospective. "
                 "The benchmark results are complete."
             )
         )
         self.assertTrue(
-            makes_completed_benchmark_results_claim(
+            contains_targeted_prospective_result_claim(
                 "PRED-DL 2.0 is not publicly available, but its "
                 "benchmark results are complete."
             )
         )
         self.assertFalse(
-            makes_current_pred_dl_v2_availability_claim(
+            contains_targeted_current_pred_dl_v2_claim(
                 "After the release gates pass, PRED-DL 2.0 will be publicly "
                 "available."
             )
         )
         self.assertFalse(
-            makes_current_pred_dl_v2_availability_claim(
+            contains_targeted_current_pred_dl_v2_claim(
                 "O-GlcNAcPRED-DL 1.0 is publicly available. "
                 "The public test suite remains available."
+            )
+        )
+        self.assertTrue(
+            contains_targeted_prospective_result_claim(
+                "PRED-DL 2.0 outperformed v1 by 0.12 AUPRC."
+            )
+        )
+        self.assertTrue(
+            contains_targeted_prospective_result_claim(
+                "The evaluation found a 0.12 AUPRC gain."
+            )
+        )
+        self.assertFalse(
+            contains_targeted_prospective_result_claim(
+                "PRED-DL 2.0 remains prospective; the protocol sets a 0.01 "
+                "AUPRC improvement threshold."
             )
         )
         self.assertFalse(
@@ -857,6 +1116,16 @@ class SiteBuildTests(unittest.TestCase):
                 "Google Analytics is discussed but not prohibited.",
                 "use",
                 ("Google Analytics",),
+            )
+        )
+        self.assertTrue(
+            contains_permissive_tracking_clause(
+                "It may use Google Analytics after consent."
+            )
+        )
+        self.assertFalse(
+            contains_permissive_tracking_clause(
+                "It must not use Google Analytics after consent."
             )
         )
         self.assertFalse(

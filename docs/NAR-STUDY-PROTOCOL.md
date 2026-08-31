@@ -1,8 +1,18 @@
 # Prospective NAR Study Protocol
 
+<!-- nar-status: document_role=prospective_methods_only -->
+<!-- nar-status: results=none -->
+<!-- nar-status: public_predictor=pred-dl_1.0 -->
+<!-- nar-status: comprehensive_release_gate=pending_implementation_and_test -->
+
 ## Status and scope
 
-**Status:** Preregistered-style internal protocol. This document reports no results, and it does not describe a released PRED-DL 2.0 model. The prospective corpus is not frozen until **2027-01-31**. Until the release gate passes, the current public predictor is **O-GlcNAcPRED-DL 1.0**.
+**Status:** Preregistered-style internal protocol. This document reports no
+results, and it does not describe a released PRED-DL 2.0 model. The prospective
+corpus is not frozen until **2027-01-31**. Until every documented release
+criterion passes a future comprehensive executable gate, the current public
+predictor is **O-GlcNAcPRED-DL 1.0**. The current automated checker covers only
+a subset of those criteria.
 
 This protocol defines the confirmatory evaluation and prospective use cases for
 a future Nucleic Acids Research Web Server submission. Its primary proposed
@@ -45,10 +55,11 @@ requires all prespecified temporal-test discrimination, calibration
 non-inferiority, and browser-feasibility criteria in Section 4. Calibration
 non-inferiority is CI-based; a calibration improvement is a separate claim
 with its own paired-confidence-interval rule.
-The selected candidate must also meet all release gates, including the required
-temporal-test report, external comparators, browser/Python parity, and archived
-artifacts. The study will report performance and artifact constraints rather
-than infer an improvement from model architecture alone.
+The selected candidate must also meet all documented release criteria,
+including the required temporal-test report, external comparators,
+browser/Python parity, and archived artifacts. The study will report
+performance and artifact constraints rather than infer an improvement from
+model architecture alone.
 
 ### 1.3 Neutral outcome path
 
@@ -99,6 +110,33 @@ thresholding, and limitations must respect this label structure.
 The primary confirmatory analysis uses unambiguous positives and the
 prespecified unlabeled background. A separate ambiguity-stratum analysis is
 reported without reinterpreting ambiguous or unlabeled sites as negatives.
+
+For a candidate site with frozen model inputs, the calibration estimand is the
+probability that the site is recorded as a positive in the frozen Atlas
+ascertainment, under the frozen source coverage, literature, and curation
+process. It is not a biological modification probability.
+Publication, assay, protein, species, and curation coverage can all affect this
+recording indicator, and the unlabeled background can include truly modified
+sites. These limitations must accompany every calibration report.
+
+For primary Brier/ECE computation, the frozen ascertainment outcome is 1 for
+an unambiguous site recorded as positive and 0 for an eligible site in the
+prespecified unlabeled background. That 0 means “not recorded as positive in
+the frozen ascertainment”; it is not a biological negative. Ambiguous sites
+remain in their separate analysis stratum.
+
+### 2.3 Canonical publication-date rule
+
+The canonical publication date is the earliest verifiable public article,
+first-online, or ePub date. If none exists, fallback first to the issue date and
+then to the PubMed publication date. Record all candidate dates, the selected
+date, date type, source URL or PMID/DOI record, retrieval date, and the rule
+version in the frozen corpus provenance.
+
+For same-day candidates, selection is deterministic: prefer publisher article
+or DOI metadata, then publisher ePub metadata, then PubMed ePub metadata; break
+any remaining source tie by the lexicographically smallest normalized stable
+source identifier. The chosen source and the applied tie rule must be recorded.
 
 ## 3. Leakage-resistant split assignment
 
@@ -162,9 +200,13 @@ unsupported input, model errors, or comparator errors; record their status and
 reason separately from metric-eligible observations.
 
 The final report must distinguish prediction discrimination from calibration.
-Brier score, ECE, and reliability plots describe calibration; they do not turn
-a score into a universally calibrated biological probability. The model card
-must state intended use, limitations, and validation results substantively.
+Brier score, ECE, and reliability plots describe annotation-probability
+calibration under that estimand: probability of being recorded as positive in
+the frozen Atlas ascertainment. They do not estimate a universally calibrated
+biological modification probability. Release, proposal, and manuscript claims
+must never call these outputs biological calibration. The model card must state
+the ascertainment, positive-unlabeled, coverage, intended-use, and validation
+limitations substantively.
 
 ### 4.3 Material predictive-discrimination, calibration, and browser-feasibility decision rules
 
@@ -250,8 +292,8 @@ manifests from both implementations. The maximum absolute score difference is
 accepted only when it is **no greater than 1e-5** across the declared parity
 input set; the parity report records the observed maximum, tolerance, corpus
 SHA-256, artifact hashes, runtime versions, and pass/fail state. Any mismatch,
-hash disagreement, missing archive, or tolerance exceedance fails closed and
-blocks public v2 release and v2 manuscript claims.
+hash disagreement, missing archive, or tolerance exceedance is a blocking
+criterion and blocks public v2 release and v2 manuscript claims.
 
 Browser feasibility reporting includes compressed browser artifact size,
 runtime, peak memory, supported browsers and versions, and failed or
@@ -309,31 +351,60 @@ substitute for the benchmark or establish experimental validation.
 
 ## 8. Consented usability evaluation
 
-Recruit at least eight independent intended users. Obtain consent before data
-collection, use fixed synthetic or public task inputs only, and compare manual
-component-tool and Workbench workflows in a counterbalanced crossover order.
-Do not collect submitted user protein sequences or CSV files. The protocol
-records, for each task and participant, completion status, predefined
-interpretation errors, elapsed time, SUS responses, and qualitative feedback.
-Predefine the task answers and error taxonomy before recruitment; examples
-include selecting an incorrect species/site/residue, using evidence despite a
-sequence mismatch, conflating protein-level OGT-PIN context with site-level
-evidence, and treating “not reported” as absence.
+The fixed sample is **n = 24 independent intended users**; freeze that sample
+size, eligibility criteria, recruitment procedure, allocation schedule, and
+analysis specification before recruitment begins. Obtain consent before data
+collection and use fixed synthetic or public inputs only. There is no optional
+stopping, no interim outcome review, and no replacement of participants after
+recruitment begins or based on outcomes. A participant who begins any task
+remains in the fixed analysis set unless they withdraw permission to retain
+their data; a required withdrawal is reported, is not replaced, and makes the
+fixed-n confirmatory claim unavailable.
 
-Each fixed task has a 15-minute timeout. An incomplete task or an incorrect
-critical interpretation is a failure and receives an elapsed time of 15
-minutes. The primary correctness endpoint is paired critical-error-free
-completion. Claim a correctness improvement only when the 95%
-participant-cluster paired-bootstrap confidence interval for the Workbench
-minus component-workflow completion difference is entirely greater than 0.
-Define each within-participant time reduction as 100 × (component-workflow
-time − Workbench time) / component-workflow time. Claim an efficiency
-improvement only when the 95% confidence interval for the median
-within-participant time reduction is entirely at least 10%, and the lower bound
-of the correctness-difference interval is at least -0.05. Otherwise report
-neutral or mixed results. Use 10,000 paired-bootstrap replicates with seed
-20270131; SUS is descriptive only, and no threshold or decision rule may
-change post hoc.
+Each participant completes **three fixed tasks per interface**—six task trials
+in total—using the manual component-tool interface and the Workbench:
+
+1. identify an eligible predicted site and produce the requested export fields;
+2. detect a sequence mismatch and explain why matched Atlas evidence is
+   suppressed; and
+3. distinguish site-level Atlas evidence, protein-level OGT-PIN context, and a
+   “not reported” field without calling it biological absence.
+
+Freeze the exact public/synthetic inputs, answer keys, critical-error taxonomy,
+matched task versions, and counterbalanced interface and task order before
+recruitment. The allocation schedule balances which interface is used first
+and which matched version is assigned to each interface. Do not collect user
+protein sequences or CSV files. Record per task and participant the completion
+state, predefined interpretation errors, elapsed time, SUS responses, and
+qualitative feedback.
+
+Each task has a 15-minute timeout. An incomplete task, an unattempted task after
+session discontinuation, or an incorrect critical interpretation is a failure
+and receives an elapsed time of 15 minutes. For each participant and interface,
+the **participant-level critical-error-free outcome** is 1 only when all three
+tasks are completed without any critical error; otherwise it is 0. The
+**participant-level median time** is the median of that interface's three task
+times after the 15-minute assignments. These participant-level paired values,
+not task rows treated as independent observations, are the analysis units.
+
+Claim a correctness improvement only when the 95% participant-cluster
+paired-bootstrap confidence interval for the Workbench-minus-component
+participant-level outcome difference is entirely greater than 0. Define each
+within-participant time reduction as 100 × (component median time − Workbench
+median time) / component median time. Claim an efficiency improvement only
+when the 95% confidence interval for the median within-participant time
+reduction is entirely at least 10%, and the lower bound of the correctness
+difference interval is at least -0.05. Otherwise report a neutral, mixed, or
+non-estimable outcome. Use 10,000 paired-bootstrap replicates with seed
+20270131. SUS and qualitative feedback are descriptive only; no endpoint,
+threshold, exclusion, or missing-data rule may change after recruitment.
+
+Archive a simulation-based **power and sensitivity plan** before recruitment,
+using a range of explicitly labeled assumptions for paired correctness,
+within-participant correlation, task-time distributions, attrition, and
+non-estimable intervals. This planning exercise documents the rationale and
+sensitivity of the fixed n = 24 design; it does not estimate a result, justify
+optional stopping, or permit an outcome-driven sample-size change.
 
 Assign random participant identifiers solely for transient paired analysis.
 Keep the consent/contact key separately under the approved procedure. Within
@@ -346,8 +417,8 @@ telemetry outside explicit, consented study sessions.
 
 ## 9. Artifacts, reporting, and release decision
 
-The following output map extends, and must not weaken, the required-artifact
-release checklist.
+The following output map defines documented readiness evidence beyond the
+current partial required-artifact list.
 
 | Required output | Release-checklist location or linked archive |
 | --- | --- |
@@ -358,26 +429,40 @@ release checklist.
 | Aggregate and per-species metrics, candidate sizes, runtime, memory, failure counts, mandatory browser/device-matrix results, and relative-v1 feasibility values | `benchmarks/metrics.json` and linked report |
 | Bootstrap configuration and 95% intervals | `benchmarks/bootstrap-confidence-intervals.json` |
 | Comparator metadata, raw outputs where redistribution permits, exclusions, and failures | `benchmarks/comparators.json` and linked archive |
-| Held-out calibration procedure, Brier/ECE point estimates and paired confidence intervals, reliability plots, and frozen binning rule | `calibration/report.json` and frozen analysis manifest |
+| Held-out annotation-probability calibration procedure and estimand, Brier/ECE point estimates and paired confidence intervals, reliability plots, limitations, and frozen binning rule | `calibration/report.json` and frozen analysis manifest |
 | Intended use, limitations, and validation summary | `models/model-card.md` |
 | Hashed browser artifacts and manifest | `models/browser/manifest.json` |
 | Full browser/Python outputs, manifests, and tolerance result | `parity/browser-python.json` and linked archive |
 | Use-case candidate pools/rankings, selection inputs, FASTA/identifier hashes, outputs, expert interpretation, and cited literature | Versioned use-case archive |
-| Consent procedure, fixed synthetic/public tasks, de-identified aggregate usability results, SUS, qualitative summary, and analysis code | Versioned usability protocol/results archive |
+| Consent procedure, fixed n = 24 sample, three fixed tasks per interface, counterbalancing schedule, participant-level outcomes, incomplete-task handling, de-identified aggregate usability results, power/sensitivity plan, SUS, qualitative summary, and analysis code | Versioned usability protocol/results archive |
 
 Public v2 release and v2 manuscript claims are blocked by a failure of the
 Section 4.3 material predictive-discrimination, calibration non-inferiority,
 or mandatory browser-feasibility criteria; any leakage; unresolved
 cross-window component; provenance gap; incomplete comparator evaluation;
-browser/Python parity failure; unavailable required artifact; or failed release
-gate. The calibration non-inferiority release gate uses the Section 4.3
+browser/Python parity failure; unavailable required artifact; or failed
+documented release criterion. Calibration non-inferiority uses the Section 4.3
 point-estimate and paired-confidence-interval requirements for both Brier score
 and ECE. A calibration-improvement claim is additionally blocked unless both
-metrics meet the separate paired-confidence-interval rule in Section 4.3. The
-release gate is run with
-`python3 prediction-v2/tools/check_release.py`; it must pass only after the
-corpus freeze and complete scientific artifacts are present. Passing
-file-presence checks alone is insufficient.
+metrics meet the separate paired-confidence-interval rule in Section 4.3.
+
+The current `check_release.py` is a **necessary but insufficient partial
+automated check** of selected artifact structure and cross-artifact invariants.
+Run it with `python3 prediction-v2/tools/check_release.py` only after the corpus
+freeze and its currently listed inputs exist. A successful run does not
+establish comprehensive release readiness.
+
+**Tracked readiness item — pending before any public v2 release:** implement and
+test one comprehensive executable gate that blocks release unless it verifies
+all documented criteria: v2-versus-v1 discrimination; the paired calibration
+confidence-interval rules; browser/Python maximum absolute difference no
+greater than 1e-5; payload, runtime, and memory on every mandatory
+browser/device; the named YinOYang 1.2 and other comparator requirements; the
+hashed exclusion ledger; prospective use-case archives; the fixed usability
+analysis; the environment lock; and the frozen analysis manifest. Until that
+gate exists, is tested with failing counterexamples for each criterion, and
+passes on frozen evidence, no checker output authorizes a v2 release or v2
+claim.
 
 Only after validation is complete may the project create a versioned
 source/data/model archive and obtain a DOI. The DOI archive must include the

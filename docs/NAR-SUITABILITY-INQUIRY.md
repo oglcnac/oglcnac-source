@@ -1,11 +1,23 @@
-# Draft NAR Web Server Issue suitability inquiry
+# Draft NAR Web Server Issue suitability proposal
+
+<!-- nar-status: document_role=internal_formal_suitability_proposal_draft -->
+<!-- nar-status: submission=unsent -->
+<!-- nar-status: results=none -->
 
 > **INTERNAL, UNSENT DRAFT — NOT SUBMITTED.** This draft has no editorial approval.
 > The research team must confirm authorship, affiliations, and all submission
-> details before sending it.
+> details before sending it. This is an internal draft of the formal one-page
+> suitability proposal, not a separate preliminary inquiry.
+>
+> **Official instructions checked:** 2026-08-31. At that check, the suitability
+> proposal was a summary of no more than one page sent by email, covering input,
+> output, method, prior-publication PMIDs, two to four keywords,
+> update/resubmission status, and authors/affiliations. Recheck the current
+> instructions before sending. This draft does not treat a particular opening
+> sentence or full-reference format as prescribed.
 
 **To:** Nucleic Acids Research Web Server Issue editors
-**Subject:** Suitability inquiry — *O-GlcNAc Workbench: integrated browser-local analysis for O-GlcNAc prediction and evidence retrieval*
+**Subject:** Suitability proposal — *O-GlcNAc Workbench: integrated browser-local analysis for O-GlcNAc prediction and evidence retrieval*
 
 Dear Web Server Issue Editors,
 
@@ -14,8 +26,9 @@ Issue submission, provisionally titled *O-GlcNAc Workbench: integrated
 browser-local analysis for O-GlcNAc prediction and evidence retrieval*. The
 proposed resource is a public, HTTPS web application for researchers working
 with human or mouse protein sequences and O-GlcNAc-related evidence. It is
-registration-free, cookie-free, and tracking-free; it offers sample data,
-tutorials, and rich downloadable CSV and JSON output. Submitted FASTA
+registration-free, sets no tracking cookies, and adds no client analytics or
+tracking; it offers sample data, tutorials, and rich downloadable CSV and JSON
+output. Submitted FASTA
 sequences and CSV data remain in the visitor's browser. We intend to maintain
 the resource for at least five years.
 
@@ -62,8 +75,11 @@ computation; evidence integration.
 
 **Authors and affiliations.** [To be confirmed by the research team.]
 
-**Update/resubmission disclosure.** This would be a new suitability inquiry,
-not an update or resubmission of a prior NAR Web Server Issue manuscript.
+**Update/resubmission disclosure.** This proposal concerns the integrated
+Workbench described above. Before sending, the team must confirm and disclose
+whether this resource is an update or resubmission of any server previously
+published in NAR or elsewhere; the component publications currently identified
+are listed above.
 
 Could you advise whether this proposed integrated resource is in scope under
 the current [Web Server Issue instructions](https://academic.oup.com/nar/pages/submission_webserver), and specifically whether it meets the minimum two-year
@@ -78,10 +94,13 @@ Sincerely,
 
 ## Pre-submission checklist
 
+- [ ] Current official instructions rechecked and check date recorded
+- [ ] Independent validation complete and approved by the team
 - [ ] Team-confirmed authors
 - [ ] Team-confirmed affiliations
 - [ ] Corresponding author and contact details
-- [ ] Final proposal mechanism and address
+- [ ] Formal one-page proposal email mechanism and address confirmed
+- [ ] Update/resubmission disclosure rechecked for NAR and elsewhere
 - [ ] Eligibility date confirmed with the editors
 - [ ] Adoption evidence assembled
 - [ ] Comparator list finalized

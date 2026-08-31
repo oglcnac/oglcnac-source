@@ -15,7 +15,7 @@ bundled JavaScript model. User sequences and CSV files are not uploaded.
 site/                    Authored templates, page content, metadata, and CSS
 public/                  Tracked datasets and other public static assets
 prediction-reference/   Offline Python reference/export code for PRED-DL
-prediction-v2/          Prospective v2 protocol and fail-closed release gate
+prediction-v2/          Prospective v2 protocol and partial automated checks
 scripts/                 Build, test, deployment, and data-generation tools
 docs/                    Maintenance and recovery documentation
 dist/                    Generated complete site (ignored; never authoritative)
@@ -77,7 +77,7 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and
 - [Static HexNAcQuest](docs/HEXNAC-QUEST.md)
 - [Integrated Workbench](docs/WORKBENCH.md)
 - [NAR Web Server readiness](docs/NAR-WEB-SERVER-READINESS.md)
-- [Draft NAR suitability inquiry](docs/NAR-SUITABILITY-INQUIRY.md)
+- [Draft NAR suitability proposal](docs/NAR-SUITABILITY-INQUIRY.md)
 - [Prospective NAR study protocol](docs/NAR-STUDY-PROTOCOL.md)
 - [Privacy-preserving adoption evidence](docs/NAR-ADOPTION-EVIDENCE.md)
 

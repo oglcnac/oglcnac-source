@@ -43,6 +43,19 @@ other client-behavior collection. It must not collect submitted FASTA or CSV
 content. A consented study is a separately approved research activity, not an
 exception that permits passive collection from public visitors.
 
+## Hosting-provider operational metadata
+
+The site adds no client analytics or tracking. Static hosting/CDN providers
+may nevertheless process minimal request headers and network and security
+metadata under provider-controlled delivery, abuse-prevention, and error
+reporting operations. That provider-level processing is not used by the project
+for user profiling or adoption counts and does not authorize project analytics.
+
+Verify the current deployment separately, including response headers, loaded
+scripts, browser network requests, provider configuration, and project access
+to provider logs, before the proposal. Record a dated verification; do not
+describe any external provider setting or data practice as permanent.
+
 ## Evidence register
 
 Use one register row per source, observation, or permitted statement. The
