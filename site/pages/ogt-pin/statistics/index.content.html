@@ -1,17 +1,29 @@
 <section class="page-hero page-hero-compact">
   <div class="container page-hero-inner">
-    <p class="eyebrow">Historical publication evidence</p>
+    <p class="eyebrow">Current evidence and publication context</p>
     <h1>OGT-PIN statistics</h1>
     <p class="page-lead">
-      Fixed publication figures covering OGT interaction evidence from 1984
-      through December 31, 2021.
+      Explore a readable summary of the current tracked records, with the
+      original publication figures preserved below.
     </p>
   </div>
 </section>
 
 <section class="content-section">
   <div class="container">
-    <div class="panel ogt-statistics-panel">
+    <div class="panel ogt-network-summary">
+      <div class="ogt-network-heading"><div><p class="eyebrow">Current tracked data</p><h2>Readable OGT interaction overview</h2><p>Filter by species. The network shows up to 12 interactors with the most evidence records; node numbers are evidence-record counts, not interaction strengths.</p></div><label for="ogt-network-species">Species<select id="ogt-network-species"><option>All species</option></select></label></div>
+      <div id="ogt-summary-metrics" class="metric-grid" aria-live="polite"></div>
+      <div class="ogt-network-canvas" aria-label="OGT-centered summary network"><div class="ogt-center-node">OGT</div><div id="ogt-network-nodes"></div></div>
+      <p id="ogt-network-status" class="form-note" role="status">Loading current OGT-PIN data…</p>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
+    <details class="panel historical-figures">
+      <summary><strong>Open original publication figures</strong><span>Fixed evidence snapshots through December 31, 2021</span></summary>
       <div class="evidence-grid ogt-statistics-grid">
         <figure class="evidence-figure">
           <h2>Distribution of 1,095 high-stringency interacting proteins</h2>
@@ -34,6 +46,6 @@
           </figcaption>
         </figure>
       </div>
-    </div>
+    </details>
   </div>
 </section>

@@ -17,7 +17,9 @@ npm ci
 npm run qa:pr
 npm run test:tables:browser
 npm run test:prediction:browser
+npm run test:workbench:browser
 npm run test:hexnac:browser
+npm run test:accessibility:browser
 ```
 
 Review, commit, and push all source changes. Deployment intentionally refuses a

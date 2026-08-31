@@ -31,7 +31,7 @@ const waitForTable = (id) => async (page) => {
 };
 
 const waitForSelector = (selector) => async (page) => {
-  await page.locator(selector).waitFor({ timeout: 60000 });
+  await page.locator(selector).first().waitFor({ timeout: 60000 });
 };
 
 const captures = [
@@ -49,6 +49,33 @@ const captures = [
     },
   },
   { group: "suite", route: "/404.html", name: "not-found" },
+  { group: "suite", route: "/citations/", name: "citations" },
+  { group: "suite", route: "/licenses/", name: "licenses" },
+
+  { group: "workbench", route: "/analysis/", name: "workbench", aboveFold: "#workbench-form" },
+  {
+    group: "workbench",
+    route: "/analysis/",
+    name: "workbench-result",
+    aboveFold: "#workbench-results",
+    act: async (page) => {
+      await page.click("#workbench-sample");
+      await page.click('#workbench-form button[type="submit"]');
+    },
+    ready: waitForSelector("#workbench-table tbody tr"),
+  },
+  {
+    group: "workbench",
+    route: "/analysis/",
+    name: "workbench-error",
+    act: async (page) => {
+      await page.fill("#workbench-fasta", ">NO_SITES\nAAAAAAAAAAAA");
+      await page.click('#workbench-form button[type="submit"]');
+    },
+    ready: async (page) => {
+      await page.waitForFunction(() => !document.querySelector("#workbench-error").hidden);
+    },
+  },
 
   { group: "atlas", route: "/atlas/", name: "atlas-home", aboveFold: ".resource-hero .button-row" },
   {
@@ -113,6 +140,14 @@ const captures = [
     group: "ogt-pin",
     route: "/ogt-pin/statistics/",
     name: "ogt-pin-statistics",
+    ready: waitForSelector("#ogt-network-nodes a"),
+  },
+  {
+    group: "ogt-pin",
+    route: "/ogt-pin/statistics/",
+    name: "ogt-pin-publication-figures",
+    act: async (page) => page.click(".historical-figures > summary"),
+    ready: waitForSelector(".historical-figures[open] img"),
   },
   { group: "ogt-pin", route: "/ogt-pin/search/", name: "ogt-pin-search", aboveFold: ".search-form" },
   {
@@ -195,6 +230,7 @@ const captures = [
     },
   },
   { group: "pred-dl", route: "/pred_dl/tutorial/", name: "pred-dl-tutorial" },
+  { group: "pred-dl", route: "/pred_dl/model-card/", name: "pred-dl-model-card" },
   { group: "pred-dl", route: "/pred_dl/download/", name: "pred-dl-download" },
   { group: "pred-dl", route: "/pred_dl/contact/", name: "pred-dl-contact" },
 
@@ -284,7 +320,11 @@ async function captureState(
   page.on("request", (request) => {
     if (
       request.url().includes("api.oglcnac.org") ||
-      request.url().includes("shinyapps.io")
+      request.url().includes("shinyapps.io") ||
+      request.url().includes("cloudflareinsights.com") ||
+      request.url().includes("/cdn-cgi/rum") ||
+      request.url().includes("google-analytics.com") ||
+      request.url().includes("googletagmanager.com")
     ) {
       forbiddenRequests.push(request.url());
     }
@@ -327,7 +367,10 @@ async function captureState(
       const isVisible = (element) => {
         const style = getComputedStyle(element);
         const bounds = element.getBoundingClientRect();
-        return style.display !== "none" && style.visibility !== "hidden" &&
+        const rendered = typeof element.checkVisibility === "function"
+          ? element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
+          : style.display !== "none" && style.visibility !== "hidden";
+        return rendered &&
           Number(style.opacity) !== 0 && bounds.width > 1 && bounds.height > 1;
       };
       const selector = "h1,h2,h3,p,li,a,button,label,legend,th,td,figcaption";

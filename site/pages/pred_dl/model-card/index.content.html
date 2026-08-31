@@ -1,0 +1,17 @@
+<section class="page-hero page-hero-compact"><div class="container page-hero-inner">
+  <p class="eyebrow">Deployed model documentation</p><h1>O-GlcNAcPRED-DL model card</h1>
+  <p class="page-lead">Scope, outputs, limitations, and reproducibility information for version 1.0.0.</p>
+</div></section>
+<section class="content-section"><div class="container"><article class="panel prose">
+  <h2>Model and intended use</h2>
+  <p>The deployed O-GlcNAcPRED-DL 1.0.0 release is the published species-specific ensemble for prioritizing candidate serine and threonine O-GlcNAcylation sites in human or mouse protein sequences. It supports experimental planning; it does not establish modification.</p>
+  <h2>Inputs and outputs</h2>
+  <p>Input is one or more protein sequences in FASTA format with a selected human or mouse model. The browser reports each S/T residue, its one-based position, a model score rounded to three decimals, and the published confidence thresholds: greater than 0.5, 0.95, and 0.99.</p>
+  <h2>Architecture and runtime</h2>
+  <p>Five CNN–BiLSTM models combine AAindex and Word2Vec sequence features with published species-specific ensemble weights. TensorFlow.js/WASM inference runs locally in a Web Worker. The tracked manifest identifies every model and feature artifact by SHA-256.</p>
+  <h2>Limitations</h2>
+  <ul><li>Performance evidence is strongest for human and mouse, the two trained species.</li><li>A high score is not experimental evidence, and a low score does not prove absence.</li><li>The score should not be interpreted as a universally calibrated biological probability.</li><li>Sequence context alone does not represent tissue, condition, localization, enzyme availability, or measurement bias.</li><li>Unusual residues and very large requests are restricted by the documented browser input contract.</li></ul>
+  <h2>Validation and reproducibility</h2>
+  <p>The browser implementation is tested against Python-generated golden results for both species. The published study provides the model-development and comparative evaluation context. <a href="/citations/">View the complete citation</a>.</p>
+  <p>A prospective PRED-DL 2.0 protocol exists in the source repository, but no v2 model is claimed or deployed before its future corpus freeze and release gates pass.</p>
+</article></div></section>

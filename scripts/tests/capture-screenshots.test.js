@@ -43,8 +43,12 @@ test("visual audit covers every configured route and required dynamic state", ()
     "ogt-pin-search-error",
     "ogt-pin-detail",
     "ogt-pin-detail-empty",
+    "ogt-pin-publication-figures",
     "pred-dl-result",
     "pred-dl-error",
+    "workbench",
+    "workbench-result",
+    "workbench-error",
     "hexnac-analysis",
     "hexnac-result",
     "hexnac-error",
@@ -73,7 +77,7 @@ test("visual audit locks 4K, wide, desktop, and mobile viewports and contact she
 test("baseline mode keeps one selector-agnostic comparison for every tool", () => {
   assert.deepEqual(
     new Set(baselineCaptures.map((capture) => capture.group)),
-    new Set(["suite", "atlas", "ogt-pin", "pred-dl", "hexnac"]),
+    new Set(["suite", "atlas", "ogt-pin", "pred-dl", "hexnac", "workbench"]),
   );
   assert.ok(baselineCaptures.some((capture) => capture.name === "not-found"));
   assert.ok(

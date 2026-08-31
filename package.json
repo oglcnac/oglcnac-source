@@ -6,14 +6,16 @@
     "check:site": "python3 scripts/build_site.py --check",
     "qa:runtime": "npm run build:site && python3 scripts/check_site.py --forbid-external-runtime dist",
     "qa:repository": "npm run build:site && python3 -S scripts/check_site.py --forbid-external-runtime --audit-assets --audit-routes dist",
-    "qa:pr": "npm run qa:repository && npm run test:site && npm run test:data && npm run test:tables:unit && npm run test:prediction:unit && npm run test:hexnac:unit && npm run test:visual-config && node --test scripts/tests/browser-smoke-core.test.js",
+    "qa:pr": "npm run qa:repository && npm run test:site && npm run test:data && npm run test:tables:unit && npm run test:ogt-network:unit && npm run test:prediction:unit && npm run test:workbench:unit && npm run test:prediction:v2-protocol && npm run test:hexnac:unit && npm run test:visual-config && node --test scripts/tests/browser-smoke-core.test.js",
     "test:site": "npm run build:site && python3 -m unittest scripts.tests.test_site_build -v",
     "test:data": "python3 -m unittest scripts.tests.test_generate_static_data -v && node --test scripts/tests/static-data.test.js",
     "test:tables": "npm run test:tables:unit && npm run test:tables:browser",
     "test:tables:unit": "node --test scripts/tests/native-table-core.test.js scripts/tests/static-data.test.js",
+    "test:ogt-network:unit": "node --test scripts/tests/ogt-network-summary.test.js",
     "test:tables:browser": "npm run build:site && node --test scripts/tests/site-interactions-browser.test.js",
     "screenshots": "node scripts/capture_screenshots.js",
     "test:visual-config": "node --test scripts/tests/capture-screenshots.test.js",
+    "test:accessibility:browser": "npm run build:site && node --test scripts/tests/accessibility-browser.test.js",
     "smoke:static": "npm run build:site && python3 scripts/smoke_static_site.py",
     "smoke:static:browser": "node scripts/smoke_static_site_browser.js",
     "test:hexnac": "npm run test:hexnac:unit && npm run test:hexnac:browser",
@@ -21,9 +23,13 @@
     "test:hexnac:browser": "npm run build:site && node --test scripts/tests/hexnac-quest-browser.test.js",
     "test:prediction": "npm run test:prediction:unit && npm run test:prediction:browser",
     "test:prediction:unit": "node --test scripts/tests/prediction-core.test.js",
+    "test:workbench:unit": "node --test scripts/tests/workbench-core.test.js",
+    "test:workbench:browser": "npm run build:site && node --test scripts/tests/workbench-browser.test.js",
+    "test:prediction:v2-protocol": "python3 -m unittest scripts.tests.test_prediction_v2_protocol -v",
     "test:prediction:browser": "npm run build:site && node --test scripts/tests/prediction-browser.test.js"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "playwright": "^1.60.0"
   },
   "dependencies": {

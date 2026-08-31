@@ -558,6 +558,19 @@ test("Atlas statistics separates current release metrics from historical figures
   await page.close();
 });
 
+test("OGT-PIN statistics filters the readable network and preserves publication figures", async () => {
+  const page = await browser.newPage();
+  await page.goto(`${baseUrl}/ogt-pin/statistics/`);
+  await page.waitForFunction(() => document.querySelector("#ogt-summary-metrics")?.textContent.includes("3,757"));
+  assert.equal(await page.locator("#ogt-network-nodes a").count(), 12);
+  await page.selectOption("#ogt-network-species", { label: "Mus musculus (Mouse)" });
+  await page.waitForFunction(() => !document.querySelector("#ogt-summary-metrics")?.textContent.includes("3,757"));
+  assert.ok(await page.locator("#ogt-network-nodes a").count() > 0);
+  await page.locator(".historical-figures > summary").click();
+  assert.equal(await page.locator('.historical-figures img[src="/static/img/OGT-Interactome-760.svg"]').isVisible(), true);
+  await page.close();
+});
+
 test("result surfaces announce empty and data-load error states", async () => {
   const page = await browser.newPage();
   await page.goto(`${baseUrl}/atlas/search/?q=NOT-A-REAL-ACCESSION&field=accession`);
@@ -1018,7 +1031,7 @@ test("shared title surfaces are compact and leave room for useful content", asyn
     ["/atlas/statistics/", ".metric-grid", 500],
     ["/atlas/search/", ".table-results-section", 390],
     ["/atlas/browse/?species=Human", ".table-results-section", 350],
-    ["/ogt-pin/statistics/", ".evidence-grid", 380],
+    ["/ogt-pin/statistics/", ".ogt-network-summary", 380],
     ["/ogt-pin/search/", ".table-results-section", 390],
     ["/pred_dl/", ".resource-directory", 450],
     ["/hexnac-quest/analysis/", ".hq-upload-card", 340],

@@ -1,0 +1,20 @@
+{
+  "status": "prospective_protocol_not_a_released_model",
+  "corpus_freeze": "2027-01-31",
+  "positives": "unambiguous_only",
+  "ambiguous_sites": "held_as_separate_analysis_stratum",
+  "learning_assumption": "positive_unlabeled",
+  "splits": {
+    "train": {"publication_end": "2023-12-31"},
+    "validation": {"publication_start": "2024-01-01", "publication_end": "2024-12-31"},
+    "temporal_test": {"publication_start": "2025-01-01", "publication_end": "2027-01-31", "untouched_until_final_selection": true}
+  },
+  "leakage_groups": ["pmid", "protein_accession", "sequence_cluster"],
+  "sequence_clustering": {"identity_max": 0.30, "coverage_min": 0.80},
+  "candidate_models": ["published_v1", "retrained_legacy", "compact_residual_multispecies"],
+  "primary_metric": "macro_species_auprc",
+  "secondary_metrics": ["auroc", "mcc", "f1", "sensitivity", "specificity", "brier", "ece"],
+  "confidence_intervals": "stratified_bootstrap",
+  "smaller_model_tolerance": 0.01,
+  "external_comparators": ["DeepO-GlcNAc", "other_functioning_predictors_frozen_in_benchmark_manifest"]
+}
