@@ -448,6 +448,126 @@ class SiteBuildTests(unittest.TestCase):
                 for fact in facts:
                     self.assertIn(fact.casefold(), text)
 
+    def test_nar_planning_artifacts_remain_linked_and_prospective(self) -> None:
+        nar_documents = (
+            "NAR-SUITABILITY-INQUIRY.md",
+            "NAR-STUDY-PROTOCOL.md",
+            "NAR-ADOPTION-EVIDENCE.md",
+        )
+        readme = (REPOSITORY_ROOT / "README.md").read_text(encoding="utf-8")
+        for document in nar_documents:
+            with self.subTest(readme_link=document):
+                self.assertIn(f"docs/{document}", readme)
+                self.assertTrue((REPOSITORY_ROOT / "docs" / document).is_file())
+
+        inquiry = re.sub(
+            r"\s+",
+            " ",
+            (REPOSITORY_ROOT / "docs" / nar_documents[0]).read_text(
+                encoding="utf-8"
+            ),
+        )
+        for fact in (
+            "INTERNAL, UNSENT DRAFT — NOT SUBMITTED",
+            "confirm authorship, affiliations",
+            "https://academic.oup.com/nar/pages/submission_webserver",
+            "minimum two-year interval requirement",
+            "article date 2025-02-21",
+            "issue publication 2025-08-01",
+        ):
+            with self.subTest(inquiry_fact=fact):
+                self.assertIn(fact, inquiry)
+        for pmid in (
+            "33442735",
+            "39988118",
+            "34502531",
+            "38054441",
+            "36122299",
+            "38995536",
+        ):
+            with self.subTest(inquiry_pmid=pmid):
+                self.assertIn(f"PMID {pmid}", inquiry)
+        self.assertNotRegex(inquiry, r"(?i)released PRED-DL 2\.0")
+        self.assertNotRegex(inquiry, r"(?i)completed benchmark results")
+
+        protocol = re.sub(
+            r"\s+",
+            " ",
+            (REPOSITORY_ROOT / "docs" / nar_documents[1]).read_text(
+                encoding="utf-8"
+            ),
+        )
+        for fact in (
+            "reports no results",
+            "does not describe a released PRED-DL 2.0 model",
+            "2027-01-31",
+            "current public predictor is **O-GlcNAcPRED-DL 1.0**",
+            "only **positive** labels",
+            "Ambiguous sites are retained as a distinct analysis stratum",
+            "**unlabeled** under a positive-unlabeled learning assumption",
+            (
+                "PMID, protein accession, and sequence cluster are indivisible "
+                "leakage groups"
+            ),
+            "macro-species AUPRC",
+            "AUROC, MCC,",
+            (
+                "F1, sensitivity, specificity, Brier score, and expected "
+                "calibration error"
+            ),
+            "DeepO-GlcNAc",
+            "YinOYang 1.2",
+            "Browser/Python parity",
+            "A. Experimentally supported site reconciliation",
+            "B. Candidate prioritization",
+            "C. Human/mouse comparison",
+            "## 8. Consented usability evaluation",
+            "Obtain consent before data collection",
+        ):
+            with self.subTest(protocol_fact=fact):
+                self.assertIn(fact, protocol)
+
+        adoption = re.sub(
+            r"\s+",
+            " ",
+            (REPOSITORY_ROOT / "docs" / nar_documents[2]).read_text(
+                encoding="utf-8"
+            ),
+        )
+        for fact in (
+            "Cloudflare Browser Insights/RUM",
+            "/cdn-cgi/rum",
+            "Google Analytics",
+            "Google Tag Manager",
+            "permanent or tracking cookies",
+            "fingerprinting",
+            "IP or user-agent profiling",
+            "hidden telemetry",
+            "must not collect submitted FASTA or CSV content",
+            "*engagement*, not users or adoption",
+            "internal** readiness gate, not an NAR rule",
+        ):
+            with self.subTest(adoption_fact=fact):
+                self.assertIn(fact, adoption)
+
+        readiness = re.sub(
+            r"\s+",
+            " ",
+            (REPOSITORY_ROOT / "docs" / "NAR-WEB-SERVER-READINESS.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        for document in nar_documents:
+            with self.subTest(readiness_link=document):
+                self.assertIn(f"]({document})", readiness)
+        for dated_step in (
+            "Through 2027-01-31",
+            "February–April 2027",
+            "After validation and confirmed eligibility",
+        ):
+            with self.subTest(readiness_sequence=dated_step):
+                self.assertIn(dated_step, readiness)
+
     def test_hexnac_public_copy_excludes_migration_and_runtime_jargon(self) -> None:
         forbidden_phrases = (
             "shinyapps.io",
