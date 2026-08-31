@@ -28,8 +28,8 @@ than manually using the corresponding component tools?
 **Success criteria.** The consented usability evaluation in Section 8 must
 show task completion, predefined interpretation-error counts, elapsed time,
 System Usability Scale (SUS) responses, and qualitative feedback for both
-workflows. The interpretation benefit is assessed from the prespecified task
-outcomes, not from passive usage telemetry. A favorable workflow result may be
+workflows. Correctness and efficiency claims use the fixed decision rules in
+Section 8, not passive usage telemetry. A favorable workflow result may be
 reported even if no v2 model is released; it does not relabel v1 as v2.
 
 ### 1.2 Prospective-model question
@@ -40,11 +40,13 @@ published v1 candidate while retaining an artifact small enough for practical
 browser execution?
 
 **Success criteria.** Candidate selection is based only on the frozen
-validation procedure in Section 4. The selected candidate must meet all
-release gates, including the required temporal-test report, calibration,
-external comparators, browser/Python parity, and archived artifacts. The
-study will report performance and artifact constraints rather than infer an
-improvement from model architecture alone.
+validation procedure in Section 4. A material predictive improvement requires
+all prespecified temporal-test, calibration, and browser-feasibility criteria
+in Section 4. The selected candidate must also meet all release gates,
+including the required temporal-test report, external comparators,
+browser/Python parity, and archived artifacts. The study will report
+performance and artifact constraints rather than infer an improvement from
+model architecture alone.
 
 ### 1.3 Neutral outcome path
 
@@ -97,9 +99,9 @@ reported without reinterpreting ambiguous or unlabeled sites as negatives.
 
 ## 3. Leakage-resistant split assignment
 
-Split assignment is made once from the frozen corpus and stored in
-`prediction-v2/splits/assignments.csv`. Every corpus record is assigned exactly
-once. The current temporal windows are binding:
+Before the corpus freeze, construct connected components on the candidate
+corpus using undirected PMID, protein-accession, and sequence-cluster edges.
+The current temporal windows are binding:
 
 | Split | Publication-date window | Permitted use |
 | --- | --- | --- |
@@ -108,14 +110,23 @@ once. The current temporal windows are binding:
 | Untouched temporal test | 2025-01-01 through 2027-01-31 | Final evaluation only, after model selection and calibration freeze |
 
 PMID, protein accession, and sequence cluster are indivisible leakage groups:
-all members of each group must remain in one split. Sequence clusters are
-constructed at no more than 30% sequence identity and at least 80% coverage.
-If a group spans otherwise incompatible temporal windows, assign it without
-splitting the group, document the conflict and resolution in the split
-manifest, and verify that it does not place a group in multiple splits. No
-temporal-test record, score, error analysis, or calibration result may affect
-candidate choice, model size choice, threshold selection, calibration method,
-or calibration binning.
+all members of a connected component must remain in one split. Sequence
+clusters are constructed at no more than 30% sequence identity and at least
+80% coverage. If a component contains records from more than one temporal
+window, exclude the entire component from the benchmark corpus before freeze.
+Preserve every excluded record in a hashed exclusion ledger with reason
+`cross_window_group`; allow it only in a clearly labeled descriptive analysis,
+never in model fitting, selection, calibration, temporal testing, or the
+primary benchmark. An unresolved component blocks corpus freeze and release.
+
+After exclusions, assign every retained benchmark record exactly once in
+`prediction-v2/splits/assignments.csv`. Every retained record must satisfy the
+date bounds of its assigned split, and every PMID, protein accession, and
+sequence-cluster group must occur in one split only. Freeze and archive the
+component algorithm/version, all edge inputs, retained-component assignments,
+and the exclusion-ledger SHA-256. No temporal-test record, score, error
+analysis, or calibration result may affect candidate choice, model size choice,
+threshold selection, calibration method, or calibration binning.
 
 ## 4. Model selection, calibration, and evaluation
 
@@ -152,7 +163,29 @@ Brier score, ECE, and reliability plots describe calibration; they do not turn
 a score into a universally calibrated biological probability. The model card
 must state intended use, limitations, and validation results substantively.
 
-### 4.3 Uncertainty estimation
+### 4.3 Material-improvement and browser-feasibility decision rules
+
+Call v2 a material predictive improvement only if all of the following are met
+on the untouched temporal test relative to released v1:
+
+| Criterion | Required result |
+| --- | --- |
+| Primary performance | Macro-species AUPRC improves by at least +0.01, and the paired-bootstrap 95% confidence-interval lower bound for the v2-minus-v1 difference is greater than 0. |
+| Species safeguards | Neither human nor mouse AUPRC decreases by more than 0.01. |
+| Calibration safeguards | Neither Brier score nor ECE worsens by more than 0.01. |
+| Browser payload | The compressed model/runtime addition relative to v1 is at most 25 MiB. |
+| Browser memory | Peak JavaScript heap is at most 512 MiB. |
+| Browser runtime | On every frozen reference browser/device, median runtime is at most 30 seconds per 1,000 candidate sites. |
+
+Report each browser-feasibility measurement alongside its relative v1 value.
+Freeze the reference hardware, operating system, browser and version, runtime,
+input fixture, warm-up count, and measured-run count before test execution.
+Use the paired, species-stratified protein-cluster bootstrap in Section 4.4
+for the v2-minus-v1 inference. If any criterion in this table fails, retain v1
+as the public predictor and report the outcome as neutral rather than as a v2
+improvement.
+
+### 4.4 Uncertainty estimation
 
 For each reported metric, calculate 95% percentile confidence intervals using
 **10,000 deterministic species-stratified protein-cluster bootstrap
@@ -218,20 +251,23 @@ every shipped model file.
 ## 7. Prospective biological use cases
 
 No actual protein, site, result, interpretation, or biological finding is
-selected or claimed in this protocol. Before any case outcome is reviewed by a
-person, freeze and hash its machine-executed selection rule and input-only
-eligibility manifest, including identifiers, input FASTA, species, expected
-sequence snapshots, chosen data releases, and analysis version. The selector
-must write its execution record and the complete result export before human
-review. Retain a human-readable record of domain-expert interpretation.
-Interpretations must cite the supporting literature and state which statements
-are prediction, curated evidence, or biological hypothesis.
+selected or claimed in this protocol. Before narrative drafting or human case
+review, freeze the candidate pool, machine-executed selection rule, inputs,
+and ranking fields for each case. Hash the input FASTA, identifiers, species,
+expected sequence snapshots, chosen data releases, selection-rule version, and
+analysis version. The selector must write and preserve the full
+candidate/ranking table, its SHA-256, the selection execution record, and the
+complete result export before human review. If a case has zero eligible
+candidates, report it as unavailable without relaxing criteria. Retain a
+human-readable record of domain-expert interpretation. Interpretations must
+cite the supporting literature and state which statements are prediction,
+curated evidence, or biological hypothesis.
 
 | Case | Prospective selection rule and required display | Guardrails |
 | --- | --- | --- |
-| A. Experimentally supported site reconciliation | Preselect an eligible accession/site from the frozen Atlas evidence source by a deterministic manifest rule. Display sequence-verification state; exact accession, position, residue, and species evidence; associated PMIDs; and the prediction context. | Join Atlas evidence only on exact accession, selected species, residue, and protein position. No cross-species or cross-site joins. A sequence mismatch suppresses evidence. |
-| B. Candidate prioritization | Use the frozen machine-executed selector to choose a prediction-positive protein/site under the frozen threshold that is Atlas-absent in the frozen release and has independently curated OGT-PIN context. Freeze this deterministic predicate before case outcome review. | Label the result a hypothesis requiring experimental validation, not a discovery. Atlas absence remains “not reported,” not biological absence. Keep prediction, Atlas, and protein-level OGT-PIN fields distinct. |
-| C. Human/mouse comparison | Preselect one human/mouse ortholog pair by a frozen identifier and provenance rule; run species-specific predictions and retrieve species-specific evidence. | Do not treat site coordinates as homologous merely because proteins are orthologs. State a site mapping only if the archived alignment establishes the mapping, and preserve the alignment/version/hash. |
+| A. Experimentally supported site reconciliation | Candidate pool: sequence-verified, Atlas-supported candidates. Rank by Atlas record count descending, unique PMID count descending, accession ascending, then position ascending. Select the first eligible candidate. Display sequence-verification state; exact accession, position, residue, and species evidence; associated PMIDs; and prediction context. | Join Atlas evidence only on exact accession, selected species, residue, and protein position. No cross-species or cross-site joins. A sequence mismatch suppresses evidence. |
+| B. Candidate prioritization | Candidate pool: sites with score above the frozen decision threshold, Atlas absent in the frozen release, and OGT-PIN present. Rank by score descending, OGT evidence count descending, accession ascending, then position ascending. Select the first eligible candidate. | Label the result a hypothesis requiring experimental validation, not a discovery. Atlas absence remains “not reported,” not biological absence. Keep prediction, Atlas, and protein-level OGT-PIN fields distinct. |
+| C. Human/mouse comparison | Candidate pool: human/mouse ortholog pairs with an aligned S/T. Rank by ortholog source-confidence descending, alignment coverage descending, then accession-pair ascending. Select the first eligible pair. The selection must not use prediction or evidence outcomes. | Do not treat site coordinates as homologous merely because proteins are orthologs. State a site mapping only if the archived alignment establishes the mapping, and preserve the alignment/version/hash. |
 
 Every case requires review and written interpretation by a qualified domain
 expert with cited literature. The case report must include both complete exports
@@ -242,20 +278,39 @@ substitute for the benchmark or establish experimental validation.
 ## 8. Consented usability evaluation
 
 Recruit at least eight independent intended users. Obtain consent before data
-collection, use fixed task scripts, and compare manual component-tool and
-Workbench workflows in counterbalanced order. The protocol records, for each
-task and participant, completion status, predefined interpretation errors,
-elapsed time, SUS responses, and qualitative feedback. Predefine the task
-answers and error taxonomy before recruitment; examples include selecting an
-incorrect species/site/residue, using evidence despite a sequence mismatch,
-conflating protein-level OGT-PIN context with site-level evidence, and treating
-“not reported” as absence.
+collection, use fixed synthetic or public task inputs only, and compare manual
+component-tool and Workbench workflows in a counterbalanced crossover order.
+Do not collect submitted user protein sequences or CSV files. The protocol
+records, for each task and participant, completion status, predefined
+interpretation errors, elapsed time, SUS responses, and qualitative feedback.
+Predefine the task answers and error taxonomy before recruitment; examples
+include selecting an incorrect species/site/residue, using evidence despite a
+sequence mismatch, conflating protein-level OGT-PIN context with site-level
+evidence, and treating “not reported” as absence.
 
-Store only de-identified aggregate results for reporting. Keep consent records
-separate from study data and retain only the minimum operational information
-required by the approved study procedure. This evaluation is not passive web
-tracking: the public Workbench remains registration-free and does not collect
-analytics or behavioral telemetry outside explicit, consented study sessions.
+Each fixed task has a 15-minute timeout. An incomplete task or an incorrect
+critical interpretation is a failure and receives an elapsed time of 15
+minutes. The primary correctness endpoint is paired critical-error-free
+completion. Claim a correctness improvement only when the 95%
+participant-cluster paired-bootstrap confidence interval for the Workbench
+minus component-workflow completion difference is entirely greater than 0.
+Define each within-participant time reduction as 100 × (component-workflow
+time − Workbench time) / component-workflow time. Claim an efficiency
+improvement only when the 95% confidence interval for the median
+within-participant time reduction is entirely at least 10%, and the lower bound
+of the correctness-difference interval is at least -0.05. Otherwise report
+neutral or mixed results. Use 10,000 paired-bootstrap replicates with seed
+20270131; SUS is descriptive only, and no threshold or decision rule may
+change post hoc.
+
+Assign random participant identifiers solely for transient paired analysis.
+Keep the consent/contact key separately under the approved procedure. Within
+30 days after aggregate verification, delete participant-level task data and
+destroy the linkage; retain only de-identified aggregate results and analysis
+code. The institutional determination controls when it requires stricter
+handling. This evaluation is not passive web tracking: the public Workbench
+remains registration-free and does not collect analytics or behavioral
+telemetry outside explicit, consented study sessions.
 
 ## 9. Artifacts, reporting, and release decision
 
@@ -265,24 +320,26 @@ release checklist.
 | Required output | Release-checklist location or linked archive |
 | --- | --- |
 | Frozen corpus records, provenance, record count, and SHA-256 | `corpus/records.csv`, `corpus/manifest.json` |
-| One-to-one split assignments and leakage checks | `splits/assignments.csv` and split-analysis manifest |
+| One-to-one retained-record split assignments, component inputs, and leakage checks | `splits/assignments.csv` and split-analysis manifest |
+| Cross-window component exclusions | Hashed exclusion ledger with reason `cross_window_group` |
 | Scripts, environment lock, and frozen analysis configuration | Versioned source/data/model archive |
-| Aggregate and per-species metrics, candidate sizes, runtime, memory, failure counts, and browser support | `benchmarks/metrics.json` and linked report |
+| Aggregate and per-species metrics, candidate sizes, runtime, memory, failure counts, browser support, and relative-v1 feasibility values | `benchmarks/metrics.json` and linked report |
 | Bootstrap configuration and 95% intervals | `benchmarks/bootstrap-confidence-intervals.json` |
 | Comparator metadata, raw outputs where redistribution permits, exclusions, and failures | `benchmarks/comparators.json` and linked archive |
 | Held-out calibration procedure, Brier/ECE, reliability plots, and frozen binning rule | `calibration/report.json` and frozen analysis manifest |
 | Intended use, limitations, and validation summary | `models/model-card.md` |
 | Hashed browser artifacts and manifest | `models/browser/manifest.json` |
 | Full browser/Python outputs, manifests, and tolerance result | `parity/browser-python.json` and linked archive |
-| Use-case selection inputs, FASTA/identifier hashes, outputs, expert interpretation, and cited literature | Versioned use-case archive |
-| Consent procedure, fixed tasks, de-identified aggregate usability results, SUS, and qualitative summary | Versioned usability protocol/results archive |
+| Use-case candidate pools/rankings, selection inputs, FASTA/identifier hashes, outputs, expert interpretation, and cited literature | Versioned use-case archive |
+| Consent procedure, fixed synthetic/public tasks, de-identified aggregate usability results, SUS, qualitative summary, and analysis code | Versioned usability protocol/results archive |
 
 Public v2 release and v2 manuscript claims are blocked by any leakage,
-provenance gap, incomplete comparator evaluation, browser/Python parity
-failure, unavailable required artifact, or failed release gate. The release
-gate is run with `python3 prediction-v2/tools/check_release.py`; it must pass
-only after the corpus freeze and complete scientific artifacts are present.
-Passing file-presence checks alone is insufficient.
+unresolved cross-window component, provenance gap, incomplete comparator
+evaluation, browser/Python parity failure, unavailable required artifact, or
+failed release gate. The release gate is run with
+`python3 prediction-v2/tools/check_release.py`; it must pass only after the
+corpus freeze and complete scientific artifacts are present. Passing
+file-presence checks alone is insufficient.
 
 Only after validation is complete may the project create a versioned
 source/data/model archive and obtain a DOI. The DOI archive must include the
