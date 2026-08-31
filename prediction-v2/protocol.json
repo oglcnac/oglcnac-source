@@ -16,5 +16,6 @@
   "secondary_metrics": ["auroc", "mcc", "f1", "sensitivity", "specificity", "brier", "ece"],
   "confidence_intervals": "stratified_bootstrap",
   "smaller_model_tolerance": 0.01,
-  "external_comparators": ["DeepO-GlcNAc", "other_functioning_predictors_frozen_in_benchmark_manifest"]
+  "required_external_comparators": ["DeepO-GlcNAc"],
+  "additional_functioning_comparators_minimum": 1
 }

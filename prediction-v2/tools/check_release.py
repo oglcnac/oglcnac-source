@@ -26,6 +26,12 @@ def unit_interval(value: object) -> bool:
     return finite_number(value) and 0 <= value <= 1
 
 
+def metric_in_domain(name: str, value: object) -> bool:
+    if name == "mcc":
+        return finite_number(value) and -1 <= value <= 1
+    return unit_interval(value)
+
+
 def load_json(path: Path, problems: list[str]) -> dict:
     try:
         value = json.loads(path.read_text())
@@ -126,15 +132,15 @@ def validate_scientific_artifacts(root: Path, protocol: dict, problems: list[str
     metric_values = metrics.get("metrics", {})
     if metrics and (metrics.get("selection_frozen") is not True or not required_metrics.issubset(metric_values)):
         problems.append("invalid benchmark metrics: selection is unfrozen or required metrics are missing")
-    elif metrics and any(not unit_interval(metric_values[name]) for name in required_metrics):
-        problems.append("invalid benchmark metrics: required values must be finite numbers from zero to one")
+    elif metrics and any(not metric_in_domain(name, metric_values[name]) for name in required_metrics):
+        problems.append("invalid benchmark metrics: required values fall outside their scientific domains")
     per_species = metrics.get("per_species", {})
     if metrics and (not isinstance(per_species, dict) or not {"human", "mouse"}.issubset(per_species)):
         problems.append("invalid benchmark metrics: human and mouse stratified results are required")
     elif metrics and any(
         not isinstance(species_metrics, dict)
         or not required_metrics.issubset(species_metrics)
-        or any(not unit_interval(species_metrics[name]) for name in required_metrics)
+        or any(not metric_in_domain(name, species_metrics[name]) for name in required_metrics)
         for species_metrics in per_species.values()
     ):
         problems.append("invalid benchmark metrics: species-stratified values are incomplete or nonnumeric")
@@ -173,8 +179,8 @@ def validate_scientific_artifacts(root: Path, protocol: dict, problems: list[str
         problems.append("invalid confidence intervals: confidence level must be between zero and one")
     elif intervals and any(
         not isinstance(intervals["metrics"].get(name), dict)
-        or not unit_interval(intervals["metrics"][name].get("lower"))
-        or not unit_interval(intervals["metrics"][name].get("upper"))
+        or not metric_in_domain(name, intervals["metrics"][name].get("lower"))
+        or not metric_in_domain(name, intervals["metrics"][name].get("upper"))
         or intervals["metrics"][name]["lower"] > intervals["metrics"][name]["upper"]
         for name in required_metrics
     ):
@@ -182,18 +188,35 @@ def validate_scientific_artifacts(root: Path, protocol: dict, problems: list[str
     comparators = load_json(root / "benchmarks/comparators.json", problems)
     require_fields(comparators, {"frozen", "comparators"}, "comparator benchmark", problems)
     comparator_items = comparators.get("comparators", [])
-    completed_comparators = {
-        item.get("name") for item in comparator_items
-        if isinstance(item, dict) and item.get("status") == "completed"
-    }
+    required_comparators = set(protocol.get("required_external_comparators", []))
+    comparator_names = [item.get("name") for item in comparator_items if isinstance(item, dict)] if isinstance(comparator_items, list) else []
+    additional_minimum = protocol.get("additional_functioning_comparators_minimum")
+    comparator_results_invalid = not isinstance(comparator_items, list) or any(
+        not isinstance(item, dict)
+        or not isinstance(item.get("name"), str)
+        or not item.get("name", "").strip()
+        or not isinstance(item.get("version"), str)
+        or not item.get("version", "").strip()
+        or item.get("status") != "completed"
+        or item.get("corpus_sha256") != manifest.get("records_sha256")
+        or not SHA256.fullmatch(str(item.get("corpus_sha256", "")))
+        or not isinstance(item.get("metrics"), dict)
+        or not required_metrics.issubset(item.get("metrics", {}))
+        or any(not metric_in_domain(name, item.get("metrics", {}).get(name)) for name in required_metrics)
+        for item in comparator_items
+    )
     if comparators and (
         comparators.get("frozen") is not True
-        or not isinstance(comparator_items, list)
         or not comparator_items
-        or not set(protocol.get("external_comparators", [])).issubset(completed_comparators)
-        or any(not isinstance(item, dict) or item.get("status") != "completed" for item in comparator_items)
+        or len(comparator_names) != len(set(comparator_names))
+        or not required_comparators.issubset(comparator_names)
+        or not isinstance(additional_minimum, int)
+        or isinstance(additional_minimum, bool)
+        or additional_minimum < 0
+        or len(set(comparator_names) - required_comparators) < additional_minimum
+        or comparator_results_invalid
     ):
-        problems.append("invalid comparator benchmark: functioning comparators are not frozen and complete")
+        problems.append("invalid comparator benchmark: versioned results on the frozen corpus are incomplete")
     calibration = load_json(root / "calibration/report.json", problems)
     require_fields(calibration, {"brier", "ece", "method", "frozen"}, "calibration report", problems)
     if calibration and (

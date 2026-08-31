@@ -41,21 +41,34 @@ class PredictionV2ProtocolTests(unittest.TestCase):
         records_hash = hashlib.sha256((root / "corpus/records.csv").read_bytes()).hexdigest()
         model_hash = hashlib.sha256((root / "models/browser/model.bin").read_bytes()).hexdigest()
         metric_names = ["macro_species_auprc", "auroc", "mcc", "f1", "sensitivity", "specificity", "brier", "ece"]
+        aggregate_metrics = {name: 0.8 for name in metric_names}
+        aggregate_metrics["mcc"] = -0.2
+        species_metrics = {species: dict(aggregate_metrics) for species in ("human", "mouse")}
+        interval_metrics = {name: {"lower": 0.7, "upper": 0.9} for name in metric_names}
+        interval_metrics["mcc"] = {"lower": -0.4, "upper": 0.1}
+        comparator_metrics = dict(aggregate_metrics)
+        comparator = lambda name, version: {
+            "name": name,
+            "version": version,
+            "status": "completed",
+            "corpus_sha256": records_hash,
+            "metrics": dict(comparator_metrics),
+        }
         payloads = {
             "corpus/manifest.json": {"frozen": True, "freeze_date": "2027-01-31", "record_count": 3, "records_sha256": records_hash, "provenance": ["study-a", "study-b", "study-c"]},
             "benchmarks/metrics.json": {
                 "selected_model": "compact_residual_multispecies",
                 "selection_frozen": True,
-                "metrics": {name: 0.8 for name in metric_names},
-                "per_species": {species: {name: 0.8 for name in metric_names} for species in ("human", "mouse")},
+                "metrics": aggregate_metrics,
+                "per_species": species_metrics,
                 "candidates": [
                     {"name": "published_v1", "macro_species_auprc": 0.80, "size_bytes": 2000},
                     {"name": "retrained_legacy", "macro_species_auprc": 0.79, "size_bytes": 1500},
                     {"name": "compact_residual_multispecies", "macro_species_auprc": 0.795, "size_bytes": 1000},
                 ],
             },
-            "benchmarks/bootstrap-confidence-intervals.json": {"method": "stratified_bootstrap", "confidence_level": 0.95, "metrics": {name: {"lower": 0.7, "upper": 0.9} for name in metric_names}},
-            "benchmarks/comparators.json": {"frozen": True, "comparators": [{"name": name, "status": "completed"} for name in ("DeepO-GlcNAc", "other_functioning_predictors_frozen_in_benchmark_manifest")]},
+            "benchmarks/bootstrap-confidence-intervals.json": {"method": "stratified_bootstrap", "confidence_level": 0.95, "metrics": interval_metrics},
+            "benchmarks/comparators.json": {"frozen": True, "comparators": [comparator("DeepO-GlcNAc", "frozen-release"), comparator("AdditionalTool", "1.0")]},
             "calibration/report.json": {"brier": 0.1, "ece": 0.05, "method": "held-out temporal calibration", "frozen": True},
             "models/browser/manifest.json": {"version": "2.0.0", "artifacts": {"model.bin": model_hash}},
             "parity/browser-python.json": {"passed": True, "max_abs_difference": 0.000001, "tolerance": 0.00001, "corpus_sha256": records_hash},
@@ -86,6 +99,8 @@ class PredictionV2ProtocolTests(unittest.TestCase):
         self.assertEqual(protocol["sequence_clustering"]["coverage_min"], 0.80)
         self.assertEqual(protocol["primary_metric"], "macro_species_auprc")
         self.assertEqual(protocol["smaller_model_tolerance"], 0.01)
+        self.assertEqual(protocol["required_external_comparators"], ["DeepO-GlcNAc"])
+        self.assertEqual(protocol["additional_functioning_comparators_minimum"], 1)
 
     def test_release_gate_rejects_an_incomplete_or_future_release(self) -> None:
         result = subprocess.run(
@@ -143,6 +158,9 @@ class PredictionV2ProtocolTests(unittest.TestCase):
             "empty per-species results": ("benchmarks/metrics.json", lambda value: value.update({"per_species": {}})),
             "invalid confidence level": ("benchmarks/bootstrap-confidence-intervals.json", lambda value: value.update({"confidence_level": 1.5})),
             "missing named comparator": ("benchmarks/comparators.json", lambda value: value.update({"comparators": [{"name": "unplanned-tool", "status": "completed"}]})),
+            "status-only comparator": ("benchmarks/comparators.json", lambda value: value["comparators"][0].pop("metrics")),
+            "comparator corpus mismatch": ("benchmarks/comparators.json", lambda value: value["comparators"][0].update({"corpus_sha256": "0" * 64})),
+            "MCC outside scientific domain": ("benchmarks/metrics.json", lambda value: value["metrics"].update({"mcc": -1.1})),
             "invalid calibration": ("calibration/report.json", lambda value: value.update({"ece": None})),
             "corpus/group disagreement": ("splits/assignments.csv", None),
             "parity corpus mismatch": ("parity/browser-python.json", lambda value: value.update({"corpus_sha256": "0" * 64})),
