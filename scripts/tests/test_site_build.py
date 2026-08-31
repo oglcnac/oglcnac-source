@@ -149,36 +149,36 @@ def states_no_results(text: str) -> bool:
     )
 
 
-def makes_affirmative_pred_dl_v2_claim(text: str) -> bool:
+def makes_current_pred_dl_v2_availability_claim(text: str) -> bool:
     v2_pattern = r"\b(?:O-GlcNAc)?PRED[- ]DL\s+2\.0\b"
-    normalized = normalized_markdown(text)
-    if not re.search(v2_pattern, normalized, re.IGNORECASE):
-        return False
-
-    for sentence in re.split(r"(?<=[.!?])\s+", normalized):
+    for sentence in re.split(r"(?<=[.!?])\s+", normalized_markdown(text)):
         if not re.search(v2_pattern, sentence, re.IGNORECASE):
             continue
-        if re.search(r"\b(?:no|not|never|without)\b", sentence, re.IGNORECASE):
-            continue
-        if re.search(
-            rf"{v2_pattern}[^.!?]*\b(?:current(?:ly)?|public(?:ly)?|"
-            r"released?|available)\b",
-            sentence,
-            re.IGNORECASE,
-        ) or re.search(
-            rf"\b(?:current(?:ly)?|public(?:ly)?|released?|available)\b"
-            rf"[^.!?]*{v2_pattern}",
+        for match in re.finditer(
+            r"\b(?:is|are|was|were|has been|have been|remains|now)\b"
+            r"[^.!?]{0,50}\b(?:publicly\s+available|released|available)\b",
             sentence,
             re.IGNORECASE,
         ):
-            return True
-        if re.search(
-            r"\b(?:benchmark|benchmarks|results?)\b[^.!?]*\b(?:is|are|was|"
-            r"were|has|have)\b[^.!?]*\b(?:complete|completed|available|reported)\b"
-            r"|\b(?:complete|completed|available|reported)\b[^.!?]*\b"
-            r"(?:benchmark|benchmarks|results?)\b",
-            sentence,
-            re.IGNORECASE,
+            if not re.search(
+                r"\b(?:no|not|never|without)\b", match.group(), re.IGNORECASE
+            ):
+                return True
+    return False
+
+
+def makes_completed_benchmark_results_claim(text: str) -> bool:
+    for match in re.finditer(
+        r"\b(?:benchmark(?:\s+results?)?|results?)\b[^.!?]{0,80}"
+        r"\b(?:is|are|was|were|has|have|remains)\b[^.!?]{0,50}"
+        r"\b(?:complete|completed)\b"
+        r"|\b(?:complete|completed)\b[^.!?]{0,80}"
+        r"\b(?:benchmark(?:\s+results?)?|results?)\b",
+        normalized_markdown(text),
+        re.IGNORECASE,
+    ):
+        if not re.search(
+            r"\b(?:no|not|never|without)\b", match.group(), re.IGNORECASE
         ):
             return True
     return False
@@ -630,7 +630,8 @@ class SiteBuildTests(unittest.TestCase):
                 self.assertRegex(inquiry, rf"\bPMID\s+{pmid}\b")
         self.assertRegex(inquiry, r"\barticle date\s+2025-02-21\b")
         self.assertRegex(inquiry, r"\bissue publication\s+2025-08-01\b")
-        self.assertFalse(makes_affirmative_pred_dl_v2_claim(inquiry_body))
+        self.assertFalse(makes_current_pred_dl_v2_availability_claim(inquiry_body))
+        self.assertFalse(makes_completed_benchmark_results_claim(inquiry_body))
 
         protocol_raw = nar_documents["protocol"].read_text(encoding="utf-8")
         protocol_status = markdown_section(protocol_raw, "Status and scope")
@@ -819,18 +820,34 @@ class SiteBuildTests(unittest.TestCase):
                 "This document does not report adoption results."
             )
         )
+        self.assertFalse(
+            states_no_adoption_results("No entries or counts are invented.")
+        )
         self.assertTrue(
-            makes_affirmative_pred_dl_v2_claim(
-                "PRED-DL 2.0 is now publicly available. The benchmark is complete."
+            makes_current_pred_dl_v2_availability_claim(
+                "PRED-DL 2.0 is now publicly available."
             )
         )
         self.assertTrue(
-            makes_affirmative_pred_dl_v2_claim(
-                "PRED-DL 2.0 benchmark results are complete."
+            makes_completed_benchmark_results_claim(
+                "PRED-DL 2.0 remains prospective. "
+                "The benchmark results are complete."
+            )
+        )
+        self.assertTrue(
+            makes_completed_benchmark_results_claim(
+                "PRED-DL 2.0 is not publicly available, but its "
+                "benchmark results are complete."
             )
         )
         self.assertFalse(
-            makes_affirmative_pred_dl_v2_claim(
+            makes_current_pred_dl_v2_availability_claim(
+                "After the release gates pass, PRED-DL 2.0 will be publicly "
+                "available."
+            )
+        )
+        self.assertFalse(
+            makes_current_pred_dl_v2_availability_claim(
                 "O-GlcNAcPRED-DL 1.0 is publicly available. "
                 "The public test suite remains available."
             )
