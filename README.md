@@ -77,6 +77,9 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and
 - [Static HexNAcQuest](docs/HEXNAC-QUEST.md)
 - [Integrated Workbench](docs/WORKBENCH.md)
 - [NAR Web Server readiness](docs/NAR-WEB-SERVER-READINESS.md)
+- [Draft NAR suitability inquiry](docs/NAR-SUITABILITY-INQUIRY.md)
+- [Prospective NAR study protocol](docs/NAR-STUDY-PROTOCOL.md)
+- [Privacy-preserving adoption evidence](docs/NAR-ADOPTION-EVIDENCE.md)
 
 Never commit secrets, `.env` files, caches, virtual environments, screenshots,
 or a generated `dist/` directory.
