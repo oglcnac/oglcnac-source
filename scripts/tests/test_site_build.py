@@ -80,6 +80,77 @@ EVIDENCE_ASSET_SHA256 = {
     "static/img/OGT-Interactome-760.svg": "6602ab1e8f2cf906a23a7447806e9efe5565d1ed4eef97e82d0522f8736f0708",
 }
 
+MARKDOWN_LINK_PATTERN = re.compile(r"(?<!!)\[([^]]+)\]\(([^()\s]+)\)")
+
+
+def normalized_markdown(text: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[*`_]", "", text)).strip()
+
+
+def markdown_links(text: str) -> tuple[tuple[str, str], ...]:
+    return tuple(MARKDOWN_LINK_PATTERN.findall(text))
+
+
+def local_markdown_target(document: Path, target: str) -> Path | None:
+    parsed = urlsplit(target)
+    if parsed.scheme or parsed.netloc or not parsed.path:
+        return None
+    return document.parent / parsed.path
+
+
+def markdown_section(text: str, heading: str) -> str | None:
+    expected_heading = normalized_markdown(heading).casefold()
+    lines = text.splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        match = re.match(r"^(#{1,6})\s+(.+?)\s*$", line)
+        if (
+            not match
+            or normalized_markdown(match.group(2)).casefold() != expected_heading
+        ):
+            continue
+        level = len(match.group(1))
+        section = [line]
+        for following in lines[index + 1 :]:
+            next_heading = re.match(r"^(#{1,6})\s+", following)
+            if next_heading and len(next_heading.group(1)) <= level:
+                break
+            section.append(following)
+        return "".join(section)
+    return None
+
+
+def prohibits_terms(text: str, action: str, terms: tuple[str, ...]) -> bool:
+    clause = re.search(
+        rf"\b(?:must|shall)\s+not\s+{re.escape(action)}\b(?P<objects>[^.]*)",
+        normalized_markdown(text),
+        re.IGNORECASE,
+    )
+    if clause is None:
+        return False
+    objects = clause.group("objects").casefold()
+    return all(term.casefold() in objects for term in terms)
+
+
+def states_no_results(text: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:reports?|contains?)\s+no\s+results\b",
+            normalized_markdown(text),
+            re.IGNORECASE,
+        )
+    )
+
+
+def states_no_adoption_results(text: str) -> bool:
+    return bool(
+        re.search(
+            r"\bdoes\s+not\s+report\s+adoption\s+results\b"
+            r"|\bno\s+entries\s+or\s+counts\s+are\s+invented\b",
+            normalized_markdown(text),
+            re.IGNORECASE,
+        )
+    )
+
 
 class DocumentParser(HTMLParser):
     def __init__(self) -> None:
@@ -449,34 +520,51 @@ class SiteBuildTests(unittest.TestCase):
                     self.assertIn(fact.casefold(), text)
 
     def test_nar_planning_artifacts_remain_linked_and_prospective(self) -> None:
-        nar_documents = (
-            "NAR-SUITABILITY-INQUIRY.md",
-            "NAR-STUDY-PROTOCOL.md",
-            "NAR-ADOPTION-EVIDENCE.md",
-        )
-        readme = (REPOSITORY_ROOT / "README.md").read_text(encoding="utf-8")
-        for document in nar_documents:
-            with self.subTest(readme_link=document):
-                self.assertIn(f"docs/{document}", readme)
-                self.assertTrue((REPOSITORY_ROOT / "docs" / document).is_file())
+        nar_documents = {
+            "inquiry": REPOSITORY_ROOT / "docs" / "NAR-SUITABILITY-INQUIRY.md",
+            "protocol": REPOSITORY_ROOT / "docs" / "NAR-STUDY-PROTOCOL.md",
+            "adoption": REPOSITORY_ROOT / "docs" / "NAR-ADOPTION-EVIDENCE.md",
+        }
+        readme_path = REPOSITORY_ROOT / "README.md"
+        readme_links = {
+            target for _, target in markdown_links(readme_path.read_text())
+        }
+        for document in nar_documents.values():
+            expected_target = document.relative_to(REPOSITORY_ROOT).as_posix()
+            with self.subTest(readme_target=expected_target):
+                self.assertIn(expected_target, readme_links)
+                self.assertEqual(
+                    local_markdown_target(readme_path, expected_target), document
+                )
+                self.assertTrue(document.is_file())
 
-        inquiry = re.sub(
-            r"\s+",
-            " ",
-            (REPOSITORY_ROOT / "docs" / nar_documents[0]).read_text(
-                encoding="utf-8"
-            ),
-        )
-        for fact in (
-            "INTERNAL, UNSENT DRAFT — NOT SUBMITTED",
-            "confirm authorship, affiliations",
+        inquiry_path = nar_documents["inquiry"]
+        inquiry_raw = inquiry_path.read_text(encoding="utf-8")
+        inquiry = normalized_markdown(inquiry_raw)
+        inquiry_links = {target for _, target in markdown_links(inquiry_raw)}
+        self.assertIn(
             "https://academic.oup.com/nar/pages/submission_webserver",
-            "minimum two-year interval requirement",
-            "article date 2025-02-21",
-            "issue publication 2025-08-01",
-        ):
-            with self.subTest(inquiry_fact=fact):
-                self.assertIn(fact, inquiry)
+            inquiry_links,
+        )
+        inquiry_fields = {
+            "Input": r"\bInput\s*[:.]",
+            "Output": r"\bOutput\s*[:.]",
+            "Processing method": r"\bProcessing method\s*[:.]",
+            "Novelty": r"\bNovelty\b[^.]{0,80}\bbenefit\b",
+        }
+        for label, pattern in inquiry_fields.items():
+            with self.subTest(inquiry_label=label):
+                self.assertRegex(inquiry, pattern)
+        self.assertRegex(inquiry, r"\bINTERNAL\b.*\bUNSENT\b.*\bNOT SUBMITTED\b")
+        self.assertRegex(inquiry, r"\bconfirm\s+authorship\s*,?\s+affiliations\b")
+        self.assertRegex(inquiry, r"\bmaintain\w*\b[^.]{0,80}\bfive\s+years?\b")
+        self.assertRegex(inquiry, r"\badvise\b[^?]*\b(?:two-year|eligib)\w*")
+        keywords = re.search(r"\bKeywords\s*[.:]\s*([^.]*)", inquiry, re.IGNORECASE)
+        self.assertIsNotNone(keywords)
+        assert keywords is not None
+        keyword_items = [item for item in keywords.group(1).split(";") if item.strip()]
+        self.assertGreaterEqual(len(keyword_items), 2)
+        self.assertLessEqual(len(keyword_items), 4)
         for pmid in (
             "33442735",
             "39988118",
@@ -486,87 +574,208 @@ class SiteBuildTests(unittest.TestCase):
             "38995536",
         ):
             with self.subTest(inquiry_pmid=pmid):
-                self.assertIn(f"PMID {pmid}", inquiry)
+                self.assertRegex(inquiry, rf"\bPMID\s+{pmid}\b")
+        self.assertRegex(inquiry, r"\barticle date\s+2025-02-21\b")
+        self.assertRegex(inquiry, r"\bissue publication\s+2025-08-01\b")
         self.assertNotRegex(inquiry, r"(?i)released PRED-DL 2\.0")
         self.assertNotRegex(inquiry, r"(?i)completed benchmark results")
 
-        protocol = re.sub(
-            r"\s+",
-            " ",
-            (REPOSITORY_ROOT / "docs" / nar_documents[1]).read_text(
-                encoding="utf-8"
-            ),
+        protocol_raw = nar_documents["protocol"].read_text(encoding="utf-8")
+        protocol_status = markdown_section(protocol_raw, "Status and scope")
+        self.assertIsNotNone(protocol_status)
+        assert protocol_status is not None
+        self.assertTrue(states_no_results(protocol_status))
+        self.assertRegex(
+            normalized_markdown(protocol_status),
+            r"\bdoes not describe a released PRED-DL 2\.0 model\b",
         )
-        for fact in (
-            "reports no results",
-            "does not describe a released PRED-DL 2.0 model",
-            "2027-01-31",
-            "current public predictor is **O-GlcNAcPRED-DL 1.0**",
-            "only **positive** labels",
-            "Ambiguous sites are retained as a distinct analysis stratum",
-            "**unlabeled** under a positive-unlabeled learning assumption",
-            (
-                "PMID, protein accession, and sequence cluster are indivisible "
-                "leakage groups"
-            ),
+        self.assertRegex(
+            normalized_markdown(protocol_status),
+            r"\b2027-01-31\b.*\bcurrent public predictor\b.*\b(?:v1|1\.0)\b",
+        )
+        labels = markdown_section(protocol_raw, "2.2 Label definition and estimand")
+        leakage = markdown_section(
+            protocol_raw, "3. Leakage-resistant split assignment"
+        )
+        metrics = markdown_section(
+            protocol_raw, "4.2 Required evaluation outputs"
+        )
+        comparators = markdown_section(
+            protocol_raw, "5. External comparator protocol"
+        )
+        parity = markdown_section(
+            protocol_raw, "6. Browser/Python parity and browser feasibility"
+        )
+        use_cases = markdown_section(
+            protocol_raw, "7. Prospective biological use cases"
+        )
+        usability = markdown_section(
+            protocol_raw, "8. Consented usability evaluation"
+        )
+        for name, section in {
+            "labels": labels,
+            "leakage": leakage,
+            "metrics": metrics,
+            "comparators": comparators,
+            "parity": parity,
+            "use cases": use_cases,
+            "usability": usability,
+        }.items():
+            with self.subTest(protocol_section=name):
+                self.assertIsNotNone(section)
+        assert labels is not None
+        assert leakage is not None
+        assert metrics is not None
+        assert comparators is not None
+        assert parity is not None
+        assert use_cases is not None
+        assert usability is not None
+        labels = normalized_markdown(labels)
+        self.assertRegex(labels, r"\bonly\s+positive\s+labels\b")
+        self.assertRegex(
+            labels,
+            r"(?i)\bambiguous sites\b.*\bdistinct analysis stratum\b",
+        )
+        self.assertRegex(labels, r"\bunlabeled\b.*\bpositive-unlabeled\b")
+        leakage = normalized_markdown(leakage)
+        for group in ("PMID", "protein accession", "sequence cluster"):
+            with self.subTest(leakage_group=group):
+                self.assertIn(group.casefold(), leakage.casefold())
+        metrics = normalized_markdown(metrics)
+        for metric in (
             "macro-species AUPRC",
-            "AUROC, MCC,",
-            (
-                "F1, sensitivity, specificity, Brier score, and expected "
-                "calibration error"
-            ),
-            "DeepO-GlcNAc",
-            "YinOYang 1.2",
-            "Browser/Python parity",
-            "A. Experimentally supported site reconciliation",
-            "B. Candidate prioritization",
-            "C. Human/mouse comparison",
-            "## 8. Consented usability evaluation",
-            "Obtain consent before data collection",
+            "AUROC",
+            "MCC",
+            "F1",
+            "sensitivity",
+            "specificity",
+            "Brier score",
+            "expected calibration error",
         ):
-            with self.subTest(protocol_fact=fact):
-                self.assertIn(fact, protocol)
-
-        adoption = re.sub(
-            r"\s+",
-            " ",
-            (REPOSITORY_ROOT / "docs" / nar_documents[2]).read_text(
-                encoding="utf-8"
-            ),
+            with self.subTest(metric=metric):
+                self.assertIn(metric.casefold(), metrics.casefold())
+        comparators = normalized_markdown(comparators)
+        self.assertRegex(
+            comparators,
+            r"\brequired comparator panel\b.*\bDeepO-GlcNAc\b",
         )
-        for fact in (
-            "Cloudflare Browser Insights/RUM",
-            "/cdn-cgi/rum",
-            "Google Analytics",
-            "Google Tag Manager",
-            "permanent or tracking cookies",
-            "fingerprinting",
-            "IP or user-agent profiling",
-            "hidden telemetry",
-            "must not collect submitted FASTA or CSV content",
-            "*engagement*, not users or adoption",
-            "internal** readiness gate, not an NAR rule",
-        ):
-            with self.subTest(adoption_fact=fact):
-                self.assertIn(fact, adoption)
-
-        readiness = re.sub(
-            r"\s+",
-            " ",
-            (REPOSITORY_ROOT / "docs" / "NAR-WEB-SERVER-READINESS.md").read_text(
-                encoding="utf-8"
-            ),
+        self.assertRegex(
+            comparators,
+            r"\bat least one additional functioning comparator\b",
         )
-        for document in nar_documents:
-            with self.subTest(readiness_link=document):
-                self.assertIn(f"]({document})", readiness)
-        for dated_step in (
-            "Through 2027-01-31",
-            "February–April 2027",
-            "After validation and confirmed eligibility",
-        ):
-            with self.subTest(readiness_sequence=dated_step):
-                self.assertIn(dated_step, readiness)
+        parity = normalized_markdown(parity)
+        self.assertRegex(parity, r"\bbrowser and Python implementations must\b")
+        self.assertRegex(parity, r"\bsame frozen corpus hash\b")
+        self.assertRegex(parity, r"\bfails closed\b.*\bblocks public v2 release\b")
+        case_rows = re.findall(r"(?m)^\|\s*[A-Z]\.\s*", use_cases)
+        self.assertEqual(len(case_rows), 3)
+        self.assertRegex(
+            normalized_markdown(use_cases),
+            r"(?i)\bno actual protein\b.*\bselected or claimed\b",
+        )
+        self.assertRegex(
+            normalized_markdown(usability),
+            r"\bObtain consent before data collection\b",
+        )
+
+        adoption_raw = nar_documents["adoption"].read_text(encoding="utf-8")
+        adoption_boundary = markdown_section(adoption_raw, "Purpose and boundary")
+        prohibited = markdown_section(adoption_raw, "Prohibited collection and tracking")
+        readiness_gate = markdown_section(
+            adoption_raw, "Collection, verification, and internal readiness gate"
+        )
+        for name, section in {
+            "adoption boundary": adoption_boundary,
+            "prohibited collection": prohibited,
+            "readiness gate": readiness_gate,
+        }.items():
+            with self.subTest(adoption_section=name):
+                self.assertIsNotNone(section)
+        assert adoption_boundary is not None
+        assert prohibited is not None
+        assert readiness_gate is not None
+        self.assertTrue(states_no_adoption_results(adoption_boundary))
+        self.assertTrue(states_no_adoption_results(adoption_raw))
+        self.assertTrue(
+            prohibits_terms(
+                prohibited,
+                "use",
+                (
+                    "Cloudflare Browser Insights/RUM",
+                    "/cdn-cgi/rum",
+                    "Google Analytics",
+                    "Google Tag Manager",
+                    "permanent or tracking cookies",
+                    "fingerprinting",
+                    "IP or user-agent profiling",
+                    "hidden telemetry",
+                ),
+            )
+        )
+        self.assertTrue(
+            prohibits_terms(
+                prohibited,
+                "collect",
+                ("submitted FASTA", "CSV content"),
+            )
+        )
+        self.assertRegex(
+            normalized_markdown(adoption_raw),
+            r"\bengagement\b\s*,?\s+not\s+users\s+or\s+adoption\b",
+        )
+        self.assertRegex(
+            normalized_markdown(readiness_gate),
+            r"\binternal\s+readiness gate\s*,?\s+not an NAR rule\b",
+        )
+
+        readiness_path = (
+            REPOSITORY_ROOT / "docs" / "NAR-WEB-SERVER-READINESS.md"
+        )
+        readiness_raw = readiness_path.read_text(encoding="utf-8")
+        readiness_links = {target for _, target in markdown_links(readiness_raw)}
+        for document in nar_documents.values():
+            target = document.name
+            with self.subTest(readiness_target=target):
+                self.assertIn(target, readiness_links)
+                self.assertEqual(
+                    local_markdown_target(readiness_path, target), document
+                )
+        readiness_sequence = markdown_section(
+            readiness_raw, "Dated preparation sequence"
+        )
+        self.assertIsNotNone(readiness_sequence)
+        assert readiness_sequence is not None
+        positions = [
+            readiness_sequence.index(marker)
+            for marker in (
+                "September–October 2026",
+                "From November 2026",
+                "Through 2027-01-31",
+                "February–April 2027",
+                "After validation and confirmed eligibility",
+            )
+        ]
+        self.assertEqual(positions, sorted(positions))
+
+    def test_nar_document_helpers_reject_counterexamples(self) -> None:
+        self.assertFalse(states_no_results("The benchmark reports results."))
+        self.assertFalse(
+            states_no_adoption_results("The adoption results are 12 users.")
+        )
+        self.assertFalse(
+            prohibits_terms(
+                "Google Analytics is discussed but not prohibited.",
+                "use",
+                ("Google Analytics",),
+            )
+        )
+        self.assertFalse(
+            prohibits_terms(
+                "The resource may use Google Analytics.",
+                "use",
+                ("Google Analytics",),
+            )
+        )
 
     def test_hexnac_public_copy_excludes_migration_and_runtime_jargon(self) -> None:
         forbidden_phrases = (
