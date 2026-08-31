@@ -119,6 +119,14 @@ def markdown_section(text: str, heading: str) -> str | None:
     return None
 
 
+def inquiry_letter_body(text: str) -> str:
+    greeting = re.search(r"^Dear\b.*,$", text, re.MULTILINE)
+    signature = re.search(r"^Sincerely,\s*$", text, re.MULTILINE)
+    if greeting is None or signature is None or signature.start() <= greeting.end():
+        return text
+    return text[greeting.end() : signature.start()]
+
+
 def prohibits_terms(text: str, action: str, terms: tuple[str, ...]) -> bool:
     clause = re.search(
         rf"\b(?:must|shall)\s+not\s+{re.escape(action)}\b(?P<objects>[^.]*)",
@@ -141,11 +149,55 @@ def states_no_results(text: str) -> bool:
     )
 
 
+def makes_affirmative_pred_dl_v2_claim(text: str) -> bool:
+    v2_pattern = r"\b(?:O-GlcNAc)?PRED[- ]DL\s+2\.0\b"
+    normalized = normalized_markdown(text)
+    if not re.search(v2_pattern, normalized, re.IGNORECASE):
+        return False
+
+    for sentence in re.split(r"(?<=[.!?])\s+", normalized):
+        if not re.search(v2_pattern, sentence, re.IGNORECASE):
+            continue
+        if re.search(r"\b(?:no|not|never|without)\b", sentence, re.IGNORECASE):
+            continue
+        if re.search(
+            rf"{v2_pattern}[^.!?]*\b(?:current(?:ly)?|public(?:ly)?|"
+            r"released?|available)\b",
+            sentence,
+            re.IGNORECASE,
+        ) or re.search(
+            rf"\b(?:current(?:ly)?|public(?:ly)?|released?|available)\b"
+            rf"[^.!?]*{v2_pattern}",
+            sentence,
+            re.IGNORECASE,
+        ):
+            return True
+        if re.search(
+            r"\b(?:benchmark|benchmarks|results?)\b[^.!?]*\b(?:is|are|was|"
+            r"were|has|have)\b[^.!?]*\b(?:complete|completed|available|reported)\b"
+            r"|\b(?:complete|completed|available|reported)\b[^.!?]*\b"
+            r"(?:benchmark|benchmarks|results?)\b",
+            sentence,
+            re.IGNORECASE,
+        ):
+            return True
+    return False
+
+
 def states_no_adoption_results(text: str) -> bool:
     return bool(
         re.search(
-            r"\bdoes\s+not\s+report\s+adoption\s+results\b"
-            r"|\bno\s+entries\s+or\s+counts\s+are\s+invented\b",
+            r"\bdoes\s+not\s+report\s+adoption\s+results\b",
+            normalized_markdown(text),
+            re.IGNORECASE,
+        )
+    )
+
+
+def states_no_invented_adoption_counts(text: str) -> bool:
+    return bool(
+        re.search(
+            r"\bno\s+entries\s+or\s+counts\s+are\s+invented\b",
             normalized_markdown(text),
             re.IGNORECASE,
         )
@@ -541,6 +593,7 @@ class SiteBuildTests(unittest.TestCase):
         inquiry_path = nar_documents["inquiry"]
         inquiry_raw = inquiry_path.read_text(encoding="utf-8")
         inquiry = normalized_markdown(inquiry_raw)
+        inquiry_body = inquiry_letter_body(inquiry_raw)
         inquiry_links = {target for _, target in markdown_links(inquiry_raw)}
         self.assertIn(
             "https://academic.oup.com/nar/pages/submission_webserver",
@@ -577,8 +630,7 @@ class SiteBuildTests(unittest.TestCase):
                 self.assertRegex(inquiry, rf"\bPMID\s+{pmid}\b")
         self.assertRegex(inquiry, r"\barticle date\s+2025-02-21\b")
         self.assertRegex(inquiry, r"\bissue publication\s+2025-08-01\b")
-        self.assertNotRegex(inquiry, r"(?i)released PRED-DL 2\.0")
-        self.assertNotRegex(inquiry, r"(?i)completed benchmark results")
+        self.assertFalse(makes_affirmative_pred_dl_v2_claim(inquiry_body))
 
         protocol_raw = nar_documents["protocol"].read_text(encoding="utf-8")
         protocol_status = markdown_section(protocol_raw, "Status and scope")
@@ -695,7 +747,7 @@ class SiteBuildTests(unittest.TestCase):
         assert prohibited is not None
         assert readiness_gate is not None
         self.assertTrue(states_no_adoption_results(adoption_boundary))
-        self.assertTrue(states_no_adoption_results(adoption_raw))
+        self.assertTrue(states_no_invented_adoption_counts(adoption_raw))
         self.assertTrue(
             prohibits_terms(
                 prohibited,
@@ -761,6 +813,27 @@ class SiteBuildTests(unittest.TestCase):
         self.assertFalse(states_no_results("The benchmark reports results."))
         self.assertFalse(
             states_no_adoption_results("The adoption results are 12 users.")
+        )
+        self.assertFalse(
+            states_no_invented_adoption_counts(
+                "This document does not report adoption results."
+            )
+        )
+        self.assertTrue(
+            makes_affirmative_pred_dl_v2_claim(
+                "PRED-DL 2.0 is now publicly available. The benchmark is complete."
+            )
+        )
+        self.assertTrue(
+            makes_affirmative_pred_dl_v2_claim(
+                "PRED-DL 2.0 benchmark results are complete."
+            )
+        )
+        self.assertFalse(
+            makes_affirmative_pred_dl_v2_claim(
+                "O-GlcNAcPRED-DL 1.0 is publicly available. "
+                "The public test suite remains available."
+            )
         )
         self.assertFalse(
             prohibits_terms(
