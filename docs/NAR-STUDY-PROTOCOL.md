@@ -35,24 +35,26 @@ reported even if no v2 model is released; it does not relabel v1 as v2.
 ### 1.2 Prospective-model question
 
 **Question.** After the corpus freeze, does PRED-DL 2.0 materially improve
-frozen temporal-test prediction performance and calibration relative to the
-published v1 candidate while retaining an artifact small enough for practical
-browser execution?
+frozen temporal-test predictive discrimination relative to the published v1
+candidate while maintaining calibration non-inferiority and an artifact small
+enough for practical browser execution?
 
 **Success criteria.** Candidate selection is based only on the frozen
-validation procedure in Section 4. A material predictive improvement requires
-all prespecified temporal-test, calibration, and browser-feasibility criteria
-in Section 4. The selected candidate must also meet all release gates,
-including the required temporal-test report, external comparators,
-browser/Python parity, and archived artifacts. The study will report
-performance and artifact constraints rather than infer an improvement from
-model architecture alone.
+validation procedure in Section 4. A material predictive-discrimination claim
+requires all prespecified temporal-test discrimination, calibration
+non-inferiority, and browser-feasibility criteria in Section 4. A calibration
+improvement is a separate claim with its own paired-confidence-interval rule.
+The selected candidate must also meet all release gates, including the required
+temporal-test report, external comparators, browser/Python parity, and archived
+artifacts. The study will report performance and artifact constraints rather
+than infer an improvement from model architecture alone.
 
 ### 1.3 Neutral outcome path
 
-If no prospective v2 candidate materially improves prediction under this
-protocol, the public predictor remains O-GlcNAcPRED-DL 1.0. The report may
-instead describe the evaluated integrated browser-local workflow and its
+If no prospective v2 candidate materially improves predictive discrimination
+while maintaining calibration non-inferiority and browser feasibility under
+this protocol, the public predictor remains O-GlcNAcPRED-DL 1.0. The report
+may instead describe the evaluated integrated browser-local workflow and its
 usability outcome, with v1 identified accurately. It must not call that result
 PRED-DL 2.0, imply a model upgrade, or transform a workflow benefit into a
 prediction-performance claim.
@@ -163,16 +165,16 @@ Brier score, ECE, and reliability plots describe calibration; they do not turn
 a score into a universally calibrated biological probability. The model card
 must state intended use, limitations, and validation results substantively.
 
-### 4.3 Material-improvement and browser-feasibility decision rules
+### 4.3 Material predictive-discrimination, calibration, and browser-feasibility decision rules
 
-Call v2 a material predictive improvement only if all of the following are met
-on the untouched temporal test relative to released v1:
+Call v2 a material predictive-discrimination improvement only if all of the
+following are met on the untouched temporal test relative to released v1:
 
 | Criterion | Required result |
 | --- | --- |
-| Primary performance | Macro-species AUPRC improves by at least +0.01, and the paired-bootstrap 95% confidence-interval lower bound for the v2-minus-v1 difference is greater than 0. |
+| Primary discrimination | Macro-species AUPRC improves by at least +0.01, and the paired-bootstrap 95% confidence-interval lower bound for the v2-minus-v1 difference is greater than 0. |
 | Species safeguards | Neither human nor mouse AUPRC decreases by more than 0.01. |
-| Calibration safeguards | Neither Brier score nor ECE worsens by more than 0.01. |
+| Calibration non-inferiority | Neither Brier score nor ECE worsens by more than 0.01. |
 | Browser payload | The compressed model/runtime addition relative to v1 is at most 25 MiB. |
 | Browser memory | Peak JavaScript heap is at most 512 MiB. |
 | Browser runtime | On every frozen reference browser/device, median runtime is at most 30 seconds per 1,000 candidate sites. |
@@ -181,9 +183,14 @@ Report each browser-feasibility measurement alongside its relative v1 value.
 Freeze the reference hardware, operating system, browser and version, runtime,
 input fixture, warm-up count, and measured-run count before test execution.
 Use the paired, species-stratified protein-cluster bootstrap in Section 4.4
-for the v2-minus-v1 inference. If any criterion in this table fails, retain v1
-as the public predictor and report the outcome as neutral rather than as a v2
-improvement.
+for the v2-minus-v1 inference. Do not claim a calibration improvement unless
+both Brier score and ECE are lower for v2 than v1 and both paired-bootstrap
+95% confidence intervals for the v2-minus-v1 differences have upper bounds
+below 0. Otherwise report calibration as non-inferior, worse, or indeterminate
+according to the prespecified results; do not use calibration-improvement
+language. If any criterion in this table fails, retain v1 as the public
+predictor and report the outcome as neutral rather than as a v2
+predictive-discrimination improvement.
 
 ### 4.4 Uncertainty estimation
 
@@ -247,6 +254,28 @@ Browser feasibility reporting includes compressed browser artifact size,
 runtime, peak memory, supported browsers and versions, and failed or
 unsupported execution counts. The browser artifact and its manifest must hash
 every shipped model file.
+
+### 6.1 Mandatory browser/device matrix
+
+The following matrix is the minimum evidence for a v2 browser-feasibility
+claim and release. Apply every threshold in Section 4.3 to each mandatory
+platform and report the corresponding relative-v1 value.
+
+| Mandatory platform | Required configuration |
+| --- | --- |
+| Automated compatibility matrix | Playwright-bundled Chromium, Firefox, and WebKit on Ubuntu 24.04 x86_64, each at 1440x1100 and 390x844 emulation. |
+| Desktop physical-device matrix | Current stable Chrome and current stable Firefox on an x86_64 desktop reference with at least 4 cores and 8 GiB RAM. |
+| macOS physical-device matrix | Current stable Safari on arm64 macOS with at least 8 GiB RAM. |
+| Android physical-device matrix | Current stable Chrome on an Android arm64 device with 4 GiB RAM. |
+| iPhone physical-device matrix | Current and immediately previous major Mobile Safari on iPhone devices with at least 4 GiB RAM. |
+
+Before testing, freeze the exact hardware model, operating-system version,
+browser version, power mode, thread settings, input fixture, warm-up count,
+and measured-run count for every matrix entry. Automated emulation is
+compatibility evidence only; it is not a substitute for physical-device
+performance evidence. A missing mandatory platform blocks the v2
+browser-feasibility claim and v2 release, although its available results may be
+reported as incomplete.
 
 ## 7. Prospective biological use cases
 
@@ -323,7 +352,7 @@ release checklist.
 | One-to-one retained-record split assignments, component inputs, and leakage checks | `splits/assignments.csv` and split-analysis manifest |
 | Cross-window component exclusions | Hashed exclusion ledger with reason `cross_window_group` |
 | Scripts, environment lock, and frozen analysis configuration | Versioned source/data/model archive |
-| Aggregate and per-species metrics, candidate sizes, runtime, memory, failure counts, browser support, and relative-v1 feasibility values | `benchmarks/metrics.json` and linked report |
+| Aggregate and per-species metrics, candidate sizes, runtime, memory, failure counts, mandatory browser/device-matrix results, and relative-v1 feasibility values | `benchmarks/metrics.json` and linked report |
 | Bootstrap configuration and 95% intervals | `benchmarks/bootstrap-confidence-intervals.json` |
 | Comparator metadata, raw outputs where redistribution permits, exclusions, and failures | `benchmarks/comparators.json` and linked archive |
 | Held-out calibration procedure, Brier/ECE, reliability plots, and frozen binning rule | `calibration/report.json` and frozen analysis manifest |
@@ -333,10 +362,14 @@ release checklist.
 | Use-case candidate pools/rankings, selection inputs, FASTA/identifier hashes, outputs, expert interpretation, and cited literature | Versioned use-case archive |
 | Consent procedure, fixed synthetic/public tasks, de-identified aggregate usability results, SUS, qualitative summary, and analysis code | Versioned usability protocol/results archive |
 
-Public v2 release and v2 manuscript claims are blocked by any leakage,
-unresolved cross-window component, provenance gap, incomplete comparator
-evaluation, browser/Python parity failure, unavailable required artifact, or
-failed release gate. The release gate is run with
+Public v2 release and v2 manuscript claims are blocked by a failure of the
+Section 4.3 material predictive-discrimination, calibration non-inferiority,
+or mandatory browser-feasibility criteria; any leakage; unresolved
+cross-window component; provenance gap; incomplete comparator evaluation;
+browser/Python parity failure; unavailable required artifact; or failed release
+gate. A calibration-improvement claim is additionally blocked unless both
+Brier score and ECE meet the separate paired-confidence-interval rule in
+Section 4.3. The release gate is run with
 `python3 prediction-v2/tools/check_release.py`; it must pass only after the
 corpus freeze and complete scientific artifacts are present. Passing
 file-presence checks alone is insufficient.
