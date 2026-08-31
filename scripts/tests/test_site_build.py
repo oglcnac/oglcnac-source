@@ -622,6 +622,45 @@ class SiteBuildTests(unittest.TestCase):
                 for fact in facts:
                     self.assertIn(fact.casefold(), text)
 
+    def test_workbench_v2_labeling_requires_comprehensive_release_gate(self) -> None:
+        readme_path = REPOSITORY_ROOT / "README.md"
+        workbench_path = REPOSITORY_ROOT / "docs" / "WORKBENCH.md"
+        protocol_path = REPOSITORY_ROOT / "docs" / "NAR-STUDY-PROTOCOL.md"
+        readme_links = {target for _, target in markdown_links(readme_path.read_text())}
+        workbench_raw = workbench_path.read_text(encoding="utf-8")
+        workbench_links = {
+            target for _, target in markdown_links(workbench_raw)
+        }
+        workbench = normalized_markdown(workbench_raw)
+
+        workbench_target = workbench_path.relative_to(REPOSITORY_ROOT).as_posix()
+        self.assertIn(workbench_target, readme_links)
+        self.assertEqual(
+            local_markdown_target(readme_path, workbench_target), workbench_path
+        )
+        protocol_target = "NAR-STUDY-PROTOCOL.md"
+        self.assertIn(protocol_target, workbench_links)
+        self.assertEqual(
+            local_markdown_target(workbench_path, protocol_target), protocol_path
+        )
+        self.assertIn("prediction-v2/tools/check_release.py", workbench_raw)
+        self.assertRegex(
+            workbench,
+            r"\bnecessary\b[^.]{0,80}\binsufficient\b"
+            r"[^.]{0,80}\bpartial automated check\b",
+        )
+        self.assertRegex(
+            workbench,
+            r"\bsuccessful (?:run|pass)\b[^.]{0,120}\bdoes not authorize\b"
+            r"[^.]{0,100}\bPRED-DL 2\.0\b[^.]{0,80}\brelease or labeling\b",
+        )
+        self.assertRegex(
+            workbench,
+            r"\bDo not release PRED-DL 2\.0 or label Workbench output as "
+            r"PRED-DL 2\.0 unless every documented release criterion\b"
+            r".{0,120}\bfuture comprehensive executable gate\b",
+        )
+
     def test_nar_planning_artifacts_remain_linked_and_prospective(self) -> None:
         nar_documents = {
             "inquiry": REPOSITORY_ROOT / "docs" / "NAR-SUITABILITY-INQUIRY.md",
