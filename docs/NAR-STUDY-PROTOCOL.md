@@ -36,14 +36,15 @@ reported even if no v2 model is released; it does not relabel v1 as v2.
 
 **Question.** After the corpus freeze, does PRED-DL 2.0 materially improve
 frozen temporal-test predictive discrimination relative to the published v1
-candidate while maintaining calibration non-inferiority and an artifact small
-enough for practical browser execution?
+candidate while maintaining CI-based calibration non-inferiority and an
+artifact small enough for practical browser execution?
 
 **Success criteria.** Candidate selection is based only on the frozen
 validation procedure in Section 4. A material predictive-discrimination claim
 requires all prespecified temporal-test discrimination, calibration
-non-inferiority, and browser-feasibility criteria in Section 4. A calibration
-improvement is a separate claim with its own paired-confidence-interval rule.
+non-inferiority, and browser-feasibility criteria in Section 4. Calibration
+non-inferiority is CI-based; a calibration improvement is a separate claim
+with its own paired-confidence-interval rule.
 The selected candidate must also meet all release gates, including the required
 temporal-test report, external comparators, browser/Python parity, and archived
 artifacts. The study will report performance and artifact constraints rather
@@ -52,12 +53,12 @@ than infer an improvement from model architecture alone.
 ### 1.3 Neutral outcome path
 
 If no prospective v2 candidate materially improves predictive discrimination
-while maintaining calibration non-inferiority and browser feasibility under
-this protocol, the public predictor remains O-GlcNAcPRED-DL 1.0. The report
-may instead describe the evaluated integrated browser-local workflow and its
-usability outcome, with v1 identified accurately. It must not call that result
-PRED-DL 2.0, imply a model upgrade, or transform a workflow benefit into a
-prediction-performance claim.
+while maintaining CI-based calibration non-inferiority and browser feasibility
+under this protocol, the public predictor remains O-GlcNAcPRED-DL 1.0. The
+report may instead describe the evaluated integrated browser-local workflow and
+its usability outcome, with v1 identified accurately. It must not call that
+result PRED-DL 2.0, imply a model upgrade, or transform a workflow benefit into
+a prediction-performance claim.
 
 ## 2. Corpus freeze, labels, and provenance
 
@@ -174,7 +175,7 @@ following are met on the untouched temporal test relative to released v1:
 | --- | --- |
 | Primary discrimination | Macro-species AUPRC improves by at least +0.01, and the paired-bootstrap 95% confidence-interval lower bound for the v2-minus-v1 difference is greater than 0. |
 | Species safeguards | Neither human nor mouse AUPRC decreases by more than 0.01. |
-| Calibration non-inferiority | Neither Brier score nor ECE worsens by more than 0.01. |
+| Calibration non-inferiority | Neither Brier score nor ECE point estimate worsens by more than 0.01, and for both metrics the paired-bootstrap 95% confidence-interval upper bound for the v2-minus-v1 difference is at most +0.01. |
 | Browser payload | The compressed model/runtime addition relative to v1 is at most 25 MiB. |
 | Browser memory | Peak JavaScript heap is at most 512 MiB. |
 | Browser runtime | On every frozen reference browser/device, median runtime is at most 30 seconds per 1,000 candidate sites. |
@@ -183,14 +184,16 @@ Report each browser-feasibility measurement alongside its relative v1 value.
 Freeze the reference hardware, operating system, browser and version, runtime,
 input fixture, warm-up count, and measured-run count before test execution.
 Use the paired, species-stratified protein-cluster bootstrap in Section 4.4
-for the v2-minus-v1 inference. Do not claim a calibration improvement unless
-both Brier score and ECE are lower for v2 than v1 and both paired-bootstrap
-95% confidence intervals for the v2-minus-v1 differences have upper bounds
-below 0. Otherwise report calibration as non-inferior, worse, or indeterminate
-according to the prespecified results; do not use calibration-improvement
-language. If any criterion in this table fails, retain v1 as the public
-predictor and report the outcome as neutral rather than as a v2
-predictive-discrimination improvement.
+for the v2-minus-v1 inference. Call calibration non-inferior only when both
+the point-estimate and paired-confidence-interval requirements in the table
+are met for both Brier score and ECE. Do not claim a calibration improvement
+unless both Brier score and ECE are lower for v2 than v1 and both
+paired-bootstrap 95% confidence intervals for the v2-minus-v1 differences have
+upper bounds below 0. Otherwise report calibration as non-inferior, worse, or
+indeterminate according to the prespecified results; do not use
+calibration-improvement language. If any criterion in this table fails, retain
+v1 as the public predictor and report the outcome as neutral rather than as a
+v2 predictive-discrimination improvement.
 
 ### 4.4 Uncertainty estimation
 
@@ -355,7 +358,7 @@ release checklist.
 | Aggregate and per-species metrics, candidate sizes, runtime, memory, failure counts, mandatory browser/device-matrix results, and relative-v1 feasibility values | `benchmarks/metrics.json` and linked report |
 | Bootstrap configuration and 95% intervals | `benchmarks/bootstrap-confidence-intervals.json` |
 | Comparator metadata, raw outputs where redistribution permits, exclusions, and failures | `benchmarks/comparators.json` and linked archive |
-| Held-out calibration procedure, Brier/ECE, reliability plots, and frozen binning rule | `calibration/report.json` and frozen analysis manifest |
+| Held-out calibration procedure, Brier/ECE point estimates and paired confidence intervals, reliability plots, and frozen binning rule | `calibration/report.json` and frozen analysis manifest |
 | Intended use, limitations, and validation summary | `models/model-card.md` |
 | Hashed browser artifacts and manifest | `models/browser/manifest.json` |
 | Full browser/Python outputs, manifests, and tolerance result | `parity/browser-python.json` and linked archive |
@@ -367,9 +370,11 @@ Section 4.3 material predictive-discrimination, calibration non-inferiority,
 or mandatory browser-feasibility criteria; any leakage; unresolved
 cross-window component; provenance gap; incomplete comparator evaluation;
 browser/Python parity failure; unavailable required artifact; or failed release
-gate. A calibration-improvement claim is additionally blocked unless both
-Brier score and ECE meet the separate paired-confidence-interval rule in
-Section 4.3. The release gate is run with
+gate. The calibration non-inferiority release gate uses the Section 4.3
+point-estimate and paired-confidence-interval requirements for both Brier score
+and ECE. A calibration-improvement claim is additionally blocked unless both
+metrics meet the separate paired-confidence-interval rule in Section 4.3. The
+release gate is run with
 `python3 prediction-v2/tools/check_release.py`; it must pass only after the
 corpus freeze and complete scientific artifacts are present. Passing
 file-presence checks alone is insufficient.
