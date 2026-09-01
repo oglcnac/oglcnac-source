@@ -13,4 +13,4 @@ npm run test:workbench:unit
 npm run test:workbench:browser
 ```
 
-Do not label Workbench output as PRED-DL 2.0 until `python3 prediction-v2/tools/check_release.py` passes after the prospective 2027-01-31 corpus freeze.
+After the prospective 2027-01-31 corpus freeze, `python3 prediction-v2/tools/check_release.py` is a necessary but insufficient partial automated check. A successful run does not authorize PRED-DL 2.0 release or labeling. Do not release PRED-DL 2.0 or label Workbench output as PRED-DL 2.0 unless every documented release criterion in the [prospective study protocol](NAR-STUDY-PROTOCOL.md) has passed the future comprehensive executable gate.

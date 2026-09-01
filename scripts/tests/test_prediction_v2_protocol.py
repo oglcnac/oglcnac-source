@@ -78,7 +78,7 @@ class PredictionV2ProtocolTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(payload))
 
-    def run_gate(self, root: Path) -> subprocess.CompletedProcess[str]:
+    def run_partial_check(self, root: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(V2 / "tools" / "check_release.py"), "--root", str(root), "--today", "2028-01-01"],
             cwd=ROOT,
@@ -102,7 +102,7 @@ class PredictionV2ProtocolTests(unittest.TestCase):
         self.assertEqual(protocol["required_external_comparators"], ["DeepO-GlcNAc"])
         self.assertEqual(protocol["additional_functioning_comparators_minimum"], 1)
 
-    def test_release_gate_rejects_an_incomplete_or_future_release(self) -> None:
+    def test_partial_release_check_rejects_an_incomplete_or_future_release(self) -> None:
         result = subprocess.run(
             [sys.executable, str(V2 / "tools" / "check_release.py"), "--today", "2026-08-30"],
             cwd=ROOT,
@@ -115,6 +115,29 @@ class PredictionV2ProtocolTests(unittest.TestCase):
 
     def test_release_checklist_requires_scientific_and_browser_artifacts(self) -> None:
         checklist = json.loads((V2 / "release-checklist.json").read_text())
+        self.assertEqual(
+            checklist["automated_check_scope"],
+            "partial_necessary_not_sufficient",
+        )
+        comprehensive_gate = checklist["comprehensive_executable_gate"]
+        self.assertEqual(
+            comprehensive_gate["status"], "pending_implementation_and_test"
+        )
+        self.assertEqual(
+            set(comprehensive_gate["required_coverage"]),
+            {
+                "v2_v1_discrimination",
+                "paired_calibration_confidence_intervals",
+                "browser_python_parity_at_most_1e-5",
+                "mandatory_browser_device_payload_runtime_memory",
+                "named_yinoyang_and_comparator_requirements",
+                "exclusion_ledger",
+                "prospective_use_cases",
+                "fixed_usability_analysis",
+                "environment_lock",
+                "frozen_analysis_manifest",
+            },
+        )
         required = set(checklist["required_artifacts"])
         self.assertTrue({
             "corpus/manifest.json",
@@ -125,7 +148,7 @@ class PredictionV2ProtocolTests(unittest.TestCase):
             "parity/browser-python.json",
         }.issubset(required))
 
-    def test_release_gate_rejects_nonempty_placeholder_artifacts(self) -> None:
+    def test_partial_release_check_rejects_nonempty_placeholder_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             release_root = Path(directory)
             (release_root / "protocol.json").write_text((V2 / "protocol.json").read_text())
@@ -146,12 +169,17 @@ class PredictionV2ProtocolTests(unittest.TestCase):
         self.assertIn("invalid", result.stderr.casefold())
         self.assertNotIn("release gates passed", result.stdout.casefold())
 
-    def test_release_gate_validates_scientific_values_and_cross_artifact_invariants(self) -> None:
+    def test_partial_release_check_validates_its_current_invariants(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             release_root = Path(directory)
             self.write_valid_release(release_root)
-            valid = self.run_gate(release_root)
+            valid = self.run_partial_check(release_root)
             self.assertEqual(valid.returncode, 0, valid.stderr)
+            self.assertIn("partial automated checks passed", valid.stdout.casefold())
+            self.assertIn(
+                "does not establish comprehensive release readiness",
+                valid.stdout.casefold(),
+            )
 
         mutations = {
             "non-numeric metric": ("benchmarks/metrics.json", lambda value: value["metrics"].update({"macro_species_auprc": None})),
@@ -177,7 +205,7 @@ class PredictionV2ProtocolTests(unittest.TestCase):
                     value = json.loads(path.read_text())
                     mutate(value)
                     path.write_text(json.dumps(value))
-                result = self.run_gate(release_root)
+                result = self.run_partial_check(release_root)
                 self.assertNotEqual(result.returncode, 0, f"{label} passed unexpectedly")
                 self.assertIn("invalid", result.stderr.casefold())
 

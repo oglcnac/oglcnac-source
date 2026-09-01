@@ -1,6 +1,22 @@
 {
   "release_name": "O-GlcNAcPRED-DL 2.0",
   "current_state": "blocked_until_prospective_corpus_freeze_and_validation",
+  "automated_check_scope": "partial_necessary_not_sufficient",
+  "comprehensive_executable_gate": {
+    "status": "pending_implementation_and_test",
+    "required_coverage": [
+      "v2_v1_discrimination",
+      "paired_calibration_confidence_intervals",
+      "browser_python_parity_at_most_1e-5",
+      "mandatory_browser_device_payload_runtime_memory",
+      "named_yinoyang_and_comparator_requirements",
+      "exclusion_ledger",
+      "prospective_use_cases",
+      "fixed_usability_analysis",
+      "environment_lock",
+      "frozen_analysis_manifest"
+    ]
+  },
   "required_artifacts": [
     "corpus/manifest.json",
     "corpus/records.csv",

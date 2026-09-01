@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail closed until every prospective PRED-DL 2.0 release condition is met."""
+"""Run the current partial automated checks for prospective PRED-DL 2.0."""
 
 from __future__ import annotations
 
@@ -277,7 +277,10 @@ def main() -> int:
         for problem in problems:
             print(f"- {problem}", file=sys.stderr)
         return 1
-    print("O-GlcNAcPRED-DL 2.0 release gates passed.")
+    print(
+        "O-GlcNAcPRED-DL 2.0 partial automated checks passed; "
+        "this does not establish comprehensive release readiness."
+    )
     return 0
 
 
