@@ -26,7 +26,7 @@ Review findings corrected include narrow-screen search clipping, colliding navig
 
 Local evidence is retained under `visual-review/uniprot-ui-2026-09-29/`; generated screenshots and machine reports are intentionally excluded from the source repository. The browser suites cover real human/mouse prediction against the Python reference corpus, HexNAcQuest's canonical class totals, Workbench evidence matching, CSV/JSON parity, cancellation/retry, scientific field preservation and privacy.
 
-The full 60-case interaction suite passed separately in Chromium, Firefox and WebKit. Both Chromium and Firefox passed 100 accessibility checks covering every route and key states. Targeted checks are repeated after the final record/column/layout corrections. Firefox needs access to the temporary font setup in this server environment; an earlier fontless run is retained as an invalid environment run. The large Firefox prediction corpus was rerun without competing inference jobs and passed; its numerical assertions and timeouts were not weakened.
+The final `qa:pr` and `qa:public` gates pass, as do all 216 final screenshot checks. The full 60-case interaction suite passed separately in Chromium, Firefox and WebKit. Both Chromium and Firefox passed 100 accessibility checks covering every route and key states. After the final corrections, five focused record checks passed in each of the three engines, and 16 affected page/state accessibility checks passed again in both Chromium and Firefox. Firefox needs access to the temporary font setup in this server environment; an earlier fontless run is retained as an invalid environment run. The large Firefox prediction corpus was rerun without competing inference jobs and passed; its numerical assertions and timeouts were not weakened.
 
 ## Controlled mobile performance
 
@@ -44,6 +44,14 @@ The previous release's corresponding Atlas data-readiness medians were 3.50 s, 3
 
 ## Publication
 
-Publication and live verification are pending the final release checks. The deployment must use the clean source checkout and the standard deployment script. The final report records source and Pages commits, complete artifact parity, changed live-file hashes, all-route desktop/mobile checks and live scientific workflows.
+The reviewed implementation was published from clean source commit `4236b89809751d7665d1540895829962fa4b7867` through the standard deployment script as Pages commit `4fba0095e4bfd77797ed256426248395ff980802`. GitHub Pages reports the build complete.
+
+- All 759 deployed repository files match the reviewed artifact byte for byte.
+- All 38 changed live files match: 34 byte for byte and four contact pages after decoding only Cloudflare's email-protection transformation. The decoded email addresses, links and all remaining HTML match the source.
+- All 29 public routes pass live desktop/mobile checks (58 visits), including record pages with real identifiers, one H1, the shared search control, no page-level horizontal overflow and no JavaScript exceptions.
+- Both Chromium and Firefox pass the live static-browser smoke suite, including real PRED-DL and HexNAcQuest outputs. Additional live checks verify global search, protein/evidence counts and shareable view, complete source-field download, OGT-PIN protein-name search and both new example loaders.
+- The initial GitHub quality run exposed a test reading a native disclosure before its asynchronous `toggle` handler had positioned the column chooser. The assertion now waits for that handler, retaining the same viewport bounds and all export checks. The follow-up CI result is recorded at completion.
+
+The main working tree was synchronized selectively. Unrelated research files, scripts and preview configuration were preserved.
 
 The automated accessibility checks supplement visual and keyboard review. Playwright WebKit is an engine check, not a claim of testing native Safari. Physical devices, screen readers and field Core Web Vitals are outside this lab review.

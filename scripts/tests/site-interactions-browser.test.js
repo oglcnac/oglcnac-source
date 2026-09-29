@@ -1429,6 +1429,7 @@ test("record identity, full source export and hidden table columns retain scient
   for (let i = 0; i < source.length; i++) for (const key of Object.keys(source[i])) assert.equal(parsed.data[i][key], String(source[i][key] ?? ''));
   const tablePanel = page.locator('#atlas-all-fields');
   await tablePanel.locator('.native-column-picker > summary').click();
+  await page.waitForFunction(() => document.querySelector('#atlas-all-fields .native-column-picker fieldset').style.maxHeight, null, { timeout: 5000 });
   const pickerBounds = await tablePanel.locator('.native-column-picker fieldset').boundingBox();
   assert.ok(pickerBounds.y >= 0 && pickerBounds.y + pickerBounds.height <= 720, 'Column choices remain inside a short desktop viewport');
   await tablePanel.getByLabel('condition', { exact: true }).uncheck();
