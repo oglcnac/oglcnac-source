@@ -1,7 +1,6 @@
 
-    <header class="hq-page-heading">
+    <header class="hq-page-heading hq-analysis-heading">
       <div class="hq-container">
-        <p class="hq-kicker">Oxonium-ion classification</p>
         <h1>Analyze oxonium-ion intensities</h1>
         <p>Select one CSV with the columns <code>id,f126,f138,f144,f168,f186</code>. Headers may be reordered and extra columns are ignored.</p>
       </div>
@@ -39,6 +38,7 @@
         <div class="hq-card">
           <h2>Prediction results</h2>
           <div class="hq-table-wrap table-scroll" tabindex="0" role="region" aria-label="HexNAcQuest prediction results">
+            <p class="hq-scroll-note">Scroll horizontally to view all intensity columns.</p>
             <table class="hq-table"><thead><tr><th>pred_outcome</th><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead><tbody id="hexnac-results-body"></tbody></table>
           </div>
           <div id="hexnac-results-pager" class="hq-pager"></div>
@@ -52,6 +52,7 @@
           <h2>Valid-row preview</h2>
           <p class="hq-help">Select a row to inspect its five intensities. Preview shows the first 500 valid rows; prediction includes all valid rows.</p>
           <div class="hq-table-wrap table-scroll" tabindex="0" role="region" aria-label="Valid HexNAcQuest input rows">
+            <p class="hq-scroll-note">Scroll horizontally to view all intensity columns.</p>
             <table class="hq-table">
               <thead><tr><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead>
               <tbody id="hexnac-preview-body"></tbody>

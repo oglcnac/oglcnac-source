@@ -58,8 +58,6 @@ GENERATED_ARTWORK = (
     "static/img/social-card.png",
     "static/img/ogt-pin-overview.svg",
     "static/img/pred-dl-workflow.svg",
-    "static/img/suite-hero.svg",
-    "static/img/suite-workflow.svg",
     "static/img/tool-atlas.svg",
     "static/img/tool-hexnac-quest.svg",
     "static/img/tool-ogt-pin.svg",
@@ -1428,18 +1426,15 @@ class SiteBuildTests(unittest.TestCase):
         ):
             self.assertNotIn(misleading_source, homepage)
         for expected_source in (
-            "/static/img/suite-hero.svg",
-            "/static/img/suite-workflow.svg",
             "/static/img/tool-atlas.svg",
             "/static/img/tool-ogt-pin.svg",
             "/static/img/tool-pred-dl.svg",
             "/static/img/tool-hexnac-quest.svg",
         ):
-            self.assertIn(expected_source, homepage)
             self.assertTrue((FRONTEND_ROOT / expected_source.lstrip("/")).is_file())
 
         suite_workflow = (
-            FRONTEND_ROOT / "static/img/suite-workflow.svg"
+            REPOSITORY_ROOT / "site/artwork/retired/suite-workflow.svg"
         ).read_text()
         self.assertIn(
             'data-flow="protein-to-pred-dl"',

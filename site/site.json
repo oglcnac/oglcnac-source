@@ -5,7 +5,8 @@
     "styles/30-polish.css",
     "styles/40-shell.css",
     "styles/50-publication.css",
-    "styles/55-analysis.css"
+    "styles/55-analysis.css",
+    "styles/56-home.css"
   ],
   "primary_navigation": [
     ["Home", "/", "home"],

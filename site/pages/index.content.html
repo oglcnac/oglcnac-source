@@ -1,108 +1,143 @@
-<section class="home-hero">
-  <div class="container hero-content">
-    <div class="hero-copy">
-      <p class="hero-kicker">Community resources for O-GlcNAc biology</p>
-      <h1>oglcnac.org</h1>
-      <p>
-        Search curated O-GlcNAc sites and OGT interactions, predict sites from
-        FASTA, and classify glycoforms in one portal.
-      </p>
-      <div class="hero-actions">
-        <a class="button button-primary" href="/analysis/">Open Workbench</a>
-        <a class="button button-secondary" href="/atlas/">Explore Atlas</a>
-        <a class="button button-secondary" href="/pred_dl/input_fasta/">Run a prediction</a>
+<div class="portal-home">
+  <div class="portal-home-inner">
+    <header class="portal-home-heading">
+      <h1>O-GlcNAc resources</h1>
+      <p>Curated protein and site evidence, sequence prediction, and glycoproteomics analysis.</p>
+    </header>
+
+    <div class="portal-home-start">
+      <section class="portal-search" aria-labelledby="portal-search-heading">
+        <h2 id="portal-search-heading">Search O-GlcNAcAtlas</h2>
+        <p>Find experimentally identified proteins and modification sites.</p>
+        <form action="/atlas/search/" method="get" class="portal-search-form">
+          <div class="portal-search-term">
+            <label for="portal-search-term">Search term</label>
+            <input id="portal-search-term" name="q" type="search" required autocomplete="off" placeholder="e.g. P18583">
+          </div>
+          <div class="portal-search-field">
+            <label for="portal-search-field">Search by</label>
+            <select id="portal-search-field" name="field">
+              <option value="accession">Accession</option>
+              <option value="protein_name">Protein name</option>
+              <option value="gene_name">Gene name</option>
+              <option value="peptide_seq">Peptide sequence</option>
+              <option value="species">Species</option>
+            </select>
+          </div>
+          <button class="portal-primary-action" type="submit">Search Atlas</button>
+        </form>
+        <div class="portal-search-examples" role="group" aria-label="Example Atlas searches">
+          <span>Examples:</span>
+          <a href="/atlas/search/?q=P18583&amp;field=accession">P18583</a>
+          <a href="/atlas/search/?q=SON&amp;field=gene_name">SON gene</a>
+          <a href="/atlas/search/?q=mouse&amp;field=species">Mouse proteins</a>
+        </div>
+        <p class="portal-search-source">O-GlcNAcAtlas 5.0 · <a href="/atlas/statistics/">Release statistics and counting rules</a></p>
+      </section>
+
+      <aside class="portal-workbench" aria-labelledby="portal-workbench-heading">
+        <h2 id="portal-workbench-heading">Analyze a protein sequence</h2>
+        <p>Use the Workbench to predict sites and compare them with Atlas and OGT interaction evidence.</p>
+        <a class="portal-workbench-action" href="/analysis/">Open Workbench <span aria-hidden="true">→</span></a>
+        <p class="portal-workbench-note">Human and mouse models. Sequence analysis runs in your browser.</p>
+      </aside>
+    </div>
+
+    <section class="resource-directory" aria-labelledby="resource-directory-heading">
+      <div class="resource-directory-heading">
+        <h2 id="resource-directory-heading">Tools and databases</h2>
+        <p>Choose a resource for your input and research question.</p>
       </div>
-    </div>
-    <img class="suite-hero-art" src="/static/img/suite-hero.svg?v=20260729-home-illustrations1" alt="The four connected oglcnac.org resources: O-GlcNAcAtlas, OGT-PIN, HexNAcQuest, and O-GlcNAcPRED-DL" width="960" height="560">
-  </div>
-</section>
-
-<section class="section-block home-tools-section">
-  <div class="container">
-    <div class="section-heading">
-      <p class="eyebrow">Resource suite</p>
-      <h2>Four focused tools and one integrated Workbench</h2>
-    </div>
-    <div class="tool-grid">
-      <a class="tool-card tool-atlas" href="/atlas/">
-        <img src="/static/img/tool-atlas.svg" alt="Curated protein sequence sites and evidence records representing O-GlcNAcAtlas" width="640" height="360">
-        <div>
-          <span class="card-type">Database</span>
-          <h3>O-GlcNAcAtlas</h3>
-          <p>Search and browse experimentally identified O-GlcNAc proteins and modification sites.</p>
-        </div>
-      </a>
-      <a class="tool-card tool-pin" href="/ogt-pin/">
-        <img src="/static/img/tool-ogt-pin.svg" alt="OGT at the center of a curated protein-interaction network representing OGT-PIN" width="640" height="360">
-        <div>
-          <span class="card-type">Interactome</span>
-          <h3>OGT-PIN</h3>
-          <p>Explore curated interaction proteins of OGT and its orthologues across experimental reports.</p>
-        </div>
-      </a>
-      <a class="tool-card tool-pred" href="/pred_dl/">
-        <img src="/static/img/tool-pred-dl.svg" alt="Protein sequence passing through a neural network to site scores for O-GlcNAcPRED-DL" width="640" height="360">
-        <div>
-          <span class="card-type">Deep learning</span>
-          <h3>O-GlcNAcPRED-DL</h3>
-          <p>Predict protein O-GlcNAcylation sites from FASTA input using ensemble deep learning.</p>
-        </div>
-      </a>
-      <a class="tool-card tool-quest" href="/hexnac-quest/">
-        <img src="/static/img/tool-hexnac-quest.svg" alt="Five oxonium-ion intensities leading to GlcNAc or GalNAc classification for HexNAcQuest" width="640" height="360">
-        <div>
-          <span class="card-type">Analysis tool</span>
-          <h3>HexNAcQuest</h3>
-          <p>Distinguish O-GlcNAc and O-GalNAc signals in glycoproteomics analysis.</p>
-        </div>
-      </a>
-    </div>
-  </div>
-</section>
-
-<section class="science-section home-science-section">
-  <div class="container science-grid">
-    <div>
-      <p class="eyebrow">Why it matters</p>
-      <h2>O-GlcNAc biology, from evidence to hypothesis</h2>
-    </div>
-    <div class="science-copy">
-      <p>
-        O-linked beta-N-acetylglucosamine is a dynamic post-translational
-        modification on serine, threonine, and tyrosine residues. It is
-        regulated by OGT and OGA and has been implicated in transcription,
-        translation, cell-cycle control, metabolism, and signaling.
-      </p>
-      <p>
-        oglcnac.org brings together curated evidence and predictive tools so
-        researchers can move from a protein or sequence to sites, interactors,
-        candidate predictions, and testable hypotheses.
-      </p>
-    </div>
-  </div>
-</section>
-
-<section class="workflow-section home-workflow-section">
-  <div class="container workflow-grid">
-    <div class="workflow-copy">
-      <p class="eyebrow">Integrated workflow</p>
-      <h2>Choose a tool by input</h2>
-      <ul>
-        <li>Integrated sequence analysis: use the O-GlcNAc Workbench.</li>
-        <li>Protein or site: search O-GlcNAcAtlas.</li>
-        <li>OGT interactor: search OGT-PIN.</li>
-        <li>FASTA sequence: run O-GlcNAcPRED-DL.</li>
-        <li>Oxonium-ion intensities: run HexNAcQuest.</li>
-        <li>Downstream analysis: download curated datasets and filtered results.</li>
+      <ul class="resource-directory-list">
+        <li class="resource-directory-row">
+          <div class="resource-directory-name">
+            <h3><a href="/atlas/">O-GlcNAcAtlas</a></h3>
+            <p>Curated O-GlcNAc sites and proteins</p>
+          </div>
+          <dl class="resource-directory-description">
+            <div><dt>Input</dt><dd>Accession, gene, protein, peptide, or species</dd></div>
+            <div><dt>Result</dt><dd>Reported sites with experimental context and publications</dd></div>
+          </dl>
+          <div class="resource-directory-actions">
+            <a class="resource-directory-task" href="/atlas/search/">Search Atlas <span aria-hidden="true">→</span></a>
+            <a href="/atlas/tutorial/">Atlas guide</a>
+          </div>
+        </li>
+        <li class="resource-directory-row">
+          <div class="resource-directory-name">
+            <h3><a href="/ogt-pin/">OGT-PIN</a></h3>
+            <p>Curated OGT interaction evidence</p>
+          </div>
+          <dl class="resource-directory-description">
+            <div><dt>Input</dt><dd>Interactor identifier, gene name, or species</dd></div>
+            <div><dt>Result</dt><dd>Reported OGT interactions and their experimental sources</dd></div>
+          </dl>
+          <div class="resource-directory-actions">
+            <a class="resource-directory-task" href="/ogt-pin/search/">Search interactions <span aria-hidden="true">→</span></a>
+            <a href="/ogt-pin/tutorial/">OGT-PIN guide</a>
+          </div>
+        </li>
+        <li class="resource-directory-row">
+          <div class="resource-directory-name">
+            <h3><a href="/pred_dl/">O-GlcNAcPRED-DL</a></h3>
+            <p>Sequence-based site prediction</p>
+          </div>
+          <dl class="resource-directory-description">
+            <div><dt>Input</dt><dd>Human or mouse protein sequences in FASTA format</dd></div>
+            <div><dt>Result</dt><dd>Candidate sites, published model scores, and confidence levels</dd></div>
+          </dl>
+          <div class="resource-directory-actions">
+            <a class="resource-directory-task" href="/pred_dl/input_fasta/">Predict sites <span aria-hidden="true">→</span></a>
+            <a href="/pred_dl/tutorial/">Prediction guide</a>
+          </div>
+        </li>
+        <li class="resource-directory-row">
+          <div class="resource-directory-name">
+            <h3><a href="/hexnac-quest/">HexNAcQuest</a></h3>
+            <p>HexNAc isomer classification</p>
+          </div>
+          <dl class="resource-directory-description">
+            <div><dt>Input</dt><dd>CSV with five diagnostic oxonium-ion intensities</dd></div>
+            <div><dt>Result</dt><dd>GlcNAc or GalNAc classification and spectrum inspection</dd></div>
+          </dl>
+          <div class="resource-directory-actions">
+            <a class="resource-directory-task" href="/hexnac-quest/analysis/">Analyze spectra <span aria-hidden="true">→</span></a>
+            <a href="/hexnac-quest/tutorial/">HexNAcQuest guide</a>
+          </div>
+        </li>
+        <li class="resource-directory-row">
+          <div class="resource-directory-name">
+            <h3><a href="/analysis/">O-GlcNAc Workbench</a></h3>
+            <p>Prediction alongside curated evidence</p>
+          </div>
+          <dl class="resource-directory-description">
+            <div><dt>Input</dt><dd>Human or mouse FASTA; UniProt accessions enable evidence matching</dd></div>
+            <div><dt>Result</dt><dd>Site predictions, Atlas matches, and OGT-PIN evidence in one view</dd></div>
+          </dl>
+          <div class="resource-directory-actions">
+            <a class="resource-directory-task" href="/analysis/">Open Workbench <span aria-hidden="true">→</span></a>
+            <a href="/pred_dl/model-card/">Prediction model</a>
+          </div>
+        </li>
       </ul>
+    </section>
+
+    <div class="portal-home-context">
+      <section aria-labelledby="portal-context-heading">
+        <h2 id="portal-context-heading">O-GlcNAc biology</h2>
+        <p>O-linked β-N-acetylglucosamine is a dynamic post-translational modification on serine, threonine, and tyrosine residues. It is regulated by OGT and OGA and has been implicated in transcription, translation, cell-cycle control, metabolism, and signaling.</p>
+        <p>Predictions support experimental prioritization; they are not experimental evidence. Each resource retains its own evidence and interpretation criteria.</p>
+      </section>
+      <section aria-labelledby="portal-provenance-heading">
+        <h2 id="portal-provenance-heading">Data, methods, and reuse</h2>
+        <p>Use the source publications and model documentation when interpreting results. Please cite each resource used in your work.</p>
+        <ul class="portal-provenance-links">
+          <li><a href="/citations/">Resource publications</a></li>
+          <li><a href="/atlas/download/">Download curated datasets</a></li>
+          <li><a href="/pred_dl/model-card/">Prediction model and limitations</a></li>
+          <li><a href="/licenses/">Licenses and privacy</a></li>
+        </ul>
+      </section>
     </div>
-    <figure class="workflow-figure">
-      <a class="figure-link" href="/static/img/suite-workflow.svg?v=20260729-home-illustrations1" target="_blank" rel="noopener"><img src="/static/img/suite-workflow.svg?v=20260729-home-illustrations1" alt="Experimental evidence, FASTA sequences, and mass-spectrometry intensities connect to the four oglcnac.org resources and an evidence-informed hypothesis" width="960" height="500"></a>
-      <figcaption>
-        Each resource addresses a distinct input and preserves its own
-        evidence, model, and interpretation boundary.
-      <a class="figure-full-size" href="/static/img/suite-workflow.svg?v=20260729-home-illustrations1" target="_blank" rel="noopener">Open full-size figure</a>
-      </figcaption>
-    </figure>
   </div>
-</section>
+</div>

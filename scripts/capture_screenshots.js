@@ -36,7 +36,7 @@ const waitForSelector = (selector) => async (page) => {
 };
 
 const captures = [
-  { group: "suite", route: "/", name: "home", aboveFold: ".hero-actions" },
+  { group: "suite", route: "/", name: "home", aboveFold: ".portal-search-form" },
   {
     group: "suite",
     route: "/",

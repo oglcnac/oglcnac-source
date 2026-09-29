@@ -792,13 +792,13 @@ test("shared focus and reduced-motion styles are observable", async () => {
   assert.notEqual(focused.boxShadow, "none");
   assert.ok(
     contrastRatio(
-      rgbChannels(focused.boxShadow),
+      rgbChannels(focused.outlineColor),
       rgbChannels(focused.surfaceColor),
     ) >= 3,
-    `focus halo lacks 3:1 contrast on a dark surface: ${JSON.stringify(focused)}`,
+    `focus outline lacks 3:1 contrast against the header: ${JSON.stringify(focused)}`,
   );
 
-  const lightSurfaceFocus = await page.locator(".tool-card").first().evaluate((element) => {
+  const lightSurfaceFocus = await page.locator("#portal-search-term").first().evaluate((element) => {
     element.focus();
     const style = getComputedStyle(element);
     return {
@@ -814,7 +814,7 @@ test("shared focus and reduced-motion styles are observable", async () => {
     `focus outline lacks 3:1 contrast on a light surface: ${JSON.stringify(lightSurfaceFocus)}`,
   );
 
-  const motion = await page.locator(".tool-card").first().evaluate((element) => {
+  const motion = await page.locator("#portal-search-term").first().evaluate((element) => {
     const style = getComputedStyle(element);
     return {
       animationDuration: style.animationDuration,
@@ -826,23 +826,23 @@ test("shared focus and reduced-motion styles are observable", async () => {
   await context.close();
 });
 
-test("PRED-DL hero title stays inside its desktop text column", async () => {
+test("PRED-DL title stays inside its desktop content column", async () => {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
   await page.goto(`${baseUrl}/pred_dl/`);
   const bounds = await page.evaluate(() => {
     const title = document.querySelector(".resource-hero h1");
-    const art = document.querySelector(".resource-hero .resource-art");
+    const container = document.querySelector(".resource-hero .container");
     return {
       titleRight: title.getBoundingClientRect().right,
       titleScrollWidth: title.scrollWidth,
       titleClientWidth: title.clientWidth,
-      artLeft: art.getBoundingClientRect().left,
+      containerRight: container.getBoundingClientRect().right,
     };
   });
   assert.ok(
     bounds.titleScrollWidth <= bounds.titleClientWidth &&
-      bounds.titleRight < bounds.artLeft,
-    `PRED-DL title intrudes into the art column: ${JSON.stringify(bounds)}`,
+      bounds.titleRight <= bounds.containerRight,
+    `PRED-DL title exceeds its content column: ${JSON.stringify(bounds)}`,
   );
   await page.close();
 });
@@ -899,7 +899,7 @@ test("wide desktop layouts use the available canvas", async () => {
     const layout = await page.evaluate(() => {
       const candidates = Array.from(
         document.querySelectorAll(
-          "main > section > .container, main > section > .hq-container, .home-hero .hero-content",
+          "main > section > .container, main > section > .hq-container, .portal-home-inner",
         ),
       ).filter((element) => element.getBoundingClientRect().width > 0);
       return {
@@ -909,45 +909,38 @@ test("wide desktop layouts use the available canvas", async () => {
         ),
       };
     });
+    // The homepage directory is a reading surface; data and tool pages use
+    // the wider canvas for tables, forms, and scientific figures.
+    const minimumWidth = route === "/" ? 1300 : 1500;
     assert.ok(
-      layout.widest >= 1500,
+      layout.widest >= minimumWidth,
       `${route} only uses ${layout.widest}px of a ${layout.viewport}px desktop canvas`,
     );
   }
   await page.close();
 });
 
-test("homepage illustrations stay balanced on wide desktop screens", async () => {
+test("homepage exposes direct Atlas search and all five research resources", async () => {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-  await page.goto(`${baseUrl}/`, { waitUntil: "load" });
-  const layout = await page.evaluate(() => {
-    const measure = (selector) => {
-      const rect = document.querySelector(selector).getBoundingClientRect();
-      return {
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-        left: Math.round(rect.left),
-        right: Math.round(rect.right),
-      };
-    };
-    return {
-      viewport: document.documentElement.clientWidth,
-      hero: measure(".suite-hero-art"),
-      workflow: measure(".workflow-figure img"),
-    };
-  });
-  assert.ok(
-    layout.hero.width <= 780,
-    `homepage hero illustration is visually oversized: ${JSON.stringify(layout.hero)}`,
-  );
-  assert.ok(
-    layout.hero.left >= 0 && layout.hero.right <= layout.viewport,
-    `homepage hero illustration overflows the viewport: ${JSON.stringify(layout.hero)}`,
-  );
-  assert.ok(
-    layout.workflow.left >= 0 && layout.workflow.right <= layout.viewport,
-    `homepage workflow illustration overflows the viewport: ${JSON.stringify(layout.workflow)}`,
-  );
+  await page.goto(`${baseUrl}/`);
+  assert.equal(await page.locator(".resource-directory-row").count(), 5);
+  for (const href of ["/atlas/search/", "/ogt-pin/search/", "/pred_dl/input_fasta/", "/hexnac-quest/analysis/", "/analysis/"]) {
+    assert.ok(await page.locator(`.resource-directory a[href="${href}"]`).count() > 0, `Missing direct research action ${href}`);
+  }
+  for (const width of [1920, 390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    const layout = await page.locator(".portal-search-form").evaluate(element => {
+      const r = element.getBoundingClientRect();
+      return { top:r.top, bottom:r.bottom, right:r.right, left:r.left, width:innerWidth, documentWidth:document.documentElement.scrollWidth };
+    });
+    assert.ok(layout.bottom <= 844, `Homepage search must remain above the fold: ${JSON.stringify(layout)}`);
+    assert.ok(layout.left >= 0 && layout.right <= layout.width && layout.documentWidth === layout.width, JSON.stringify(layout));
+  }
+  await page.locator("#portal-search-term").fill("P18583");
+  await page.locator(".portal-search-form button[type=submit]").click();
+  await page.waitForURL("**/atlas/search/?q=P18583&field=accession");
+  await waitForTable(page, "search_result");
+  assert.ok(await page.evaluate(() => window.OglcnacTables.get("search_result").totalRows > 0));
   await page.close();
 });
 

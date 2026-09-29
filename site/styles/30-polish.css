@@ -468,30 +468,6 @@ a {
   padding: 34px 40px;
 }
 
-.section-body.has-search-query .search-page-heading {
-  padding-bottom: 24px;
-}
-
-.section-body.has-search-query .site-main > .search-page-heading > .container {
-  padding: 24px 30px;
-}
-
-.section-body.has-search-query .search-page-heading h1 {
-  font-size: clamp(1.85rem, 3vw, 2.55rem);
-}
-
-.section-body.has-search-query .search-stat-table {
-  display: none;
-}
-
-.section-body.has-search-query .search-subtitle {
-  margin-bottom: 20px;
-}
-
-.section-body.has-search-query .site-main > .table-results-section > .container {
-  padding: 28px 34px;
-}
-
 .section-body .dataTables_scroll,
 .section-body .dataTables_scrollHead,
 .section-body .dataTables_scrollHeadInner,
