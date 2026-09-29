@@ -1,6 +1,6 @@
 # UniProt-inspired website improvement goal
 
-Status: implementation complete; final visual and live release verification in progress. Authorized scope: the entire public oglcnac.org website, including deployment and live verification. Design reference chosen by the user: UniProt. Preserve our own identity, scientific content, and browser-local analysis. Results are recorded in [the review report](UNIPROT-INSPIRED-WEBSITE-REVIEW.md).
+Status: complete, published and verified on 2026-09-29. Authorized scope: the entire public oglcnac.org website, including deployment and live verification. Design reference chosen by the user: UniProt. Our own identity, scientific content and browser-local analysis are preserved. Results are recorded in [the review report](UNIPROT-INSPIRED-WEBSITE-REVIEW.md).
 
 ## Deliverables
 
@@ -32,4 +32,6 @@ Status: implementation complete; final visual and live release verification in p
 
 ## Completion
 
-The goal is complete only when all deliverables are implemented, the visual review and required checks pass, and the live website is verified. Unrelated research changes in the main workspace must be preserved. Implementation proceeds in `/tmp/oglcnac-uniprot-20260929`, based on published source commit `880eea1`.
+All seven deliverables are implemented. Every public route was visually reviewed at desktop and mobile widths; all 216 final gallery checks, browser interaction suites, accessibility checks, scientific/export checks and performance budgets pass. The 759-file published artifact matches the review, every public route was checked live at both widths, and live analysis/download workflows pass. GitHub's follow-up quality and prediction runs pass.
+
+Implementation was isolated in `/tmp/oglcnac-uniprot-20260929`, based on published source commit `880eea1`, and released as source `4236b89` / Pages `4fba009`. Subsequent source commits contain test synchronization and release documentation only. Final changes were synchronized selectively to the main workspace, preserving unrelated research work.

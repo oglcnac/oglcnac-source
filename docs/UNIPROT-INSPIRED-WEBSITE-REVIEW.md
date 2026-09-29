@@ -20,6 +20,8 @@ The review covers every public route at desktop and mobile sizes, including full
 
 The capture suite contains 54 states at four sizes (216 screenshots): 1440 × 1100, 390 × 844, 1920 × 1080 and 3840 × 2160. States include global search, mobile navigation, protein/evidence views, active filters, empty results, failed data requests, populated records, expanded sequence/aliases, column selection, loaded examples, real analysis results, validation errors and guide contents. Wide scientific tables are evaluated inside their scrolling containers.
 
+Four additional desktop/mobile captures inspect Atlas record loading and prediction loading with deliberately delayed responses, then verify successful record completion or cancellation.
+
 Review findings corrected include narrow-screen search clipping, colliding navigation controls, verbose protein aliases, crowded view counts and table actions, empty example-status spacing, misaligned guide headings, incomplete raw record fields, ambiguous position parsing, unavailable record-section links, a column chooser extending below a short Firefox viewport, and record-loading layout shifts.
 
 ## Validation
@@ -49,8 +51,8 @@ The reviewed implementation was published from clean source commit `4236b8980975
 - All 759 deployed repository files match the reviewed artifact byte for byte.
 - All 38 changed live files match: 34 byte for byte and four contact pages after decoding only Cloudflare's email-protection transformation. The decoded email addresses, links and all remaining HTML match the source.
 - All 29 public routes pass live desktop/mobile checks (58 visits), including record pages with real identifiers, one H1, the shared search control, no page-level horizontal overflow and no JavaScript exceptions.
-- Both Chromium and Firefox pass the live static-browser smoke suite, including real PRED-DL and HexNAcQuest outputs. Additional live checks verify global search, protein/evidence counts and shareable view, complete source-field download, OGT-PIN protein-name search and both new example loaders.
-- The initial GitHub quality run exposed a test reading a native disclosure before its asynchronous `toggle` handler had positioned the column chooser. The assertion now waits for that handler, retaining the same viewport bounds and all export checks. The follow-up CI result is recorded at completion.
+- Both Chromium and Firefox pass the live static-browser smoke suite, including real PRED-DL and HexNAcQuest outputs. Additional live checks verify global search, protein/evidence counts and shareable view, complete source-field download, OGT-PIN protein-name search and both new example loaders. Live Workbench checks in both browsers produce seven sample sites, correctly export the two Atlas-matched sites, reset the filter and report no JavaScript errors or forbidden requests.
+- The initial GitHub quality run exposed a test reading a native disclosure before its asynchronous `toggle` handler had positioned the column chooser. The assertion now waits for that handler, retaining the same viewport bounds and all export checks. The follow-up [Static site quality run](https://github.com/oglcnac/oglcnac-source/actions/runs/36532093095) and [Prediction browser smoke run](https://github.com/oglcnac/oglcnac-source/actions/runs/36532093120) both pass for source `83cb988`. This follow-up changes tests/documentation only; the deployed public artifact is unchanged.
 
 The main working tree was synchronized selectively. Unrelated research files, scripts and preview configuration were preserved.
 
