@@ -82,7 +82,7 @@
 .atlas-detail-page .sequence-site[data-selected="true"] { color:#fff; background:var(--brand-teal); text-decoration:none; border-radius:2px; }
 .atlas-detail-page .record-publications ul { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0 24px; padding:0; margin:16px 0; list-style:none; }
 .atlas-detail-page .record-publications li { min-width:0; padding:11px 0; border-bottom:1px solid var(--line); }
-.atlas-detail-page .record-publications li a { display:inline-flex; align-items:center; min-height:30px; font-weight:600; }
+.atlas-detail-page .record-publications li a { display:inline-flex; align-items:center; min-height:44px; font-weight:600; }
 .atlas-detail-page .record-publications li span { display:block; color:var(--muted); font-size:.76rem; }
 @media(max-width:1200px) {
   .protein-map-workspace { grid-template-columns:minmax(0,1fr); gap:18px; }
@@ -111,7 +111,6 @@
   .protein-site-counts { margin-bottom:16px; }
   .protein-map-canvas { min-height:340px; }
   .protein-site-detail > a { min-height:44px; }
-  .atlas-detail-page .record-publications li a { min-height:44px; }
 }
 @media(max-width:390px) {
   .protein-viewer-actions { display:grid; grid-template-columns:1fr 1fr; align-items:stretch; }

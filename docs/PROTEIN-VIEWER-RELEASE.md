@@ -33,4 +33,6 @@ Local implementation and release verification completed on 2026-09-29:
 
 Review evidence is saved under `visual-review/protein-viewer-2026-09-29/`, including `corpus-audit.json`, browser logs, the screenshot gallery, and before/after performance results. Reproduce browser checks with `node --test scripts/tests/protein-viewer-browser.test.js` after building the site; set `SITE_BROWSER=firefox` or `webkit` for other engines.
 
-Publication and live verification pending.
+The viewer was published from source commit `a8ac19c` as Pages commit `84d5f49` on 2026-09-29. All 760 published files matched the reviewed build, and all 32 changed live files matched after accounting for Cloudflare email protection. Production checks covered 29 public routes at desktop and mobile widths (58 visits), plus the map, selected-position links, history, clipboard, complete and filtered CSV contents, and FASTA in Chromium and Firefox.
+
+The first GitHub accessibility run identified publication links partly covered by the sticky navigation when entering the final table's column chooser. The follow-up keeps the evidence and complete-source tables together before references, matches the section navigation to that order, and gives publication links 44-pixel targets on desktop as well as mobile. The existing column-chooser accessibility check remains unchanged. Local checks at 1440-pixel width and 720, 1100, and 1400-pixel window heights pass with the revised layout; the final automated run and deployment are recorded in the release evidence directory.
