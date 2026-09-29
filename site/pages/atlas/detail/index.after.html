@@ -67,6 +67,9 @@
   let atlasExportTable;
   let atlasCompleteRecords = [];
   let atlasCompleteFields = [];
+  let atlasProteinViewer;
+  let atlasFasta = '';
+  let atlasSelectedPosition;
   const atlasView = window.OglcnacRecordView;
   document.querySelector('.record-section-nav details').open = matchMedia('(min-width: 901px)').matches;
   document.getElementById('atlas-download-record').addEventListener('click', () => {
@@ -75,27 +78,72 @@
     const link = document.createElement('a'); link.href = url; link.download = `${ATLAS_ACCESSION}-complete-record.csv`;
     document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(url);
   });
+  document.getElementById('atlas-copy-accession').addEventListener('click', async () => {
+    const copied = await window.OglcnacProteinViewer.copyText(ATLAS_ACCESSION);
+    document.getElementById('atlas-copy-status').textContent = copied ? `Accession ${ATLAS_ACCESSION} copied.` : `Copy this accession: ${ATLAS_ACCESSION}`;
+  });
+  document.getElementById('atlas-download-fasta').addEventListener('click', () => atlasProteinViewer?.downloadFasta());
+  document.getElementById('atlas-copy-fasta').addEventListener('click', async () => {
+    const copied = await window.OglcnacProteinViewer.copyText(atlasFasta.trim() + '\n');
+    document.getElementById('atlas-sequence-action-status').textContent = copied ? 'Complete FASTA copied.' : 'Use Download FASTA to save the sequence.';
+  });
+  function populateAtlasPublications(records, position) {
+    const publications = atlasView.publications(records);
+    document.getElementById('atlas-publication-summary').textContent = `${publications.length} distinct source ${publications.length === 1 ? 'publication' : 'publications'} linked from ${position ? `the records at position ${position}` : 'this complete record'}.`;
+    const list = document.getElementById('atlas-publication-list'); list.replaceChildren();
+    publications.forEach(pmid => {
+      const linked = records.filter(record => atlasView.publications([record]).includes(pmid));
+      const item = document.createElement('li'), link = document.createElement('a'), count = document.createElement('span');
+      link.href = `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`; link.textContent = `PMID ${pmid}`;
+      const positions = atlasView.positions(linked).length;
+      count.textContent = `${linked.length} ${linked.length === 1 ? 'record' : 'records'} · ${positions} numeric ${positions === 1 ? 'position' : 'positions'}`;
+      item.append(link, count); list.append(item);
+    });
+  }
+  function applyAtlasSelection(selection) {
+    if (atlasSelectedPosition !== selection.position) {
+      atlasSelectedPosition = selection.position;
+      atlasPeptideTable.setRows(selection.records.map(atlasPeptideRow));
+      atlasEvidenceTable.setRows(selection.records.map(atlasEvidenceRow));
+      atlasPeptideTable.options.filename = `${ATLAS_ACCESSION}${selection.position ? `-position-${selection.position}` : ''}-peptides.csv`;
+      atlasEvidenceTable.options.filename = `${ATLAS_ACCESSION}${selection.position ? `-position-${selection.position}` : ''}-evidence.csv`;
+      populateAtlasPublications(selection.records, selection.position);
+    }
+    document.querySelectorAll('[data-atlas-selection-note]').forEach(note => {
+      note.hidden = !selection.position; note.replaceChildren();
+      if (!selection.position) return;
+      const residue = selection.site?.mismatch ? '' : selection.site?.residue || '';
+      note.append(document.createTextNode(`Position ${residue}${selection.position} · ${selection.records.length} of ${atlasCompleteRecords.length} source records.`));
+      const clear = document.createElement('button'); clear.type = 'button'; clear.textContent = 'Show all positions';
+      clear.addEventListener('click', () => atlasProteinViewer.select(null)); note.append(clear);
+    });
+    document.querySelectorAll('#protein-sequence [data-sequence-position]').forEach(span => {
+      if (Number(span.dataset.sequencePosition) === selection.position) span.dataset.selected = 'true';
+      else delete span.dataset.selected;
+    });
+  }
   function populateAtlasIdentity(payload) {
     const join = field => atlasView.values(payload.records, field).join(' / ') || 'Not reported';
     document.getElementById('atlas-entry-name').textContent = join('entry_name');
     const names = atlasView.values(payload.records, 'protein_name');
-    const nameField = document.getElementById('atlas-protein-name'); nameField.textContent = names[0] || 'Not reported';
+    const nameField = document.getElementById('atlas-protein-name'); nameField.textContent = names[0] || ATLAS_ACCESSION;
+    document.title = `${names[0] || ATLAS_ACCESSION} · ${ATLAS_ACCESSION} | O-GlcNAcAtlas`;
+    const aliases = document.getElementById('atlas-other-names'); aliases.replaceChildren(); aliases.hidden = names.length < 2;
     if (names.length > 1) {
       const details = document.createElement('details'); details.className = 'record-aliases';
       const summary = document.createElement('summary'); summary.textContent = `Other reported names (${names.length - 1})`;
       const list = document.createElement('ul');
       for (const name of names.slice(1)) { const item = document.createElement('li'); item.textContent = name; list.append(item); }
-      details.append(summary, list); nameField.append(details);
+      details.append(summary, list); aliases.append(details);
     }
     document.getElementById('atlas-gene-name').textContent = join('gene_name');
     document.getElementById('atlas-species').textContent = join('species');
     const link = document.getElementById('atlas-uniprot-link');
     link.href = `https://www.uniprot.org/uniprotkb/${encodeURIComponent(ATLAS_ACCESSION)}/entry`;
     link.hidden = !atlasView.values(payload.records, 'accession_source').some(source => /uniprot/i.test(source));
-    const publications = atlasView.publications(payload.records);
-    document.getElementById('atlas-publication-summary').textContent = `${publications.length} distinct source ${publications.length === 1 ? 'publication' : 'publications'} linked from these records.`;
-    const list = document.getElementById('atlas-publication-list'); list.replaceChildren();
-    publications.forEach(pmid => { const item = document.createElement('li'), a = document.createElement('a'); a.href = `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`; a.textContent = `PMID ${pmid}`; item.append(a); list.append(item); });
+    document.getElementById('atlas-position-count').textContent = window.OglcnacProteinViewer.summarize(payload.records).sites.length.toLocaleString();
+    document.getElementById('atlas-record-count').textContent = payload.records.length.toLocaleString();
+    document.getElementById('atlas-publication-count').textContent = atlasView.publications(payload.records).length.toLocaleString();
     atlasCompleteRecords = payload.records;
     atlasCompleteFields = atlasView.exportFields(payload.records);
     if (!atlasExportTable) {
@@ -129,6 +177,8 @@
     atlasRecovery.hidden = visible;
     document.getElementById("atlas-identity").hidden = !visible;
     document.getElementById("atlas-record-actions").hidden = !visible;
+    document.getElementById("atlas-record-metrics").hidden = !visible;
+    if (!visible) document.getElementById("atlas-other-names").hidden = true;
   }
 
   function setAtlasTablesLoading() {
@@ -152,22 +202,32 @@
     } catch (error) {
       fasta = "";
     }
-    if (!fasta || ["NA", "N/A"].includes(fasta.trim().toUpperCase())) {
+    const sequence = window.OglcnacProteinViewer.sequenceFromFasta(fasta);
+    atlasFasta = sequence ? fasta : '';
+    if (!sequence) {
       document.getElementById("protein-sequence").textContent =
         "Protein sequence for this entry is not available in the local Atlas snapshot or UniProt. The curated evidence below remains complete.";
       document.getElementById("atlas-length").textContent = "Not available";
     } else {
-      document.getElementById("atlas-length").textContent = `${fasta.split("\n").slice(1).join("").replace(/\s/g, "").length.toLocaleString()} residues`;
-      document.getElementById("sequence-summary").textContent = `· ${fasta.split("\n").slice(1).join("").replace(/\s/g, "").length.toLocaleString()} residues`;
+      document.getElementById("atlas-length").textContent = `${sequence.length.toLocaleString()} aa`;
+      document.getElementById("sequence-summary").textContent = `· ${sequence.length.toLocaleString()} residues`;
       document.getElementById("protein-sequence").innerHTML = formatSequence(
         fasta,
         payload.positions || []
       );
     }
+    document.getElementById('atlas-download-fasta').disabled = !sequence;
+    document.getElementById('atlas-copy-fasta').disabled = !sequence;
+    atlasProteinViewer.setSequence(atlasFasta);
   }
 
   async function loadAtlasDetail() {
     showAtlasContent(false);
+    if (atlasProteinViewer) atlasProteinViewer.destroy();
+    atlasSelectedPosition = undefined;
+    atlasFasta = '';
+    document.getElementById('atlas-download-fasta').disabled = true;
+    document.getElementById('atlas-copy-fasta').disabled = true;
     retryRecord.hidden = true;
     if (!ATLAS_ACCESSION) {
       atlasRecordState.dataset.state = "initial";
@@ -207,9 +267,15 @@
     atlasPeptideTable.setRows(payload.records.map(atlasPeptideRow));
     atlasEvidenceTable.setRows(payload.records.map(atlasEvidenceRow));
     populateAtlasIdentity(payload);
+    atlasProteinViewer = window.OglcnacProteinViewer.create(document.getElementById('atlas-protein-viewer'), {
+      accession: ATLAS_ACCESSION, records: payload.records, onSelect: applyAtlasSelection
+    });
+    if (window.location.hash === '#atlas-landscape') {
+      requestAnimationFrame(() => document.getElementById('atlas-landscape').scrollIntoView({ block: 'start' }));
+    }
     atlasRecordState.dataset.state = "ready";
     atlasRecordState.textContent =
-      `${payload.records.length.toLocaleString()} curated Atlas records loaded · ${(payload.positions || []).length} distinct numeric positions. Mixed-format annotations are retained in the evidence.`;
+      `${payload.records.length.toLocaleString()} curated Atlas records loaded.`;
     document.getElementById("protein-sequence").textContent =
       "Loading protein sequence from the local Atlas snapshot…";
     loadAtlasSequence(payload);

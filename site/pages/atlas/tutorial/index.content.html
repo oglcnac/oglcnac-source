@@ -50,6 +50,16 @@
         <li>Copy the visible rows or download the filtered result as CSV. On a record, <strong>Download complete record</strong> includes every source row and field, regardless of table filters or hidden columns. <strong>Reset table</strong> restores its original view.</li>
       </ol>
 
+      <h2 id="protein-map">Explore a protein modification map</h2>
+      <p>The modification landscape places reported numeric positions on the available protein sequence. Circles indicate source records marked unambiguous; squares indicate records marked ambiguous. A position may appear on both tracks when its source records have different assignments. Counts describe records and distinct publications, not a confidence score.</p>
+      <ol>
+        <li>Select a marker or use <strong>Reported position</strong>. The map opens the surrounding region, highlights the sequence context, and filters the peptide, experimental-evidence, and publication sections to that position. The arrow buttons move to the previous or next reported position.</li>
+        <li>Switch between <strong>Region</strong> and <strong>Full protein</strong> to change the scale. <strong>Show all positions</strong> restores every source record. Table filters can narrow the selected records further; <strong>Reset table</strong> clears only that table's controls.</li>
+        <li>Use <strong>Copy view link</strong> to share the current position. The page address records the selection, and browser Back and Forward restore earlier selections.</li>
+        <li>Use <strong>Download FASTA</strong> or <strong>Copy FASTA</strong> for the complete available sequence. Expand <strong>View complete protein sequence</strong> to see all reported numeric positions and the highlighted selection.</li>
+      </ol>
+      <p>Records without a single numeric position, or whose positions fall outside the available sequence, are retained in the tables. Entries without an available sequence still provide their curated evidence. <strong>Download complete record</strong> and <strong>All record fields</strong> always retain every source row, including rows outside the selected position.</p>
+
       <h2>Search tips</h2>
       <ul>
         <li>Use <strong>Search</strong> in the site header from any page, or press <kbd>/</kbd> outside an input field. Press <kbd>Escape</kbd> to close it.</li>

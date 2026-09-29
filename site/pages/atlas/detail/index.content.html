@@ -8,30 +8,39 @@
 <section class="detail-page atlas-detail-page">
  <div class="container record-layout">
   <nav class="record-section-nav" aria-label="Record sections"><details><summary>On this record</summary><div class="section-index-links">
-    <a href="#atlas-overview">Overview</a><a href="#atlas-sequence">Sequence</a><a href="#atlas-peptides">Peptides</a><a href="#atlas-evidence">Experimental evidence</a><a href="#atlas-publications">Publications</a><a href="#atlas-all-fields">All record fields</a>
+    <a href="#atlas-overview">Overview</a><a href="#atlas-landscape">Modification map</a><a href="#atlas-sequence">Sequence</a><a href="#atlas-peptides">Peptides</a><a href="#atlas-evidence">Experimental evidence</a><a href="#atlas-publications">Publications</a><a href="#atlas-all-fields">All record fields</a>
   </div></details><p>O-GlcNAcAtlas 5.0<br><a href="/atlas/tutorial/">Interpret this record</a></p></nav>
   <div class="record-main">
    <header class="detail-hero record-overview" id="atlas-overview">
     <p class="record-breadcrumb"><a href="/atlas/">O-GlcNAcAtlas</a><span aria-hidden="true">/</span>Protein record</p>
-    <h1 id="atlas-accession-title">Find an Atlas record</h1>
-    <p class="record-subtitle" id="atlas-entry-name">Curated O-GlcNAcylation evidence.</p>
+    <h1 id="atlas-protein-name">Find an Atlas record</h1>
+    <p class="record-subtitle"><span id="atlas-accession-title"></span><span id="atlas-entry-name"></span></p>
     <dl class="record-identity" id="atlas-identity" hidden>
-      <div><dt>Protein</dt><dd id="atlas-protein-name"></dd></div><div><dt>Species</dt><dd id="atlas-species"></dd></div>
-      <div><dt>Gene</dt><dd id="atlas-gene-name"></dd></div><div><dt>Sequence length</dt><dd id="atlas-length">Loading sequence…</dd></div>
+      <div><dt>Gene</dt><dd id="atlas-gene-name"></dd></div><div><dt>Species</dt><dd id="atlas-species"></dd></div>
     </dl>
-    <div class="record-actions" id="atlas-record-actions" hidden><button type="button" id="atlas-download-record">Download complete record</button><a id="atlas-uniprot-link" href="https://www.uniprot.org/">View in UniProt <span aria-hidden="true">↗</span></a><a href="#atlas-publications">Source publications</a></div>
+    <div id="atlas-other-names" hidden></div>
+    <div class="record-actions" id="atlas-record-actions" hidden><button type="button" id="atlas-download-record">Download complete record</button><button type="button" id="atlas-copy-accession">Copy accession</button><a id="atlas-uniprot-link" href="https://www.uniprot.org/">View in UniProt <span aria-hidden="true">↗</span></a><a href="#atlas-publications">Source publications</a></div>
+    <p id="atlas-copy-status" class="protein-action-status" role="status" aria-live="polite"></p>
+    <dl class="protein-record-metrics" id="atlas-record-metrics" hidden><div><dt>Reported numeric positions</dt><dd id="atlas-position-count"></dd></div><div><dt>Evidence records</dt><dd id="atlas-record-count"></dd></div><div><dt>Source publications</dt><dd id="atlas-publication-count"></dd></div><div><dt>Sequence length</dt><dd id="atlas-length">Loading…</dd></div></dl>
    </header>
+   <section class="detail-section" id="atlas-landscape" hidden>
+    <div class="detail-section-heading"><h2>Modification landscape</h2><a href="/atlas/tutorial/#protein-map">About this map</a></div>
+    <div id="atlas-protein-viewer"></div>
+   </section>
    <section class="detail-section" id="atlas-sequence" hidden>
     <div class="detail-section-heading"><h2>Protein sequence</h2></div>
-    <details class="sequence-disclosure"><summary>View protein sequence <span id="sequence-summary"></span></summary><p>Reported positions are underlined in red. Site ambiguity is recorded with the experimental evidence.</p><pre id="protein-sequence" class="sequence-viewer" tabindex="0" role="region" aria-label="Protein sequence with curated modification sites">Loading protein sequence…</pre></details>
+    <div class="protein-sequence-actions"><button type="button" id="atlas-download-fasta" disabled>Download FASTA</button><button type="button" id="atlas-copy-fasta" disabled>Copy FASTA</button><span id="atlas-sequence-action-status" class="protein-action-status" role="status" aria-live="polite"></span></div>
+    <details class="sequence-disclosure"><summary>View complete protein sequence <span id="sequence-summary"></span></summary><p>Reported numeric positions are underlined. The selected position is highlighted in teal. Site ambiguity is retained in the experimental evidence.</p><pre id="protein-sequence" class="sequence-viewer" tabindex="0" role="region" aria-label="Protein sequence with curated modification sites">Loading protein sequence…</pre></details>
    </section>
    <section class="detail-section" id="atlas-peptides" hidden>
     <div class="detail-section-heading"><h2>Peptide information</h2></div>
+    <p class="protein-table-selection" data-atlas-selection-note hidden></p>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas peptide information table"><table class="table detail-table" id="detail1"><thead><tr><th>ID</th><th>Peptide Seq</th><th>Site Residue</th><th>Position in Peptide</th><th>Position in Protein</th></tr></thead><tbody id="atlas-peptide-rows"></tbody></table></div>
    </section>
    <section class="detail-section" id="atlas-evidence" hidden>
     <div class="detail-section-heading"><h2>Experimental evidence</h2></div>
     <p class="record-section-note">Each row retains its reported method, sample context, ambiguity, and source publication.</p>
+    <p class="protein-table-selection" data-atlas-selection-note hidden></p>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas O-GlcNAcylation evidence table"><table class="table detail-table" id="detail2"><thead><tr><th>ID</th><th>Method</th><th>Analytical Throughput</th><th>Ambiguity</th><th>Species</th><th>Sample Type</th><th>Condition</th><th>log2Ratio</th><th>P Value</th><th>Data Source PMID</th><th>Comments</th></tr></thead><tbody id="atlas-evidence-rows"></tbody></table></div>
    </section>
    <section class="detail-section record-publications" id="atlas-publications" hidden><div class="detail-section-heading"><h2>Source publications</h2></div><p id="atlas-publication-summary"></p><ul id="atlas-publication-list"></ul><a href="/citations/">How to cite O-GlcNAcAtlas</a></section>
@@ -45,11 +54,13 @@
 <script src="/static/js/static-data.js"></script>
 <script src="/static/js/table-utils.js"></script>
 <script src="/static/js/record-view.js"></script>
+<script src="/static/js/protein-viewer.js"></script>
 <script>
   const detailParams = new URLSearchParams(window.location.search);
   const detailPath = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "");
   const ATLAS_ACCESSION = (detailParams.get("id") || (!["detail", "index.html"].includes(detailPath) ? detailPath : "")).trim();
   document.getElementById("atlas-accession-title").textContent = ATLAS_ACCESSION || "Find an Atlas record";
+  document.getElementById("atlas-protein-name").textContent = ATLAS_ACCESSION || "Find an Atlas record";
   function escapeHtml(value) { return String(value || "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char])); }
   function formatSequence(seq, positions) {
     const lines = seq.split("\n"), sites = new Set(positions);
@@ -57,7 +68,7 @@
     const body = lines.slice(1).join("").replace(/\s/g, "");
     for (let i = 0; i < body.length; i++) {
       const char = escapeHtml(body[i]);
-      formatted += sites.has(i + 1) ? `<span class="sequence-site">${char}</span>` : char;
+      formatted += sites.has(i + 1) ? `<span class="sequence-site" data-sequence-position="${i + 1}">${char}</span>` : char;
       if ((i + 1) % 10 === 0) formatted += " ";
       if ((i + 1) % 100 === 0) formatted += "<br>";
     }
