@@ -1,56 +1,41 @@
 <script>
-  if (new URLSearchParams(window.location.search).get("q")) {
-    document.body.classList.add("has-search-query", "atlas-query-pending");
-  }
+  if (new URLSearchParams(window.location.search).get("q")) document.body.classList.add("has-search-query", "atlas-query-pending");
 </script>
-<section class="search-page-heading">
+<section class="search-page-heading atlas-query-bar">
   <div class="container">
-    <p class="eyebrow">O-GlcNAcAtlas 5.0</p>
-    <h1>Search <span class="nowrap">O-GlcNAc</span> sites</h1>
-    <p class="search-subtitle">
-      Search curated O-GlcNAcylated proteins and sites. Current release counts
-      and counting rules are available on the <a href="/atlas/statistics/">statistics page</a>.
-    </p>
+    <div class="atlas-query-title"><h1>O-GlcNAcAtlas</h1><span>Curated proteins &amp; sites</span></div>
     <form action="/atlas/search/" method="get" class="search-form" id="atlas-search-form">
-      <div class="form-field">
-        <label for="atlas-search-term">Search term</label>
-        <input id="atlas-search-term" type="search" required class="form-control" name="q" autocomplete="off">
-      </div>
-      <div class="form-field">
-        <label for="atlas-search-field">Search field</label>
-        <select id="atlas-search-field" class="form-control" name="field">
-          <option value="accession">Accession</option>
-          <option value="protein_name">Protein name</option>
-          <option value="gene_name">Gene name</option>
-          <option value="peptide_seq">Peptide sequence</option>
-          <option value="species">Species</option>
-        </select>
-      </div>
+      <div class="form-field"><label for="atlas-search-term">Search term</label><input id="atlas-search-term" type="search" required class="form-control" name="q" autocomplete="off" placeholder="Accession, gene, protein…"></div>
+      <div class="form-field"><label for="atlas-search-field">Search field</label><select id="atlas-search-field" class="form-control" name="field"><option value="accession">Accession</option><option value="protein_name">Protein name</option><option value="gene_name">Gene name</option><option value="peptide_seq">Peptide sequence</option><option value="species">Species</option></select></div>
       <button type="submit">Search Atlas</button>
     </form>
+    <p class="atlas-query-examples">Examples: <a href="?q=P18583&amp;field=accession">P18583</a> <a href="?q=SON&amp;field=gene_name">SON gene</a> <a href="?q=mouse&amp;field=species">Mouse proteins</a></p>
   </div>
 </section>
-
-<section class="table-results-section" aria-labelledby="atlas-results-heading">
-  <div class="container">
-    <div class="table-card-header">
-      <span>Results</span>
-      <h2 id="atlas-results-heading">Search results</h2>
+<div class="container atlas-search-layout">
+  <aside class="atlas-filter-sidebar" aria-label="Refine Atlas search">
+    <details id="atlas-filter-disclosure"><summary>Refine results <span id="atlas-filter-count"></span></summary>
+      <div class="atlas-filter-fields">
+        <label for="atlas-species-filter">Species</label><select id="atlas-species-filter" disabled><option value="">All species</option></select>
+        <label for="atlas-position-filter">Position annotation</label><select id="atlas-position-filter" disabled><option value="">Any record</option><option value="reported">Annotation present</option><option value="unreported">Not reported</option></select>
+        <button type="button" class="atlas-text-button" id="atlas-clear-filters" disabled>Clear filters</button>
+        <p>Filters apply to both views. Counts reflect the matching records.</p>
+      </div>
+    </details>
+    <div class="atlas-sidebar-help"><strong>O-GlcNAcAtlas 5.0</strong><a href="/atlas/statistics/">Release &amp; counting rules</a><a href="/atlas/tutorial/">Search guide</a><a href="/atlas/download/">Download datasets</a></div>
+  </aside>
+  <section class="table-results-section atlas-search-results" aria-labelledby="atlas-results-heading">
+    <div class="atlas-results-heading"><h2 id="atlas-results-heading">Search results</h2><p id="atlas-match-summary" role="status" aria-live="polite">Search above to explore curated proteins and their evidence.</p></div>
+    <div class="atlas-view-switch" role="group" aria-label="Result view">
+      <button type="button" id="atlas-view-proteins" aria-pressed="true" aria-controls="atlas-protein-results">Proteins <span id="atlas-protein-count"></span></button>
+      <button type="button" id="atlas-view-evidence" aria-pressed="false" aria-controls="atlas-evidence-results">Evidence records <span id="atlas-evidence-count"></span></button>
     </div>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="O-GlcNAcAtlas search results table">
-      <table class="table results-table" id="search_result">
-        <thead>
-          <tr>
-            <th>Accession</th>
-            <th>Entry Name</th>
-            <th>Protein Name</th>
-            <th>Gene Name</th>
-            <th>Position in Protein</th>
-            <th>UniProt Link</th>
-          </tr>
-        </thead>
-        <tbody id="atlas-search-results"></tbody>
-      </table>
+    <div id="atlas-protein-results" class="atlas-result-panel">
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas protein search results"><table class="table results-table" id="atlas_proteins"><thead><tr><th>Accession</th><th>Protein name</th><th>Gene</th><th>Species</th><th>Numeric positions</th><th>Evidence records</th></tr></thead><tbody id="atlas-protein-rows"></tbody></table></div>
     </div>
-  </div>
-</section>
+    <div id="atlas-evidence-results" class="atlas-result-panel" hidden>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="O-GlcNAcAtlas search results table"><table class="table results-table" id="search_result"><thead><tr><th>Accession</th><th>Entry Name</th><th>Protein Name</th><th>Gene Name</th><th>Position in Protein</th><th>UniProt Link</th></tr></thead><tbody id="atlas-search-results"></tbody></table></div>
+    </div>
+    <p class="atlas-results-note">A protein can have multiple evidence records. Numeric position counts include positive integers only; mixed-format annotations remain in the evidence. Open an accession for peptides, experimental context, and publications.</p>
+  </section>
+</div>

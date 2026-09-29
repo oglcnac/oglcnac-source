@@ -1,11 +1,42 @@
     <script src="/static/js/static-data.js"></script>
     <script src="/static/js/table-utils.js"></script>
+    <script src="/static/js/record-view.js"></script>
     <script>
         const detailParams = new URLSearchParams(window.location.search);
         const detailPath = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "");
         const INTERACTOME_UUID_B = (detailParams.get("id") || (!["detail", "index.html"].includes(detailPath) ? detailPath : "")).trim();
         document.getElementById("interactome-title").textContent = INTERACTOME_UUID_B || "Find an interaction record";
 
+        const recordView = window.OglcnacRecordView;
+        let completeRecords = [];
+        document.querySelector('.record-section-nav details').open = matchMedia('(min-width: 901px)').matches;
+        document.getElementById('ogt-download-record').addEventListener('click', () => {
+            const fields = recordView.exportFields(completeRecords);
+            const csv = window.OglcnacTables.rowsToText(fields, completeRecords.map(record => fields.map(field => record[field])), ',');
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+            const link = document.createElement('a'); link.href = url; link.download = `${INTERACTOME_UUID_B}-ogt-pin-complete.csv`;
+            document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+        });
+        function fillIdentity(records) {
+            completeRecords = records;
+            const join = field => recordView.values(records, field).join(' / ') || 'Not reported';
+            document.getElementById('ogt-protein-name').textContent = join('protein_name_b');
+            document.getElementById('ogt-gene-name').textContent = join('gene_name_b');
+            document.getElementById('ogt-species').textContent = join('ncbi_id_b');
+            document.getElementById('ogt-partner').textContent = `${join('gene_name_a')} · ${join('uuid_a')}`;
+            document.getElementById('ogt-uniprot-link').href = `https://www.uniprot.org/uniprotkb/${encodeURIComponent(INTERACTOME_UUID_B)}/entry`;
+            document.getElementById('ogt-uniprot-link').hidden = !/^[A-Z0-9]{6,10}(?:-\d+)?$/.test(INTERACTOME_UUID_B);
+            const publications = recordView.publications(records);
+            document.getElementById('ogt-publication-summary').textContent = `${publications.length} distinct source ${publications.length === 1 ? 'publication' : 'publications'} linked from these records.`;
+            const list = document.getElementById('ogt-publication-list'); list.replaceChildren();
+            publications.forEach(pmid => { const item = document.createElement('li'), a = document.createElement('a'); a.href = `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`; a.textContent = `PMID ${pmid}`; item.append(a); list.append(item); });
+        }
+        function showOgtContent(visible) {
+            document.querySelectorAll('.interactome-detail-page .detail-section').forEach(section => { section.hidden = !visible; });
+            document.querySelectorAll('.record-section-nav a[href^="#"]').forEach(link => { link.hidden = !visible && link.hash !== '#ogt-overview'; });
+            document.getElementById('ogt-identity').hidden = !visible;
+            document.getElementById('ogt-record-actions').hidden = !visible;
+        }
         const interactomeDetailTable = window.OglcnacTables.create(
             "interactome",
             { mobileColumns: [0, 2, 3, 8], filename: `${INTERACTOME_UUID_B}-ogt-pin.csv` }
@@ -14,9 +45,7 @@
   interactomeRecordState.setAttribute("data-record-state", "ogt-pin");
   interactomeRecordState.setAttribute("role", "status");
   interactomeRecordState.setAttribute("aria-live", "polite");
-        document.querySelector(".interactome-detail-page .detail-hero").appendChild(
-            interactomeRecordState
-        );
+        document.querySelector(".interactome-detail-page .record-subtitle").after(interactomeRecordState);
 
         const recovery = document.createElement("div");
         recovery.className = "record-recovery";
@@ -51,7 +80,7 @@
         }
 
         async function loadInteractomeDetail() {
-            document.querySelector(".interactome-detail-page .detail-section").hidden = true;
+            showOgtContent(false);
             retry.hidden = true;
             if (!INTERACTOME_UUID_B) {
                 interactomeRecordState.dataset.state = "initial";
@@ -72,7 +101,8 @@
                     interactomeDetailTable.setRows([]);
                     return;
                 }
-                document.querySelector(".interactome-detail-page .detail-section").hidden = false;
+                showOgtContent(true);
+                fillIdentity(payload.records);
                 recovery.hidden = true;
                 interactomeDetailTable.setRows(
                     payload.records.map(interactomeDetailRow)

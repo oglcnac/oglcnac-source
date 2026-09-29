@@ -74,6 +74,7 @@ async function setSearch(page, formId, query, field, tableId) {
   await page.selectOption(`#${formId} [name="field"]`, field);
   await page.click(`#${formId} button[type="submit"]`);
   await waitForTable(page, tableId);
+  if (formId === "atlas-search-form" && tableId === "search_result") await page.click("#atlas-view-evidence");
 }
 
 function csvRecordCount(csv) {
@@ -558,7 +559,7 @@ test("result surfaces announce empty and data-load error states", async () => {
   await page.goto(`${baseUrl}/atlas/search/?q=NOT-A-REAL-ACCESSION&field=accession`);
   await waitForTable(page, "search_result");
   await assert.doesNotReject(() =>
-    page.locator('[data-table-state="empty"]').waitFor(),
+    page.locator('[data-table-state="empty"]').first().waitFor(),
   );
   assert.match(
     await page.locator('[data-table-status-for="search_result"]').textContent(),
@@ -571,7 +572,7 @@ test("result surfaces announce empty and data-load error states", async () => {
   await page.reload();
   await waitForTable(page, "search_result");
   await assert.doesNotReject(() =>
-    page.locator('[data-table-state="error"]').waitFor(),
+    page.locator('[data-table-state="error"]').first().waitFor(),
   );
   assert.match(
     await page.locator('[data-table-status-for="search_result"]').textContent(),
@@ -1100,7 +1101,7 @@ test("tutorial glossaries use compact two-column entries without repeated divide
 });
 
 test("desktop result tables keep titles, controls, and record counts on one compact row", async () => {
-  const routes = ["/atlas/browse/?species=Human", "/atlas/search/?q=P18583&field=accession", "/ogt-pin/search/?q=Q9H1M0&field=uuid_b"];
+  const routes = ["/atlas/browse/?species=Human", "/ogt-pin/search/?q=Q9H1M0&field=uuid_b"];
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 
   for (const route of routes) {
@@ -1142,33 +1143,11 @@ test("desktop result tables keep titles, controls, and record counts on one comp
 });
 
 test("all public content pages reflow without horizontal overflow", async () => {
-  const routes = [
-    "/",
-    "/atlas/",
-    "/atlas/statistics/",
-    "/atlas/search/",
-    "/atlas/browse/",
-    "/atlas/detail/?id=P18583",
-    "/atlas/tutorial/",
-    "/atlas/download/",
-    "/atlas/contact/",
-    "/ogt-pin/",
-    "/ogt-pin/statistics/",
-    "/ogt-pin/search/",
-    "/ogt-pin/detail/?id=Q9H1M0",
-    "/ogt-pin/tutorial/",
-    "/ogt-pin/contact/",
-    "/pred_dl/",
-    "/pred_dl/input_fasta/",
-    "/pred_dl/tutorial/",
-    "/pred_dl/download/",
-    "/pred_dl/contact/",
-    "/hexnac-quest/",
-    "/hexnac-quest/analysis/",
-    "/hexnac-quest/tutorial/",
-    "/hexnac-quest/contact/",
-  ];
-  for (const width of [390, 320]) {
+  const routes = require(path.join(ROOT, "site/site.json")).pages
+    .filter(page => !page.route.startsWith("/research/"))
+    .map(page => page.output === "404.html" ? "/404.html" : page.route)
+    .map(route => route === "/atlas/detail/" ? `${route}?id=P18583` : route === "/ogt-pin/detail/" ? `${route}?id=Q9H1M0` : route);
+  for (const width of [320, 390, 768, 1440, 1920]) {
     for (const route of routes) {
       // Isolate layout checks across engines. The local WPE runtime can crash on
       // repeated navigation even with plain HTML (documented in visual-review).
@@ -1300,7 +1279,16 @@ test("all navigation destinations remain available across the complete responsiv
     const toggle = page.locator(".site-nav-disclosure > summary");
     if (await toggle.isVisible()) { await toggle.focus(); await page.keyboard.press("Enter"); }
     assert.equal(await page.locator(".site-workbench-link").isVisible(), true, `Workbench missing at ${width}`);
-    for (const link of await page.locator("header a").all()) assert.equal(await link.isVisible(), true, `Hidden navigation at ${width}`);
+    for (const link of await page.locator(".site-brand, .site-nav-panel a").all()) assert.equal(await link.isVisible(), true, `Hidden navigation at ${width}`);
+    await page.locator("#site-search > summary").click();
+    assert.equal(await page.locator(".site-search-help a").isVisible(), true, `Search help missing at ${width}`);
+    const searchBounds = await page.locator(".site-search-panel").evaluate(panel => {
+      const bounds = panel.getBoundingClientRect();
+      const controls = [...panel.querySelectorAll('input, select, button')].map(element => element.getBoundingClientRect());
+      return controls.every(control => control.left >= bounds.left && control.right <= bounds.right && control.width >= 24);
+    });
+    assert.equal(searchBounds, true, `Search controls clipped at ${width}`);
+    await page.keyboard.press("Escape");
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Overflow at ${width}`);
     if (width < 1280) {
       const panelWidth = await page.locator(".site-nav-panel").evaluate(element => element.getBoundingClientRect().width);
@@ -1320,6 +1308,9 @@ test("initial and missing-identifier pages offer recovery without empty data too
     assert.equal(await page.locator(".native-table-controls:visible").count(), 0);
     assert.equal(await page.locator("table:visible").count(), 0);
     assert.doesNotMatch(await page.locator("h1").textContent(), /^detail$/i);
+    for (const link of await page.locator('.record-section-nav a[href^="#"]:visible').all()) {
+      assert.equal(await page.locator(await link.getAttribute('href')).isVisible(), true, 'Record navigation must only link to available sections');
+    }
     assert.deepEqual(requestedData, []);
     page.off("request", record);
   }
@@ -1375,4 +1366,97 @@ test("Atlas query layout stays stable while table scripts are delayed", async ()
     releaseScripts();
     await page.close();
   }
+});
+
+test("global database search is keyboard-operable and routes protein-name searches correctly", async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.goto(`${baseUrl}/`);
+  await page.locator('.site-brand').focus();
+  await page.keyboard.press('/');
+  assert.equal(await page.locator('#site-search').evaluate(el => el.open), true);
+  await page.waitForFunction(() => document.activeElement.id === 'site-search-term');
+  await page.fill('#site-search-term', 'Nucleoporin');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#site-search').evaluate(el => el.open), false);
+  assert.equal(await page.locator('.site-brand').evaluate(el => el === document.activeElement), true);
+  await page.locator('#site-search > summary').click();
+  await page.selectOption('#site-search-resource', 'ogt-pin');
+  await page.selectOption('#site-search-field', 'protein_name_b');
+  await page.locator('#site-search-form button[type="submit"]').click();
+  await page.waitForURL('**/ogt-pin/search/?field=protein_name_b&q=Nucleoporin');
+  await waitForTable(page, 'search_result');
+  assert.ok(await page.evaluate(() => OglcnacTables.get('search_result').totalRows > 0));
+  await page.close();
+});
+
+test("Atlas protein view preserves all evidence and shares active view and filters", async () => {
+  const context = await browser.newContext({ acceptDownloads: true });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/atlas/search/?q=P18583&field=accession`);
+  await waitForTable(page, 'atlas_proteins');
+  assert.deepEqual(await page.evaluate(() => [OglcnacTables.get('atlas_proteins').totalRows, OglcnacTables.get('search_result').totalRows]), [4, 110]);
+  assert.equal(await page.locator('#atlas-view-proteins').getAttribute('aria-pressed'), 'true');
+  await page.selectOption('#atlas-position-filter', 'unreported');
+  assert.deepEqual(await page.evaluate(() => [OglcnacTables.get('atlas_proteins').totalRows, OglcnacTables.get('search_result').totalRows]), [1, 4]);
+  await page.click('#atlas-view-evidence');
+  assert.match(page.url(), /view=evidence/);
+  assert.match(page.url(), /position=unreported/);
+  await page.reload(); await waitForTable(page, 'search_result');
+  assert.equal(await page.locator('#atlas-evidence-results').isVisible(), true);
+  assert.equal(await page.locator('#atlas-position-filter').inputValue(), 'unreported');
+  assert.equal(await page.evaluate(() => OglcnacTables.get('search_result').totalRows), 4);
+  await page.click('#atlas-clear-filters');
+  assert.equal(await page.evaluate(() => OglcnacTables.get('search_result').totalRows), 110);
+  await page.fill('#atlas-search-term', 'unsubmitted draft');
+  await page.click('#atlas-view-proteins');
+  assert.equal(new URL(page.url()).searchParams.get('q'), 'P18583');
+  await context.close();
+});
+
+test("record identity, full source export and hidden table columns retain scientific fields", async () => {
+  const context = await browser.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 720 } });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/atlas/detail/?id=P18583`);
+  await page.waitForSelector('[data-record-state="atlas"][data-state="ready"]');
+  assert.match(await page.locator('#atlas-protein-name').textContent(), /Protein SON/);
+  assert.equal((await page.locator('#atlas-gene-name').textContent()).trim(), 'SON');
+  const source = JSON.parse(await fs.readFile(path.join(ROOT,'public/static/data/atlas-records.json'),'utf8')).filter(record => record.accession === 'P18583');
+  const downloadEvent = page.waitForEvent('download'); await page.click('#atlas-download-record');
+  const download = await downloadEvent; const csv = await fs.readFile(await download.path(), 'utf8');
+  const Papa = require('papaparse'); const parsed = Papa.parse(csv, { header: true });
+  assert.equal(parsed.data.length, source.length);
+  assert.deepEqual(new Set(parsed.meta.fields), new Set(Object.keys(source[0])));
+  for (let i = 0; i < source.length; i++) for (const key of Object.keys(source[i])) assert.equal(parsed.data[i][key], String(source[i][key] ?? ''));
+  const tablePanel = page.locator('#atlas-all-fields');
+  await tablePanel.locator('.native-column-picker > summary').click();
+  const pickerBounds = await tablePanel.locator('.native-column-picker fieldset').boundingBox();
+  assert.ok(pickerBounds.y >= 0 && pickerBounds.y + pickerBounds.height <= 720, 'Column choices remain inside a short desktop viewport');
+  await tablePanel.getByLabel('condition', { exact: true }).uncheck();
+  await tablePanel.locator('.native-column-picker > summary').click();
+  const filteredEvent = page.waitForEvent('download'); await page.locator('[data-table-csv-for="detail3"]').click();
+  const filteredDownload = await filteredEvent; const filtered = Papa.parse(await fs.readFile(await filteredDownload.path(),'utf8'),{ header:true });
+  assert.equal(filtered.data[0].condition, source[0].condition);
+  await page.locator('[data-table-reset-for="detail3"]').click();
+  assert.equal(await page.evaluate(() => OglcnacTables.get('detail3').hiddenColumns.size), 0);
+  await page.goto(`${baseUrl}/ogt-pin/detail/?id=Q9H1M0`); await page.waitForSelector('[data-record-state="ogt-pin"][data-state="ready"]');
+  assert.equal(await page.locator('#ogt-gene-name').textContent(), 'NUP62CL');
+  assert.match(await page.locator('#ogt-protein-name').textContent(), /Nucleoporin/);
+  await context.close();
+});
+
+test("analysis examples populate inputs without submitting jobs", async () => {
+  const page = await browser.newPage();
+  await page.goto(`${baseUrl}/pred_dl/input_fasta/`);
+  await page.getByRole('button',{ name: 'Load mouse example', exact:true }).click();
+  await page.waitForFunction(() => document.getElementById('prediction-example-status').textContent.startsWith('Example loaded'));
+  assert.match(await page.locator('#message').inputValue(), /^>/);
+  assert.equal(await page.locator('#prediction-text-form input[value="mouse"]').isChecked(), true);
+  assert.equal(await page.locator('#prediction-status').isVisible(), false);
+  await page.goto(`${baseUrl}/hexnac-quest/analysis/`);
+  await page.click('#hexnac-example');
+  await page.waitForSelector('#hexnac-status[data-state="ready"]');
+  assert.match(await page.locator('#hexnac-input-name').textContent(), /example_input_data.csv/);
+  assert.equal(await page.locator('#hexnac-results-card').isVisible(), false);
+  assert.equal(await page.locator('#hexnac-run').isEnabled(), true);
+  await page.close();
 });

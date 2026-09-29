@@ -1,6 +1,6 @@
 
 
-<section class="prediction-input">
+<section class="prediction-input" id="prediction-input">
   <div class="container">
     <div class="page-heading">
       <h1>Predict <span class="nowrap">O-GlcNAc</span> sites</h1>
@@ -30,11 +30,9 @@
         <label for="message">FASTA protein sequences</label>
         <textarea required id="message" name="short_fasta" rows="6" maxlength="200000" class="form-control md-textarea" spellcheck="false" placeholder=">protein_name&#10;MST..."></textarea>
 
-        <div class="example-links">
-          <a href="/static/fasta/individual_protein_human.fasta" target="_blank" rel="noopener">Human example</a>
-          <a href="/static/fasta/individual_protein_mouse.fasta" target="_blank" rel="noopener">Mouse example</a>
-          <a href="/pred_dl/tutorial">Tutorial</a>
-        </div>
+        <div class="analysis-example-buttons" role="group" aria-label="Load example input"><button type="button" data-load-example="/static/fasta/individual_protein_human.fasta" data-example-target="#message" data-example-status="#prediction-example-status" data-example-species="human">Load human example</button><button type="button" data-load-example="/static/fasta/individual_protein_mouse.fasta" data-example-target="#message" data-example-status="#prediction-example-status" data-example-species="mouse">Load mouse example</button><a href="/pred_dl/tutorial/">Input guide</a></div>
+        <p class="analysis-example-status" id="prediction-example-status" role="status" aria-live="polite"></p>
+
 
         <button type="submit">Submit for prediction</button>
       </form>
@@ -76,6 +74,7 @@
       <div class="table-card-header">
         <h2 id="prediction-results-heading">Predicted O-GlcNAc sites</h2>
       </div>
+      <p class="analysis-result-context"><a href="#prediction-input" class="analysis-return-link">Edit input ↑</a> · <a href="/pred_dl/model-card/">Model &amp; interpretation</a></p>
       <div class="table-scroll" tabindex="0" role="region" aria-labelledby="prediction-results-heading">
         <table class="table results-table" id="prediction-results-table">
           <thead><tr><th>ID</th><th>Position</th><th>Residue</th><th>O-GlcNAc prediction score</th><th>Confidence level</th></tr></thead>

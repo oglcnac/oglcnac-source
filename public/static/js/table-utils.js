@@ -175,6 +175,7 @@
       this.initial = true;
       this.error = "";
       this.context = "";
+      this.hiddenColumns = new Set();
       this.buildControls();
       this.buildSortableHeaders();
       this.render();
@@ -204,7 +205,43 @@
       this.csvButton = button("Download filtered CSV", {
         "data-table-csv-for": this.table.id,
       });
-      actions.append(this.copyButton, this.csvButton);
+      this.resetButton = button("Reset table", { "data-table-reset-for": this.table.id });
+      actions.append(this.resetButton, this.copyButton, this.csvButton);
+      if (this.headers.length >= 8) {
+        const picker = browser.document.createElement("details");
+        picker.className = "native-column-picker";
+        const summary = browser.document.createElement("summary"); summary.textContent = "Columns";
+        const choices = browser.document.createElement("fieldset");
+        const legend = browser.document.createElement("legend"); legend.textContent = "Visible table columns";
+        choices.appendChild(legend);
+        this.columnInputs = this.headers.map((name, index) => {
+          const label = browser.document.createElement("label");
+          const input = browser.document.createElement("input"); input.type = "checkbox"; input.checked = true;
+          input.addEventListener("change", () => {
+            if (input.checked) this.hiddenColumns.delete(index); else this.hiddenColumns.add(index);
+            this.applyColumns(); this.updateOverflow();
+            this.resetButton.disabled = false;
+          });
+          label.append(input, browser.document.createTextNode(name)); choices.appendChild(label); return input;
+        });
+        const hint = browser.document.createElement("p"); hint.textContent = "CSV downloads include every field.";
+        choices.appendChild(hint); picker.append(summary, choices); actions.appendChild(picker);
+        const positionChoices = () => {
+          if (!picker.open) return;
+          const bounds = summary.getBoundingClientRect();
+          const header = browser.document.querySelector('.site-header');
+          const topEdge = Math.max(8, header ? header.getBoundingClientRect().bottom : 0);
+          const above = bounds.top - topEdge - 8;
+          const below = browser.innerHeight - bounds.bottom - 8;
+          const openAbove = below < 220 && above > below;
+          choices.style.top = openAbove ? 'auto' : 'calc(100% + 8px)';
+          choices.style.bottom = openAbove ? 'calc(100% + 8px)' : 'auto';
+          choices.style.maxHeight = `${Math.max(80, Math.min(360, openAbove ? above : below))}px`;
+        };
+        picker.addEventListener("toggle", positionChoices);
+        browser.addEventListener("resize", positionChoices);
+        picker.addEventListener("keydown", event => { if (event.key === "Escape") { picker.open = false; summary.focus(); } });
+      }
       controls.append(filterLabel, actions);
 
       if (this.options.mobileColumns) {
@@ -332,6 +369,9 @@
       });
       this.copyButton.addEventListener("click", () => this.copyVisibleRows());
       this.csvButton.addEventListener("click", () => this.downloadFilteredCsv());
+      this.resetButton.addEventListener("click", () => {
+        this.resetState(); this.render(); this.actionStatus.textContent = "Table filters, sort order, page size and columns reset.";
+      });
     }
 
     buildSortableHeaders() {
@@ -408,7 +448,14 @@
       this.sizeSelect.value = String(this.options.pageSize);
       this.sortColumn = null;
       this.sortDirection = "asc";
+      this.hiddenColumns.clear();
+      if (this.columnInputs) this.columnInputs.forEach(input => { input.checked = true; input.disabled = false; });
       return this;
+    }
+
+    applyColumns() {
+      Array.from(this.table.rows).forEach(row => Array.from(row.cells).forEach((cell, index) => { cell.hidden = this.hiddenColumns.has(index); }));
+      if (this.columnInputs) this.columnInputs.forEach((input, index) => { input.disabled = !this.hiddenColumns.has(index) && this.hiddenColumns.size === this.headers.length - 1; });
     }
 
     setLoading(message) {
@@ -445,6 +492,7 @@
         this.filterInput,
         this.copyButton,
         this.csvButton,
+        this.resetButton,
         this.previousButton,
         this.nextButton,
         this.sizeSelect,
@@ -478,6 +526,7 @@
         values.forEach((value) => renderCell(row, value));
       });
       this.renderCards();
+      this.applyColumns();
 
       if (this.error) {
         this.status.dataset.tableState = "error";
@@ -492,12 +541,13 @@
         const start = this.page * this.pageSize + 1;
         const end = start + this.visibleRows.length - 1;
         this.status.dataset.tableState = "ready";
-        this.status.textContent = `Showing ${start.toLocaleString()}–${end.toLocaleString()} of ${this.filteredRows.length.toLocaleString()} records.`;
+        this.status.textContent = `Showing ${start.toLocaleString()}–${end.toLocaleString()} of ${this.filteredRows.length.toLocaleString()} ${this.options.rowLabel || "records"}.`;
       }
       this.pageStatus.textContent = `Page ${this.page + 1} of ${pageCount}`;
       this.setControlsDisabled(false);
       this.copyButton.disabled = !this.visibleRows.length;
       this.csvButton.disabled = !this.filteredRows.length;
+      this.resetButton.disabled = !this.filterInput.value && this.sortColumn === null && !this.page && this.pageSize === this.options.pageSize && !this.hiddenColumns.size;
       this.previousButton.disabled = this.page === 0;
       this.nextButton.disabled = this.page + 1 >= pageCount;
       this.controls.hidden = !this.totalRows;

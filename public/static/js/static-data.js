@@ -59,14 +59,15 @@
       gene_name_a: "gene_name_a",
       uuid_b: "uuid_b",
       gene_name_b: "gene_name_b",
+      protein_name_b: "protein_name_b",
       species: "ncbi_id_b"
     };
     return record[allowed[field] || "gene_name_b"];
   }
 
   function parsePosition(value) {
-    const parsed = Number.parseInt(value, 10);
-    return Number.isFinite(parsed) ? parsed : null;
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
   }
 
   async function loadAtlasRecords() {

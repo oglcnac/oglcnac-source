@@ -272,28 +272,44 @@
     }
   }
 
-  elements.file.addEventListener("change", async () => {
-    const token = ++selectionToken;
+  async function loadInputFile(file, token = ++selectionToken) {
     if (worker) worker.terminate();
     worker = null;
     resetOutput();
-    const file = elements.file.files[0];
     elements.run.disabled = true;
     elements.cancel.disabled = true;
-    if (!file) {
-      setStatus("idle", "Choose a CSV file to begin.");
-      return;
-    }
+    document.getElementById("hexnac-input-name").textContent = file ? `Selected input: ${file.name}` : "";
+    if (!file) { setStatus("idle", "Choose a CSV file to begin."); return; }
     originalFilename = file.name;
-    if (file.size > 25 * 1024 * 1024) {
-      setStatus("error", "The selected CSV is larger than the 25 MB limit.");
-      return;
-    }
+    if (file.size > 25 * 1024 * 1024) { setStatus("error", "The selected CSV is larger than the 25 MB limit."); return; }
     setStatus("parsing", "Reading and validating the selected CSV…");
-    const selectionWorker = createWorker();
-    const buffer = await file.arrayBuffer();
-    if (token !== selectionToken || worker !== selectionWorker) return;
-    selectionWorker.postMessage({ type: "parse", buffer }, [buffer]);
+    try {
+      const selectionWorker = createWorker();
+      const buffer = await file.arrayBuffer();
+      if (token !== selectionToken || worker !== selectionWorker) return;
+      selectionWorker.postMessage({ type: "parse", buffer }, [buffer]);
+    } catch (error) {
+      if (token === selectionToken) setStatus("error", "The CSV could not be read. Select the file again to retry.");
+    }
+  }
+  elements.file.addEventListener("change", () => loadInputFile(elements.file.files[0]));
+  document.getElementById("hexnac-example").addEventListener("click", async event => {
+    const button = event.currentTarget;
+    const token = ++selectionToken;
+    if (worker) worker.terminate(); worker = null;
+    resetOutput(); elements.run.disabled = elements.cancel.disabled = true;
+    button.disabled = true; elements.file.value = "";
+    document.getElementById("hexnac-input-name").textContent = "";
+    setStatus("loading", "Loading example CSV…");
+    try {
+      const response = await fetch("/static/hexnac-quest/example_input_data.csv");
+      if (!response.ok) throw new Error("Example unavailable");
+      const blob = await response.blob();
+      if (token !== selectionToken) return;
+      await loadInputFile(new File([blob], "example_input_data.csv", { type: "text/csv" }), token);
+    } catch (error) {
+      if (token === selectionToken) setStatus("error", "The example could not be loaded. Try again or select your CSV.");
+    } finally { button.disabled = false; }
   });
 
   elements.run.addEventListener("click", () => {

@@ -1,4 +1,4 @@
-<section class="workbench-intro">
+<section class="workbench-intro" id="workbench-input">
   <div class="container workbench-intro-grid">
     <div><h1>O-GlcNAc Workbench</h1>
       <p class="page-lead">Predict sites and compare Atlas and OGT-PIN evidence. Your sequences stay in your browser.</p></div>
@@ -26,9 +26,9 @@
   <div id="workbench-error" class="alert alert-danger" role="alert" hidden></div>
 </div></section>
 <section id="workbench-results" class="content-section" hidden><div class="container"><div class="panel">
-  <div class="workbench-results-head"><div><h2>Candidate sites and evidence</h2><p id="workbench-summary"></p></div><div class="button-row"><button id="workbench-csv" type="button">Download all CSV</button><button id="workbench-json" type="button">Download all JSON</button></div></div>
+  <div class="workbench-results-head"><div><h2>Candidate sites and evidence</h2><p id="workbench-summary"></p></div><div class="button-row"><button id="workbench-csv" type="button">Download all CSV</button><button id="workbench-json" type="button">Download all JSON</button><a href="#workbench-input" class="analysis-return-link">Edit input ↑</a></div></div>
   <div id="workbench-site-map" class="workbench-site-map" aria-label="Per-protein candidate site map"></div>
-  <div class="workbench-results-controls"><div><label for="workbench-filter">Filter results</label><input id="workbench-filter" type="search" placeholder="Protein, position, evidence, or confidence"></div><button id="workbench-table-fields" type="button" aria-expanded="false" aria-controls="workbench-table">Show all fields</button></div><p id="workbench-filter-status" class="form-note" aria-live="polite"></p>
+  <div class="workbench-results-controls"><div><label for="workbench-filter">Filter results</label><input id="workbench-filter" type="search" placeholder="Protein, position, evidence, or confidence"></div><div><label for="workbench-evidence-filter">Evidence</label><select id="workbench-evidence-filter"><option value="">All candidate sites</option><option value="atlas">Atlas site match</option><option value="ogt">OGT interaction evidence</option><option value="either">Either evidence type</option></select></div><button id="workbench-reset-filter" type="button">Clear filters</button><button id="workbench-filtered-csv" type="button">Download filtered CSV</button><button id="workbench-table-fields" type="button" aria-expanded="false" aria-controls="workbench-table">Show all fields</button></div><p id="workbench-filter-status" class="form-note" aria-live="polite"></p>
   <div id="workbench-cards" class="workbench-cards" aria-label="Candidate sites"></div>
   <div class="table-scroll workbench-desktop-table" tabindex="0" role="region" aria-label="Workbench results"><table id="workbench-table"><thead><tr><th>Protein</th><th>Species</th><th>Length</th><th>Sequence check</th><th>Site</th><th>Window</th><th>Prediction score</th><th>Confidence</th><th>Model</th><th>Atlas</th><th>Atlas records</th><th>PMIDs</th><th>OGT-PIN</th><th>Evidence</th></tr></thead><tbody></tbody></table></div>
   <div class="workbench-pagination" aria-label="Result pages"><button id="workbench-previous" type="button">Previous</button><span id="workbench-page" aria-live="polite"></span><button id="workbench-next" type="button">Next</button></div>

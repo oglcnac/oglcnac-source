@@ -1,76 +1,106 @@
-  <script src="/static/js/static-data.js"></script>
-  <script src="/static/js/table-utils.js"></script>
-  <script>
-    const atlasSearchTable = window.OglcnacTables.create("search_result", {
-      mobileColumns: [0, 2, 3, 4],
-      filename: "oglcnac-atlas-search.csv"
-    });
-
-    function atlasSearchRow(record) {
-      const accession = record.accession || "";
-      return [
-        {
-          text: accession,
-          href: `/atlas/detail/?id=${encodeURIComponent(accession)}`,
-          strong: true
-        },
-        record.entry_name,
-        record.protein_name,
-        record.gene_name,
-        record.position_in_protein,
-        {
-          text: accession ? "UniProt" : "",
-          href: accession
-            ? `https://www.uniprot.org/uniprot/${encodeURIComponent(accession)}`
-            : "",
-          external: true
-        }
-      ];
+<script src="/static/js/static-data.js"></script>
+<script src="/static/js/table-utils.js"></script>
+<script src="/static/js/record-view.js"></script>
+<script>
+  const atlasView = window.OglcnacRecordView;
+  const atlasSearchTable = window.OglcnacTables.create("search_result", { mobileColumns: [0, 2, 3, 4], filename: "oglcnac-atlas-evidence-search.csv" });
+  const atlasProteinTable = window.OglcnacTables.create("atlas_proteins", { mobileColumns: [0, 1, 2, 3, 4, 5], filename: "oglcnac-atlas-proteins.csv", rowLabel: "protein entries", label: "Atlas protein" });
+  const atlasSearchForm = document.getElementById("atlas-search-form");
+  const atlasSearchParams = new URLSearchParams(window.location.search);
+  const atlasSpeciesFilter = document.getElementById("atlas-species-filter");
+  const atlasPositionFilter = document.getElementById("atlas-position-filter");
+  const atlasClearFilters = document.getElementById("atlas-clear-filters");
+  let atlasResults = [];
+  let activeAtlasQuery = null;
+  let searchGeneration = 0;
+  let atlasResultView = atlasSearchParams.get("view") === "evidence" ? "evidence" : "proteins";
+  document.getElementById("atlas-filter-disclosure").open = window.matchMedia("(min-width: 901px)").matches;
+  function atlasAccessionLink(accession) {
+    return { text: accession || "Not reported", href: accession ? `/atlas/detail/?id=${encodeURIComponent(accession)}` : "", strong: true };
+  }
+  function atlasSearchRow(record) {
+    const accession = record.accession || "";
+    return [atlasAccessionLink(accession), record.entry_name, record.protein_name, record.gene_name, record.position_in_protein,
+      { text: accession ? "UniProt" : "", href: accession ? `https://www.uniprot.org/uniprotkb/${encodeURIComponent(accession)}/entry` : "", external: true }];
+  }
+  function updateAtlasUrl() {
+    if (!activeAtlasQuery) return;
+    const params = new URLSearchParams(activeAtlasQuery);
+    if (atlasResultView === "evidence") params.set("view", "evidence");
+    if (atlasSpeciesFilter.value) params.set("species", atlasSpeciesFilter.value);
+    if (atlasPositionFilter.value) params.set("position", atlasPositionFilter.value);
+    window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+  }
+  function setAtlasView(view, save = true) {
+    atlasResultView = view;
+    document.getElementById("atlas-protein-results").hidden = view !== "proteins";
+    document.getElementById("atlas-evidence-results").hidden = view !== "evidence";
+    document.getElementById("atlas-view-proteins").setAttribute("aria-pressed", String(view === "proteins"));
+    document.getElementById("atlas-view-evidence").setAttribute("aria-pressed", String(view === "evidence"));
+    atlasProteinTable.updateOverflow(); atlasSearchTable.updateOverflow();
+    if (save && atlasSearchForm.q.value.trim()) updateAtlasUrl();
+  }
+  function renderAtlasResults() {
+    const records = atlasView.filterRecords(atlasResults, { species: atlasSpeciesFilter.value, position: atlasPositionFilter.value });
+    const proteins = atlasView.groupProteins(records);
+    atlasSearchTable.setRows(records.map(atlasSearchRow));
+    atlasProteinTable.setRows(proteins.map(protein => [atlasAccessionLink(protein.accession), protein.protein_name || "Not reported", protein.gene_name || "Not reported", protein.species || "Not reported", protein.positions.length, protein.recordCount]));
+    document.getElementById("atlas-protein-count").textContent = proteins.length.toLocaleString();
+    document.getElementById("atlas-evidence-count").textContent = records.length.toLocaleString();
+    document.getElementById("atlas-match-summary").textContent = `${proteins.length.toLocaleString()} protein ${proteins.length === 1 ? "entry" : "entries"} · ${records.length.toLocaleString()} matching evidence records`;
+    const count = Number(Boolean(atlasSpeciesFilter.value)) + Number(Boolean(atlasPositionFilter.value));
+    document.getElementById("atlas-filter-count").textContent = count ? `(${count} active)` : "";
+    atlasClearFilters.disabled = !count;
+  }
+  async function runAtlasSearch(event) {
+    if (event) event.preventDefault();
+    const generation = ++searchGeneration;
+    const term = atlasSearchForm.q.value.trim();
+    const field = atlasSearchForm.field.value;
+    if (!term) return;
+    [atlasSearchTable, atlasProteinTable].forEach(table => table.setLoading("Loading Atlas records…"));
+    document.getElementById("atlas-match-summary").textContent = "Loading matching proteins and evidence…";
+    document.getElementById("atlas-protein-count").textContent = "";
+    document.getElementById("atlas-evidence-count").textContent = "";
+    document.getElementById("atlas-filter-count").textContent = "";
+    atlasSpeciesFilter.disabled = atlasPositionFilter.disabled = atlasClearFilters.disabled = true;
+    document.body.classList.remove("atlas-query-pending");
+    try {
+      const results = await window.OglcnacStaticData.searchAtlas(term, field);
+      if (generation !== searchGeneration) return;
+      atlasResults = results;
+      activeAtlasQuery = { q: term, field };
+      const speciesCounts = new Map();
+      for (const record of results) {
+        const species = String(record.species || "").trim().toLowerCase();
+        if (species) speciesCounts.set(species, (speciesCounts.get(species) || 0) + 1);
+      }
+      atlasSpeciesFilter.replaceChildren(new Option("All species", ""));
+      for (const [species, count] of [...speciesCounts].sort((a,b) => b[1] - a[1])) atlasSpeciesFilter.add(new Option(`${species} (${count.toLocaleString()})`, species));
+      atlasPositionFilter.value = "";
+      if (!event) {
+        if (speciesCounts.has(atlasSearchParams.get("species"))) atlasSpeciesFilter.value = atlasSearchParams.get("species");
+        if (["reported", "unreported"].includes(atlasSearchParams.get("position"))) atlasPositionFilter.value = atlasSearchParams.get("position");
+      }
+      atlasSpeciesFilter.disabled = atlasPositionFilter.disabled = !results.length;
+      renderAtlasResults(); updateAtlasUrl();
+    } catch (error) {
+      if (generation !== searchGeneration) return;
+      atlasResults = [];
+      activeAtlasQuery = null;
+      [atlasSearchTable, atlasProteinTable].forEach(table => table.setError("Atlas records could not be loaded. Please try again."));
+      document.getElementById("atlas-match-summary").textContent = "Search is unavailable. Submit your search again to retry.";
     }
-
-    let searchGeneration = 0;
-    async function runAtlasSearch(event) {
-      if (event) {
-        event.preventDefault();
-      }
-      const form = document.getElementById("atlas-search-form");
-      const generation = ++searchGeneration;
-      const term = form.q.value.trim();
-      const field = form.field.value;
-      if (!term) {
-        atlasSearchTable.setRows([]);
-        document.body.classList.remove("atlas-query-pending");
-        return;
-      }
-      atlasSearchTable.setLoading("Loading Atlas records…");
-      document.body.classList.remove("atlas-query-pending");
-      try {
-        const results = await window.OglcnacStaticData.searchAtlas(term, field);
-        if (generation !== searchGeneration) return;
-        atlasSearchTable.setRows(results.map(atlasSearchRow), {
-          preserveState: false
-        });
-        window.history.replaceState(
-          {},
-          "",
-          `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`
-        );
-      } catch (error) {
-        if (generation !== searchGeneration) return;
-        atlasSearchTable.setError(
-          "Atlas records could not be loaded. Please try again."
-        );
-      }
-    }
-
-    const atlasSearchForm = document.getElementById("atlas-search-form");
-    atlasSearchForm.addEventListener("submit", runAtlasSearch);
-    const atlasSearchParams = new URLSearchParams(window.location.search);
-    if (atlasSearchParams.get("q")) {
-      atlasSearchForm.q.value = atlasSearchParams.get("q");
-      if (atlasSearchParams.get("field")) {
-        atlasSearchForm.field.value = atlasSearchParams.get("field");
-      }
-      runAtlasSearch();
-    }
-  </script>
+  }
+  for (const input of [atlasSpeciesFilter, atlasPositionFilter]) input.addEventListener("change", () => { renderAtlasResults(); updateAtlasUrl(); });
+  atlasClearFilters.addEventListener("click", () => { atlasSpeciesFilter.value = atlasPositionFilter.value = ""; renderAtlasResults(); updateAtlasUrl(); });
+  document.getElementById("atlas-view-proteins").addEventListener("click", () => setAtlasView("proteins"));
+  document.getElementById("atlas-view-evidence").addEventListener("click", () => setAtlasView("evidence"));
+  atlasSearchForm.addEventListener("submit", runAtlasSearch);
+  setAtlasView(atlasResultView, false);
+  if (atlasSearchParams.get("q")) {
+    atlasSearchForm.q.value = atlasSearchParams.get("q");
+    if ([...atlasSearchForm.field.options].some(option => option.value === atlasSearchParams.get("field"))) atlasSearchForm.field.value = atlasSearchParams.get("field");
+    runAtlasSearch();
+  }
+</script>

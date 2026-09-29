@@ -1,182 +1,66 @@
-
-
-
-<section class="detail-search-strip" aria-label="Search another Atlas record">
-  <div class="container">
-    <form action="/atlas/search/" method="get" class="search-form">
-      <div class="form-field">
-        <label for="atlas-detail-search-term">Search term</label>
-        <input id="atlas-detail-search-term" type="search" required class="form-control" name="q">
-      </div>
-      <div class="form-field">
-        <label for="atlas-detail-search-field">Search field</label>
-        <select id="atlas-detail-search-field" class="form-control" name="field">
-          <option value="accession">Accession</option>
-          <option value="protein_name">Protein name</option>
-          <option value="gene_name">Gene name</option>
-          <option value="peptide_seq">Peptide sequence</option>
-        </select>
-      </div>
-      <button type="submit">Search Atlas</button>
-    </form>
-  </div>
+<section class="detail-search-strip atlas-query-bar" aria-label="Search another Atlas record">
+  <div class="container"><form action="/atlas/search/" method="get" class="search-form">
+    <div class="form-field"><label for="atlas-detail-search-term">Search term</label><input id="atlas-detail-search-term" type="search" required class="form-control" name="q" placeholder="Search another protein"></div>
+    <div class="form-field"><label for="atlas-detail-search-field">Search field</label><select id="atlas-detail-search-field" class="form-control" name="field"><option value="accession">Accession</option><option value="protein_name">Protein name</option><option value="gene_name">Gene name</option><option value="peptide_seq">Peptide sequence</option><option value="species">Species</option></select></div>
+    <button type="submit">Search Atlas</button>
+  </form></div>
 </section>
 <section class="detail-page atlas-detail-page">
-  <div class="container">
-    <div class="detail-hero">
-      <p class="section-label">O-GlcNAcAtlas record</p>
-      <h1 id="atlas-accession-title">Find an Atlas record</h1>
-      <p>Protein sequence and curated O-GlcNAcylation evidence for this accession.</p>
-    </div>
-
-    <div class="detail-section" hidden>
-      <div class="detail-section-heading">
-        <span>Sequence</span>
-        <h2>Protein sequence</h2>
-      </div>
-      <details class="sequence-disclosure"><summary>View protein sequence <span id="sequence-summary"></span></summary>
-      <p>Curated positions are highlighted in red and underlined.</p>
-      <pre id="protein-sequence" class="sequence-viewer" tabindex="0" role="region" aria-label="Protein sequence with curated modification sites">Loading protein sequence…</pre></details>
-    </div>
-
+ <div class="container record-layout">
+  <nav class="record-section-nav" aria-label="Record sections"><details><summary>On this record</summary><div class="section-index-links">
+    <a href="#atlas-overview">Overview</a><a href="#atlas-sequence">Sequence</a><a href="#atlas-peptides">Peptides</a><a href="#atlas-evidence">Experimental evidence</a><a href="#atlas-publications">Publications</a><a href="#atlas-all-fields">All record fields</a>
+  </div></details><p>O-GlcNAcAtlas 5.0<br><a href="/atlas/tutorial/">Interpret this record</a></p></nav>
+  <div class="record-main">
+   <header class="detail-hero record-overview" id="atlas-overview">
+    <p class="record-breadcrumb"><a href="/atlas/">O-GlcNAcAtlas</a><span aria-hidden="true">/</span>Protein record</p>
+    <h1 id="atlas-accession-title">Find an Atlas record</h1>
+    <p class="record-subtitle" id="atlas-entry-name">Curated O-GlcNAcylation evidence.</p>
+    <dl class="record-identity" id="atlas-identity" hidden>
+      <div><dt>Protein</dt><dd id="atlas-protein-name"></dd></div><div><dt>Species</dt><dd id="atlas-species"></dd></div>
+      <div><dt>Gene</dt><dd id="atlas-gene-name"></dd></div><div><dt>Sequence length</dt><dd id="atlas-length">Loading sequence…</dd></div>
+    </dl>
+    <div class="record-actions" id="atlas-record-actions" hidden><button type="button" id="atlas-download-record">Download complete record</button><a id="atlas-uniprot-link" href="https://www.uniprot.org/">View in UniProt <span aria-hidden="true">↗</span></a><a href="#atlas-publications">Source publications</a></div>
+   </header>
+   <section class="detail-section" id="atlas-sequence" hidden>
+    <div class="detail-section-heading"><h2>Protein sequence</h2></div>
+    <details class="sequence-disclosure"><summary>View protein sequence <span id="sequence-summary"></span></summary><p>Reported positions are underlined in red. Site ambiguity is recorded with the experimental evidence.</p><pre id="protein-sequence" class="sequence-viewer" tabindex="0" role="region" aria-label="Protein sequence with curated modification sites">Loading protein sequence…</pre></details>
+   </section>
+   <section class="detail-section" id="atlas-peptides" hidden>
+    <div class="detail-section-heading"><h2>Peptide information</h2></div>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas peptide information table"><table class="table detail-table" id="detail1"><thead><tr><th>ID</th><th>Peptide Seq</th><th>Site Residue</th><th>Position in Peptide</th><th>Position in Protein</th></tr></thead><tbody id="atlas-peptide-rows"></tbody></table></div>
+   </section>
+   <section class="detail-section" id="atlas-evidence" hidden>
+    <div class="detail-section-heading"><h2>Experimental evidence</h2></div>
+    <p class="record-section-note">Each row retains its reported method, sample context, ambiguity, and source publication.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas O-GlcNAcylation evidence table"><table class="table detail-table" id="detail2"><thead><tr><th>ID</th><th>Method</th><th>Analytical Throughput</th><th>Ambiguity</th><th>Species</th><th>Sample Type</th><th>Condition</th><th>log2Ratio</th><th>P Value</th><th>Data Source PMID</th><th>Comments</th></tr></thead><tbody id="atlas-evidence-rows"></tbody></table></div>
+   </section>
+   <section class="detail-section record-publications" id="atlas-publications" hidden><div class="detail-section-heading"><h2>Source publications</h2></div><p id="atlas-publication-summary"></p><ul id="atlas-publication-list"></ul><a href="/citations/">How to cite O-GlcNAcAtlas</a></section>
+   <section class="detail-section detail-export-section" id="atlas-all-fields" hidden>
+    <div class="detail-section-heading"><h2>All record fields</h2></div><p class="detail-help">This table retains every field in the source records. Its CSV includes all fields, including columns hidden from view.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="All curated Atlas fields table"><table class="table detail-table" id="detail3"><thead><tr></tr></thead><tbody id="atlas-export-rows"></tbody></table></div>
+   </section>
+  </div>
+ </div>
+</section>
 <script src="/static/js/static-data.js"></script>
 <script src="/static/js/table-utils.js"></script>
+<script src="/static/js/record-view.js"></script>
 <script>
   const detailParams = new URLSearchParams(window.location.search);
   const detailPath = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "");
   const ATLAS_ACCESSION = (detailParams.get("id") || (!["detail", "index.html"].includes(detailPath) ? detailPath : "")).trim();
   document.getElementById("atlas-accession-title").textContent = ATLAS_ACCESSION || "Find an Atlas record";
-
+  function escapeHtml(value) { return String(value || "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char])); }
   function formatSequence(seq, positions) {
-      const lines = seq.split("\n");
-      let formatted = "";
-      if (lines.length > 0) {
-          formatted += `${escapeHtml(lines[0])}<br>`;
-      }
-      const sequenceBody = lines.slice(1).join("").replace(/\s/g, "");
-      let count = 0;
-      for (let i = 0; i < sequenceBody.length; i++) {
-          let char = escapeHtml(sequenceBody[i]);
-          if (positions.includes(i + 1)) {
-              char = `<span class="sequence-site">${char}</span>`;
-          }
-          formatted += char;
-          count++;
-          if (count % 10 === 0) {
-              formatted += " ";
-          }
-          if (count % 100 === 0) {
-              formatted += "<br>";
-          }
-      }
-      return formatted.trim();
-  }
-
-  function escapeHtml(value) {
-    return String(value || "").replace(/[&<>"']/g, (char) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[char]));
+    const lines = seq.split("\n"), sites = new Set(positions);
+    let formatted = escapeHtml(lines[0] || "") + "<br>";
+    const body = lines.slice(1).join("").replace(/\s/g, "");
+    for (let i = 0; i < body.length; i++) {
+      const char = escapeHtml(body[i]);
+      formatted += sites.has(i + 1) ? `<span class="sequence-site">${char}</span>` : char;
+      if ((i + 1) % 10 === 0) formatted += " ";
+      if ((i + 1) % 100 === 0) formatted += "<br>";
+    }
+    return formatted.trim();
   }
 </script>
-
-
-
-
-
-    <div class="detail-section" hidden>
-      <div class="detail-section-heading">
-        <span>Peptides</span>
-        <h2 id="atlas-peptides">Peptide information</h2>
-      </div>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas peptide information table">
-      <table class="table detail-table" id="detail1">
-        <thead class="thead-inverse">
-          <tr>
-            <th>ID</th>
-            <th>Peptide Seq</th>
-            <th>Site Residue</th>
-            <th>Position in Peptide</th>
-            <th>Position in Protein</th>
-          </tr>
-        </thead>
-        <tbody id="atlas-peptide-rows"></tbody>
-      </table>
-      </div>
-    </div>
-
-    <div class="detail-section" hidden>
-      <div class="detail-section-heading">
-        <span>Evidence</span>
-        <h2 id="atlas-evidence">O-GlcNAcylation information</h2>
-      </div>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas O-GlcNAcylation evidence table">
-      <table class="table detail-table" id="detail2">
-        <thead class="thead-inverse">
-          <tr>
-            <th>ID</th>
-            <th>Method</th>
-            <th>Analytical Throughput</th>
-            <th>Ambiguity</th>
-            <th>Species</th>
-            <th>Sample Type</th>
-            <th>Condition</th>
-            <th>log2Ratio</th>
-            <th>P Value</th>
-            <th>Data Source PMID</th>
-            <th>Comments</th>
-          </tr>
-        </thead>
-        <tbody id="atlas-evidence-rows"></tbody>
-      </table>
-      </div>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="detail-section detail-export-section" id="atlas-all-fields" hidden>
-      <div class="detail-section-heading">
-        <span>Export</span>
-        <h2>All curated fields</h2>
-      </div>
-      <p class="detail-help">Use the controls below to download the complete record fields.</p>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="All curated Atlas fields table">
-      <table class="table detail-table" id="detail3">
-        <thead class="thead-inverse">
-          <tr>
-            <th>ID</th>
-            <th>Peptide Seq</th>
-            <th>Site Residue</th>
-            <th>Position in Peptide</th>
-            <th>Position in Protein</th>
-            <th>Method</th>
-            <th>Analytical Throughput</th>
-            <th>Ambiguity</th>
-            <th>Species</th>
-            <th>Sample Type</th>
-            <th>Data Source PMID</th>
-            <th>Comments</th>
-          </tr>
-        </thead>
-        <tbody id="atlas-export-rows"></tbody>
-      </table>
-      </div>
-    </div>
-  </div>
-</section>

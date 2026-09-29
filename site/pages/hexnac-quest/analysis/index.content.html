@@ -1,5 +1,5 @@
 
-    <header class="hq-page-heading hq-analysis-heading">
+    <header class="hq-page-heading hq-analysis-heading" id="hexnac-input">
       <div class="hq-container">
         <h1>Analyze oxonium-ion intensities</h1>
         <p>Select one CSV with the columns <code>id,f126,f138,f144,f168,f186</code>. Headers may be reordered and extra columns are ignored.</p>
@@ -10,14 +10,15 @@
       <div class="hq-container">
         <div class="hq-card hq-upload-card">
           <div>
-            <label class="hq-file-label" for="hexnac-file">Input CSV</label>
+            <div class="analysis-input-heading"><label class="hq-file-label" for="hexnac-file">Input CSV</label><button id="hexnac-example" class="hq-button" type="button">Load example</button></div>
             <input id="hexnac-file" type="file" accept=".csv,text/csv" aria-describedby="hexnac-file-help">
             <p class="hq-help" id="hexnac-file-help">Maximum 25 MB and 250,000 data rows. <a href="/static/hexnac-quest/example_input_data.csv" download>Download example CSV</a> · <a href="/hexnac-quest/tutorial/">Input guide</a></p>
           </div>
+          <p id="hexnac-input-name" class="hq-help"></p>
           <div class="hq-actions">
             <button id="hexnac-run" class="hq-button hq-button-primary" type="button" disabled>Run prediction</button>
             <button id="hexnac-cancel" class="hq-button" type="button" disabled>Cancel</button>
-            <button id="hexnac-download" class="hq-button" type="button" disabled>Download results</button>
+            <button id="hexnac-download" class="hq-button" type="button" disabled>Download all results</button>
           </div>
           <div id="hexnac-status" class="hq-status" role="status" aria-live="polite" data-state="idle"></div>
           <progress id="hexnac-progress" max="1" value="0" aria-label="Prediction progress"></progress>
@@ -36,7 +37,7 @@
           <div><span data-summary="galnac">0</span><strong>GalNAc</strong></div>
         </div>
         <div class="hq-card">
-          <h2>Prediction results</h2>
+          <div class="analysis-input-heading"><h2>Prediction results</h2><a href="#hexnac-input" class="analysis-return-link">Edit input ↑</a></div>
           <div class="hq-table-wrap table-scroll" tabindex="0" role="region" aria-label="HexNAcQuest prediction results">
             <p class="hq-scroll-note">Scroll horizontally to view all intensity columns.</p>
             <table class="hq-table"><thead><tr><th>pred_outcome</th><th>id</th><th>f126</th><th>f138</th><th>f144</th><th>f168</th><th>f186</th></tr></thead><tbody id="hexnac-results-body"></tbody></table>

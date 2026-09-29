@@ -1,6 +1,6 @@
 
 
-<section class="detail-search-strip" aria-label="Search another OGT-PIN record">
+<section class="detail-search-strip atlas-query-bar" aria-label="Search another OGT-PIN record">
   <div class="container">
     <form action="/ogt-pin/search/" method="get" class="search-form">
       <div class="form-field">
@@ -10,10 +10,11 @@
       <div class="form-field">
         <label for="ogt-pin-detail-search-field">Search field</label>
         <select id="ogt-pin-detail-search-field" class="form-control" name="field">
-          <option value="gene_name_b">Gene name for interactor B</option>
-          <option value="uuid_b">Unique identifier for interactor B</option>
-          <option value="gene_name_a">Gene name for interactor A</option>
-          <option value="uuid_a">Unique identifier for interactor A</option>
+          <option value="gene_name_b">Interactor gene</option>
+          <option value="protein_name_b">Interactor protein name</option>
+          <option value="uuid_b">Interactor accession</option>
+          <option value="gene_name_a">Partner gene</option>
+          <option value="uuid_a">Partner accession</option>
           <option value="species">Species</option>
         </select>
       </div>
@@ -22,36 +23,20 @@
   </div>
 </section>
 <section class="detail-page interactome-detail-page">
-  <div class="container">
-    <div class="detail-hero">
-      <p class="section-label">OGT-PIN record</p>
-      <h1 id="interactome-title">Find an interaction record</h1>
-      <p>Curated OGT interaction evidence for this interactor.</p>
-    </div>
-
-    <div class="detail-section" hidden>
-      <div class="detail-section-heading">
-        <span>Interactome</span>
-        <h2>Interaction information</h2>
-      </div>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="OGT-PIN interaction evidence table">
-      <table class="table hover compact detail-table" id="interactome">
-        <thead class="thead-inverse">
-          <tr>
-            <th>Unique identifier for interactor B</th>
-            <th>Alternative identifier for interactor B</th>
-            <th>Interaction detection method</th>
-            <th>PMID</th>
-            <th>Analytic throughput</th>
-            <th>Source</th>
-            <th>Curator comments</th>
-            <th>Meeting IMEx criteria</th>
-            <th>High-stringency interactor</th>
-          </tr>
-        </thead>
-        <tbody id="interactome-detail-rows"></tbody>
-      </table>
-      </div>
-    </div>
+ <div class="container record-layout">
+  <nav class="record-section-nav" aria-label="Record sections"><details><summary>On this record</summary><div class="section-index-links"><a href="#ogt-overview">Overview</a><a href="#ogt-evidence">Interaction evidence</a><a href="#ogt-publications">Publications</a></div></details><p>OGT Protein Interaction Network<br><a href="/ogt-pin/tutorial/">Interpret this record</a></p></nav>
+  <div class="record-main">
+   <header class="detail-hero record-overview" id="ogt-overview">
+    <p class="record-breadcrumb"><a href="/ogt-pin/">OGT-PIN</a><span aria-hidden="true">/</span>Interaction record</p>
+    <h1 id="interactome-title">Find an interaction record</h1>
+    <p class="record-subtitle">Curated interaction evidence with OGT.</p>
+    <dl class="record-identity" id="ogt-identity" hidden><div><dt>Protein</dt><dd id="ogt-protein-name"></dd></div><div><dt>Species</dt><dd id="ogt-species"></dd></div><div><dt>Gene</dt><dd id="ogt-gene-name"></dd></div><div><dt>Partner</dt><dd id="ogt-partner"></dd></div></dl>
+    <div class="record-actions" id="ogt-record-actions" hidden><button type="button" id="ogt-download-record">Download complete record</button><a id="ogt-uniprot-link" href="https://www.uniprot.org/">View in UniProt <span aria-hidden="true">↗</span></a><a href="#ogt-publications">Source publications</a></div>
+   </header>
+   <section class="detail-section" id="ogt-evidence" hidden><div class="detail-section-heading"><h2>Interaction evidence</h2></div><p class="record-section-note">Evidence retains its detection method, source, and curator annotations. An OGT interaction does not establish a modification site.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="OGT-PIN interaction evidence table"><table class="table detail-table" id="interactome"><thead><tr><th>Interactor accession</th><th>Alternative identifier</th><th>Interaction detection method</th><th>PMID</th><th>Analytic throughput</th><th>Source</th><th>Curator comments</th><th>Meeting IMEx criteria</th><th>High-stringency interactor</th></tr></thead><tbody id="interactome-detail-rows"></tbody></table></div>
+   </section>
+   <section class="detail-section record-publications" id="ogt-publications" hidden><div class="detail-section-heading"><h2>Source publications</h2></div><p id="ogt-publication-summary"></p><ul id="ogt-publication-list"></ul><a href="/citations/">How to cite OGT-PIN</a></section>
   </div>
+ </div>
 </section>

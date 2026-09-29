@@ -1,6 +1,6 @@
 <header class="site-header">
   <div class="site-header-inner">
-    <a class="site-brand" href="/"{{HOME_CURRENT}}>oglcnac.org</a>
+    <a class="site-brand" href="/"{{HOME_CURRENT}}><span class="site-brand-mark" aria-hidden="true">O</span><span>oglcnac.org</span></a>
     <details class="site-nav-disclosure" open>
       <summary>Menu</summary>
       <div class="site-nav-panel">
@@ -9,6 +9,20 @@
         </nav>
         <a class="site-workbench-link" href="/analysis/"{{WORKBENCH_CURRENT}}>Workbench</a>
 {{SECTION_NAV}}
+      </div>
+    </details>
+    <details class="site-search-disclosure" id="site-search">
+      <summary aria-label="Search databases" title="Search databases (/) ">Search <span aria-hidden="true">/</span></summary>
+      <div class="site-search-panel">
+        <form id="site-search-form" action="/atlas/search/" method="get" role="search" aria-label="Search curated databases">
+          <div class="site-search-heading"><strong>Search curated data</strong><button type="button" id="site-search-close" aria-label="Close database search">×</button></div>
+          <div class="site-search-options">
+            <div><label for="site-search-resource">Database</label><select id="site-search-resource"><option value="atlas">O-GlcNAcAtlas</option><option value="ogt-pin">OGT-PIN</option></select></div>
+            <div><label for="site-search-field">Search by</label><select id="site-search-field" name="field"><option value="accession">Accession</option><option value="gene_name">Gene name</option><option value="protein_name">Protein name</option><option value="peptide_seq">Peptide sequence</option><option value="species">Species</option></select></div>
+          </div>
+          <label for="site-search-term">Search term</label><div class="site-search-submit"><input id="site-search-term" name="q" type="search" required autocomplete="off" placeholder="e.g. P18583"><button type="submit">Search</button></div>
+          <p class="site-search-help">Search experimental records. For sequence prediction, <a href="/analysis/">open Workbench</a>.</p>
+        </form>
       </div>
     </details>
   </div>

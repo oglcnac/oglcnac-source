@@ -7,7 +7,7 @@ const playwright = require("playwright");
 const { AxeBuilder } = require("@axe-core/playwright");
 
 const ROOT = path.resolve(__dirname, "../..");
-const STATIC_ROOT = path.join(ROOT, "dist");
+const STATIC_ROOT = process.env.SITE_STATIC_ROOT || path.join(ROOT, "dist");
 const routes = require(path.join(ROOT, "site/site.json")).pages.filter(page => process.env.ACCESSIBILITY_INCLUDE_PREVIEW === "1" || !page.route.startsWith("/research/")).map((page) => page.output === "404.html" ? "/404.html" : page.route);
 const MIME = { ".css": "text/css", ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png" };
 let server; let browser; let baseUrl;
@@ -81,7 +81,7 @@ for (const viewport of viewports) {
 // The useful scientific answer and recovery states must be audited, not just
 // the initial empty forms. Capture fixtures are shared with the visual review.
 const auditedStates = require("../capture_screenshots.js").captures.filter((capture) =>
-  /search-results|search-empty|search-error|^atlas-detail$|^ogt-pin-detail$|pred-dl-result|pred-dl-error|hexnac-result|hexnac-error|publication-figures/.test(capture.name)
+  /search-results|search-empty|search-error|^atlas-detail$|^ogt-pin-detail$|pred-dl-result|pred-dl-error|hexnac-result|hexnac-error|publication-figures|global-search-open|atlas-evidence-results|atlas-filtered-results|loaded-example|guide-contents-open|atlas-columns-open/.test(capture.name)
 );
 for (const viewport of viewports) {
   for (const state of auditedStates) {

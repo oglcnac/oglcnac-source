@@ -64,7 +64,7 @@ test("filters displayed rows and exports the full versioned JSON schema", { time
   await page.waitForSelector("#workbench-table tbody tr", { timeout: 120000 });
   await page.fill("#workbench-filter", "identifier unavailable");
   assert.equal(await page.locator("#workbench-table tbody tr").count(), 0);
-  assert.match(await page.locator("#workbench-filter-status").textContent(), /0 of \d+ rows shown\. Downloads include all rows\./);
+  assert.match(await page.locator("#workbench-filter-status").textContent(), /0 of \d+ rows shown\. Full CSV\/JSON downloads include all rows\./);
   const downloadPromise = page.waitForEvent("download");
   await page.click("#workbench-json");
   const download = await downloadPromise;
@@ -72,6 +72,19 @@ test("filters displayed rows and exports the full versioned JSON schema", { time
   const rows = JSON.parse(content);
   assert.ok(rows.length > 0);
   assert.deepEqual(Object.keys(rows[0]), ["protein_id", "species", "sequence_length", "sequence_verification", "position", "residue", "sequence_window", "prediction_score", "confidence_band", "model_version", "atlas_status", "atlas_record_count", "atlas_pmids", "ogt_pin_status", "ogt_pin_evidence_count"]);
+  assert.equal(await page.locator("#workbench-filtered-csv").isDisabled(), true);
+  await page.click("#workbench-reset-filter");
+  await page.selectOption("#workbench-evidence-filter", "atlas");
+  const expected = rows.filter(row => row.atlas_record_count > 0);
+  assert.ok(expected.length > 0 && expected.length < rows.length);
+  const filteredDownload = page.waitForEvent("download");
+  await page.click("#workbench-filtered-csv");
+  const filtered = require("papaparse").parse(await fs.readFile(await (await filteredDownload).path(), "utf8"), { header: true, skipEmptyLines: true });
+  assert.deepEqual(filtered.data.map(row => Number(row.position)), expected.map(row => row.position));
+  assert.ok(filtered.data.every(row => Number(row.atlas_record_count) > 0));
+  await page.click("#workbench-reset-filter");
+  assert.equal(await page.inputValue("#workbench-evidence-filter"), "");
+  assert.match(await page.locator("#workbench-filter-status").textContent(), new RegExp(`${rows.length} of ${rows.length} rows shown`));
   await page.close();
 });
 

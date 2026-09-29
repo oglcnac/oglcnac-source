@@ -55,14 +55,27 @@
     return `<article class="workbench-site-card"><div class="workbench-site-card-head"><h3>${row.residue}${row.position}</h3><span class="workbench-score">${row.prediction_score.toFixed(3)}<small>Prediction score</small></span></div><p class="workbench-card-protein">${escapeHtml(row.protein_id)}</p><dl class="workbench-card-summary"><div><dt>Confidence</dt><dd>${escapeHtml(row.confidence_band)}</dd></div><div><dt>Atlas</dt><dd>${escapeHtml(row.atlas_status)} · ${row.atlas_record_count} record${row.atlas_record_count === 1 ? "" : "s"}</dd></div><div><dt>OGT-PIN</dt><dd>${escapeHtml(row.ogt_pin_status)} · ${row.ogt_pin_evidence_count} record${row.ogt_pin_evidence_count === 1 ? "" : "s"}</dd></div></dl><details><summary>Sequence and evidence details</summary><dl class="workbench-card-details"><div><dt>Species</dt><dd>${escapeHtml(row.species)}</dd></div><div><dt>Protein length</dt><dd>${row.sequence_length} residues</dd></div><div><dt>Sequence check</dt><dd>${escapeHtml(row.sequence_verification)}</dd></div><div><dt>Sequence window</dt><dd><code>${escapeHtml(row.sequence_window)}</code></dd></div><div><dt>Prediction model</dt><dd>${escapeHtml(row.model_version)}</dd></div><div><dt>Atlas PMIDs</dt><dd>${row.atlas_pmids.length ? escapeHtml(row.atlas_pmids.join("; ")) : "Not reported"}</dd></div></dl></details></article>`;
   }
 
+  function filteredRows() {
+    const query = byId("workbench-filter").value.trim().toLowerCase();
+    const evidence = byId("workbench-evidence-filter").value;
+    return allRows.filter(row => {
+      if (!Object.values(row).flat().join(" ").toLowerCase().includes(query)) return false;
+      if (evidence === "atlas") return row.atlas_record_count > 0;
+      if (evidence === "ogt") return row.ogt_pin_evidence_count > 0;
+      if (evidence === "either") return row.atlas_record_count > 0 || row.ogt_pin_evidence_count > 0;
+      return true;
+    });
+  }
   function renderRows() {
     const query = byId("workbench-filter").value.trim().toLowerCase();
-    const filtered = allRows.filter((row) => Object.values(row).flat().join(" ").toLowerCase().includes(query));
+    const filtered = filteredRows();
+    byId("workbench-filtered-csv").disabled = !filtered.length;
+    byId("workbench-reset-filter").disabled = !query && !byId("workbench-evidence-filter").value;
     const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     resultPage = Math.min(resultPage, pageCount - 1);
     const rows = filtered.slice(resultPage * PAGE_SIZE, (resultPage + 1) * PAGE_SIZE);
     const scope = filtered.length > PAGE_SIZE ? ` Showing ${resultPage * PAGE_SIZE + 1}–${Math.min((resultPage + 1) * PAGE_SIZE, filtered.length)}.` : "";
-    byId("workbench-filter-status").textContent = `${filtered.length.toLocaleString()} of ${allRows.length.toLocaleString()} rows shown. Downloads include all rows.${scope}`;
+    byId("workbench-filter-status").textContent = `${filtered.length.toLocaleString()} of ${allRows.length.toLocaleString()} rows shown. Full CSV/JSON downloads include all rows.${scope}`;
     byId("workbench-table").querySelector("tbody").innerHTML = rows.map((row) => `<tr><td>${escapeHtml(row.protein_id)}</td><td>${row.species}</td><td>${row.sequence_length}</td><td>${escapeHtml(row.sequence_verification)}</td><td>${row.residue}${row.position}</td><td><code>${escapeHtml(row.sequence_window)}</code></td><td>${row.prediction_score.toFixed(3)}</td><td>${escapeHtml(row.confidence_band)}</td><td>${escapeHtml(row.model_version)}</td><td>${escapeHtml(row.atlas_status)}</td><td>${row.atlas_record_count}</td><td>${escapeHtml(row.atlas_pmids.join("; "))}</td><td>${escapeHtml(row.ogt_pin_status)}</td><td>${row.ogt_pin_evidence_count}</td></tr>`).join("");
     byId("workbench-cards").innerHTML = rows.map(siteCard).join("");
     byId("workbench-previous").disabled = resultPage === 0;
@@ -91,6 +104,7 @@
     byId("workbench-summary").textContent = `${allRows.length.toLocaleString()} candidate S/T sites across ${records.length.toLocaleString()} protein record${records.length === 1 ? "" : "s"}.`;
     resultPage = 0;
     byId("workbench-filter").value = "";
+    byId("workbench-evidence-filter").value = "";
     renderSiteMap(allRows);
     renderRows();
     byId("workbench-results").hidden = false;
@@ -157,6 +171,9 @@
       }
     });
     byId("workbench-filter").addEventListener("input", () => { resultPage = 0; renderRows(); });
+    byId("workbench-evidence-filter").addEventListener("change", () => { resultPage = 0; renderRows(); });
+    byId("workbench-reset-filter").addEventListener("click", () => { byId("workbench-filter").value = ""; byId("workbench-evidence-filter").value = ""; resultPage = 0; renderRows(); });
+    byId("workbench-filtered-csv").addEventListener("click", () => download("oglcnac-workbench-filtered.csv", "text/csv", window.OglcnacWorkbenchCore.toCsv(filteredRows())));
     byId("workbench-table-fields").addEventListener("click", () => {
       const expanded = byId("workbench-table").classList.toggle("show-all-fields");
       byId("workbench-table-fields").setAttribute("aria-expanded", String(expanded));

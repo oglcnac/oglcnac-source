@@ -5,7 +5,7 @@
       <p>The CSV must include <code>id</code> plus summed intensities for the characteristic fragments at m/z 126, 138, 144, 168, and 186. Use the exact headers <code>f126</code>, <code>f138</code>, <code>f144</code>, <code>f168</code>, and <code>f186</code>.</p>
       <pre tabindex="0" aria-label="Example HexNAcQuest CSV">id,f126,f138,f144,f168,f186
 scan_101,37564.4248,27138.75293,32261.40771,15646.51221,20015.9458</pre>
-      <p><a class="hq-button" href="/static/hexnac-quest/example_input_data.csv" download>Download example CSV</a></p>
+      <p><a class="hq-button" href="/static/hexnac-quest/example_input_data.csv" download>Download example CSV</a></p><p>On the analysis page, <strong>Load example</strong> opens this CSV directly for preview. Prediction starts only when you choose <strong>Run prediction</strong>.</p>
 
       <h2>Individual raw files</h2>
       <ol>
@@ -31,9 +31,9 @@ scan_101,37564.4248,27138.75293,32261.40771,15646.51221,20015.9458</pre>
       <div class="hq-tutorial-step">
         <figure class="hq-workflow-diagram" aria-labelledby="hq-save-diagram-title">
           <figcaption id="hq-save-diagram-title">From prediction to CSV</figcaption>
-          <ol><li><strong>Check the summary</strong><span>Predicted, skipped, GlcNAc, and GalNAc counts</span></li><li><strong>Review the results</strong><span>Classification beside each original row</span></li><li><strong>Download results</strong><span><code>your_file_Predicted_results.csv</code></span></li></ol>
+          <ol><li><strong>Check the summary</strong><span>Predicted, skipped, GlcNAc, and GalNAc counts</span></li><li><strong>Review the results</strong><span>Classification beside each original row</span></li><li><strong>Download all results</strong><span><code>your_file_Predicted_results.csv</code></span></li></ol>
         </figure>
-        <div><h3>6. Save results</h3><p>Review the GlcNAc/GalNAc summary and choose <strong>Download results</strong>. The CSV adds a <code>pred_outcome</code> column before the original six input columns.</p><p>The original intensity text and row order are preserved for valid rows. Skipped rows are excluded from the prediction download; their reasons remain on the analysis page.</p></div>
+        <div><h3>6. Save results</h3><p>Review the GlcNAc/GalNAc summary and choose <strong>Download all results</strong>. The CSV adds a <code>pred_outcome</code> column before the original six input columns.</p><p>The original intensity text and row order are preserved for valid rows. Skipped rows are excluded from the prediction download; their reasons remain on the analysis page.</p></div>
       </div>
       </div>
     </div></section>

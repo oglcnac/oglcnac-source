@@ -14,10 +14,11 @@
       <div class="form-field">
         <label for="ogt-pin-search-field">Search field</label>
         <select id="ogt-pin-search-field" class="form-control" name="field">
-          <option value="gene_name_b">Gene name for interactor B</option>
-          <option value="uuid_b">Unique identifier for interactor B</option>
-          <option value="gene_name_a">Gene name for interactor A</option>
-          <option value="uuid_a">Unique identifier for interactor A</option>
+          <option value="gene_name_b">Interactor gene</option>
+          <option value="protein_name_b">Interactor protein name</option>
+          <option value="uuid_b">Interactor accession</option>
+          <option value="gene_name_a">Partner gene</option>
+          <option value="uuid_a">Partner accession</option>
           <option value="species">Species</option>
         </select>
       </div>
@@ -36,12 +37,12 @@
       <table class="table results-table" id="search_result">
         <thead>
           <tr>
-            <th>Unique identifier for interactor A</th>
-            <th>Gene name for interactor A</th>
-            <th>NCBI Taxonomy identifier for interactor B</th>
-            <th>Unique identifier for interactor B</th>
-            <th>Gene name for interactor B</th>
-            <th>Protein name for interactor B</th>
+            <th>Interactor A accession</th>
+            <th>Interactor A gene</th>
+            <th>Species</th>
+            <th>Interactor B accession</th>
+            <th>Interactor B gene</th>
+            <th>Interactor B protein</th>
           </tr>
         </thead>
         <tbody id="interactome-search-results"></tbody>

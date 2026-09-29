@@ -37,6 +37,7 @@ const waitForSelector = (selector) => async (page) => {
 
 const captures = [
   { group: "suite", route: "/", name: "home", aboveFold: ".portal-search-form" },
+  { group: "suite", route: "/", name: "global-search-open", act: async page => page.locator("#site-search > summary").click() },
   {
     group: "suite",
     route: "/",
@@ -91,9 +92,11 @@ const captures = [
     group: "atlas",
     route: "/atlas/search/?q=P18583&field=accession",
     name: "atlas-search-results",
-    aboveFold: ".native-table-controls",
+    aboveFold: "#atlas-protein-results .native-table-controls",
     ready: waitForTable("search_result"),
   },
+  { group: "atlas", route: "/atlas/search/?q=P18583&field=accession&view=evidence", name: "atlas-evidence-results", ready: waitForTable("search_result") },
+  { group: "atlas", route: "/atlas/search/?q=P18583&field=accession&position=unreported", name: "atlas-filtered-results", ready: waitForTable("atlas_proteins"), act: async page => page.locator("#atlas-filter-disclosure").evaluate(element => element.open = true) },
   {
     group: "atlas",
     route: "/atlas/search/?q=NOT-A-REAL-ACCESSION&field=accession",
@@ -291,6 +294,24 @@ const captures = [
   },
   { group: "hexnac", route: "/hexnac-quest/tutorial/", name: "hexnac-tutorial" },
   { group: "hexnac", route: "/hexnac-quest/contact/", name: "hexnac-contact" },
+  { group: "atlas", route: "/atlas/detail/?id=P18583", name: "atlas-expanded-record", ready: waitForSelector('[data-record-state="atlas"][data-state="ready"]'), act: async page => {
+    await page.waitForSelector(".record-aliases");
+    await page.locator(".record-aliases").evaluate(element => element.open = true);
+    await page.locator("#protein-sequence").evaluate(element => element.closest("details").open = true);
+  } },
+  { group: "pred-dl", route: "/pred_dl/input_fasta/", name: "pred-dl-loaded-example", act: async page => {
+    await page.locator('[data-example-species="human"]').click();
+    await page.waitForFunction(() => document.querySelector("#message").value.startsWith(">"));
+  } },
+  { group: "hexnac", route: "/hexnac-quest/analysis/", name: "hexnac-loaded-example", act: async page => {
+    await page.click("#hexnac-example");
+    await page.waitForFunction(() => !document.querySelector("#hexnac-run").disabled);
+  } },
+  { group: "pred-dl", route: "/pred_dl/model-card/", name: "guide-contents-open", act: async page => page.locator(".page-contents details").evaluate(element => element.open = true) },
+  { group: "atlas", route: "/atlas/detail/?id=P18583", name: "atlas-columns-open", act: async page => {
+    await page.waitForSelector('#atlas-all-fields .native-column-picker');
+    await page.locator('#atlas-all-fields .native-column-picker > summary').click();
+  } },
 ];
 
 const previewCaptures = [
@@ -370,6 +391,7 @@ async function captureState(
       await page.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
     }
     await page.evaluate(() => document.fonts?.ready);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await page.waitForTimeout(100);
     title = await page.title();
     h1 = (await page.locator("h1").first().textContent().catch(() => "")).trim();
@@ -400,18 +422,34 @@ async function captureState(
         text: (element.textContent || "").trim().slice(0, 80),
       }));
       const collisions = [];
+      // Scientific tables intentionally scroll. Compare painted bounds, not
+      // off-screen cells that extend behind the adjacent spectrum panel.
+      function visibleBounds(element) {
+        const bounds = element.getBoundingClientRect();
+        const result = { left: bounds.left, right: bounds.right, top: bounds.top, bottom: bounds.bottom };
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          const style = getComputedStyle(parent), box = parent.getBoundingClientRect();
+          if (/auto|scroll|hidden|clip/.test(style.overflowX)) { result.left = Math.max(result.left, box.left); result.right = Math.min(result.right, box.right); }
+          if (/auto|scroll|hidden|clip/.test(style.overflowY)) { result.top = Math.max(result.top, box.top); result.bottom = Math.min(result.bottom, box.bottom); }
+        }
+        return result;
+      }
+      const paintedBounds = new Map(candidates.map(element => [element, visibleBounds(element)]));
       for (let firstIndex = 0; firstIndex < candidates.length; firstIndex += 1) {
         const first = candidates[firstIndex];
-        const firstBounds = first.getBoundingClientRect();
+        const firstBounds = paintedBounds.get(first);
         for (let secondIndex = firstIndex + 1; secondIndex < candidates.length; secondIndex += 1) {
           const second = candidates[secondIndex];
+          const firstOverlay = first.closest(".site-search-panel, .native-column-picker[open] fieldset");
+          const secondOverlay = second.closest(".site-search-panel, .native-column-picker[open] fieldset");
+          if (firstOverlay !== secondOverlay && (firstOverlay || secondOverlay)) continue;
           if (first.contains(second) || second.contains(first) ||
               (first.closest("table") && first.closest("table") === second.closest("table"))) continue;
           const firstNavigationPanel = first.closest(".site-nav-panel");
           const secondNavigationPanel = second.closest(".site-nav-panel");
           if (firstNavigationPanel !== secondNavigationPanel &&
               (firstNavigationPanel || secondNavigationPanel)) continue;
-          const secondBounds = second.getBoundingClientRect();
+          const secondBounds = paintedBounds.get(second);
           const overlapWidth = Math.min(firstBounds.right, secondBounds.right) -
             Math.max(firstBounds.left, secondBounds.left);
           const overlapHeight = Math.min(firstBounds.bottom, secondBounds.bottom) -

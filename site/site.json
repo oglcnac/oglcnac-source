@@ -6,7 +6,8 @@
     "styles/40-shell.css",
     "styles/50-publication.css",
     "styles/55-analysis.css",
-    "styles/56-home.css"
+    "styles/56-home.css",
+    "styles/58-resource-workspace.css"
   ],
   "primary_navigation": [
     ["Home", "/", "home"],
@@ -126,7 +127,7 @@
       "title": "Search | O-GlcNAcAtlas",
       "description": "Search curated O-GlcNAc sites by accession, protein, gene, peptide sequence, or species.",
       "section": "atlas",
-      "body_class": "site-body section-body atlas-section",
+      "body_class": "site-body section-body atlas-section atlas-search-workspace",
       "main_class": "site-main"
     },
     {
@@ -144,7 +145,7 @@
       "title": "Protein Record | O-GlcNAcAtlas",
       "description": "Inspect protein sequence and curated O-GlcNAcylation evidence for an O-GlcNAcAtlas accession.",
       "section": "atlas",
-      "body_class": "site-body section-body atlas-section",
+      "body_class": "site-body section-body atlas-section protein-record-workspace",
       "main_class": "site-main"
     },
     {
@@ -211,7 +212,7 @@
       "title": "Interaction Record | OGT-PIN",
       "description": "Inspect curated OGT interaction evidence for a selected protein.",
       "section": "ogt-pin",
-      "body_class": "site-body section-body interactome-section",
+      "body_class": "site-body section-body interactome-section protein-record-workspace",
       "main_class": "site-main"
     },
     {

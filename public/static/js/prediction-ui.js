@@ -26,7 +26,7 @@
 
   function setBusy(busy) {
     document
-      .querySelectorAll('.prediction-card button[type="submit"], .prediction-card input, .analysis-input-choice button')
+      .querySelectorAll('.prediction-card button, .prediction-card input, .analysis-input-choice button')
       .forEach((button) => {
         button.disabled = busy;
       });

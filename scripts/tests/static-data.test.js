@@ -170,6 +170,14 @@ test('scoped evidence retains every original field, exact isoforms, row order an
   assert.ok(dataRequests(requests).every((url) => url.startsWith(`${DATA}records/`)));
 });
 
+test('sequence positions never parse a numeric prefix from a mixed source annotation', async () => {
+  const records = ['', null, '0', '-1', '2S4', '12/13', 'T886', '14', 16, '14'].map(position_in_protein => ({ accession: 'P18583', position_in_protein }));
+  const { api } = loadApi({ [bucketPath('P18583')]: snapshotBucket({}, { P18583: records.map((record, index) => [index, record]) }) });
+  const detail = await api.getAtlasDetail('P18583');
+  assert.deepEqual(plain(detail.positions), [14, 16]);
+  assert.deepEqual(plain(detail.records), records);
+});
+
 test('representative browse, accession search, peptide search and detail stay below gzip data budget', async () => {
   for (const operation of [
     (api) => api.browseAtlas('Human', ''),
