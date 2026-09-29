@@ -4,19 +4,22 @@
   <div class="container">
     <div class="page-heading">
       <p class="section-label">O-GlcNAcPRED-DL</p>
-      <h1>Deep-learning <span class="nowrap">O-GlcNAc</span> site prediction</h1>
-      <p>Submit human or mouse protein sequences in FASTA format. Use pasted input for a single sequence, or upload a FASTA file for multiple proteins.</p>
-      <p class="prediction-privacy"><strong>Private by design:</strong> prediction runs in your browser, and your protein sequence is not uploaded.</p>
+      <h1>Predict <span class="nowrap">O-GlcNAc</span> sites</h1>
+      <p>Analyze human or mouse proteins in FASTA format.</p>
+      <p class="prediction-privacy">Private, in-browser analysis.</p>
     </div>
 
 
 
-    <div class="prediction-grid">
+    <div class="analysis-input-choice" role="group" aria-label="Sequence input method">
+      <button type="button" id="prediction-paste-mode" aria-pressed="true" aria-controls="prediction-text-form">Paste FASTA</button>
+      <button type="button" id="prediction-upload-mode" aria-pressed="false" aria-controls="prediction-file-form">Upload file</button>
+    </div>
+    <div class="prediction-grid analysis-input-shell">
       <form class="prediction-card" action="#" method="post" id="prediction-text-form">
 
         <div class="prediction-card-header">
-          <span>Option 1</span>
-          <h2>Paste FASTA sequence</h2>
+          <h2>Protein sequences</h2>
         </div>
 
         <fieldset class="species-control">
@@ -25,8 +28,8 @@
           <label><input type="radio" name="drone" value="mouse"> Mouse</label>
         </fieldset>
 
-        <label for="message">Protein sequence in FASTA format</label>
-        <textarea required id="message" name="short_fasta" rows="14" maxlength="200000" class="form-control md-textarea" spellcheck="false"></textarea>
+        <label for="message">FASTA protein sequences</label>
+        <textarea required id="message" name="short_fasta" rows="6" maxlength="200000" class="form-control md-textarea" spellcheck="false" placeholder=">protein_name&#10;MST..."></textarea>
 
         <div class="example-links">
           <a href="/static/fasta/individual_protein_human.fasta" target="_blank" rel="noopener">Human example</a>
@@ -37,10 +40,9 @@
         <button type="submit">Submit for prediction</button>
       </form>
 
-      <form class="prediction-card" method="post" action="#" enctype="multipart/form-data" id="prediction-file-form">
+      <form class="prediction-card" method="post" action="#" enctype="multipart/form-data" id="prediction-file-form" hidden>
 
         <div class="prediction-card-header">
-          <span>Option 2</span>
           <h2>Upload FASTA file</h2>
         </div>
 

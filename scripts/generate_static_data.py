@@ -13,6 +13,11 @@ import urllib.request
 from datetime import date
 from pathlib import Path
 
+try:
+    from build_atlas_delivery import write_delivery
+except ModuleNotFoundError:
+    from scripts.build_atlas_delivery import write_delivery
+
 
 SEQUENCE_SNAPSHOT_NAME = "atlas-sequences-v1.json"
 UNIPROT_ACCESSION = re.compile(
@@ -569,6 +574,9 @@ def main():
     write_json(args.output_dir / "atlas-records.json", atlas)
     write_json(args.output_dir / "ogt-pin-records.json", ogt_pin)
     write_json(args.output_dir / "atlas-release-v1.json", release_metadata)
+    findings = write_delivery(args.output_dir, atlas, sequence_snapshot)
+    if findings:
+        raise RuntimeError("\n".join(findings))
     print(f"atlas_records={len(atlas)}")
     print(f"ogt_pin_records={len(ogt_pin)}")
     print(f"atlas_unique_proteins={release_metadata['unique_counts']['proteins']}")

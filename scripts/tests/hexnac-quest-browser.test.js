@@ -6,7 +6,7 @@ const fs = require("node:fs/promises");
 const playwright = require("playwright");
 
 const ROOT = path.resolve(__dirname, "../..");
-const STATIC_ROOT = path.join(ROOT, "dist");
+const STATIC_ROOT = process.env.HEXNAC_STATIC_ROOT || path.join(ROOT, "dist");
 const browserName = process.env.HEXNAC_BROWSER || "chromium";
 const browserType = playwright[browserName];
 const MIME_TYPES = {
@@ -143,6 +143,10 @@ test("predicts the canonical corpus with the legacy class totals", async () => {
     await page.locator("#hexnac-preview-body tr").first().locator("td").first().textContent(),
     "21",
   );
+  assert.equal(await page.locator("#hexnac-selected-row strong").textContent(), "21");
+  const previewHeading = await page.locator("#hexnac-preview-card h2").first().boundingBox();
+  const spectrumHeading = await page.locator(".hq-spectrum-card h2").boundingBox();
+  assert.ok(Math.abs(previewHeading.y - spectrumHeading.y) < 2, "spectrum should align with the preview heading");
   await page.click("#hexnac-run");
   await page.waitForFunction(
     () => document.querySelector("#hexnac-status").dataset.state === "complete",
@@ -165,15 +169,68 @@ test("predicts the canonical corpus with the legacy class totals", async () => {
   await page.close();
 });
 
+test("mobile spectrum details and skipped reasons remain readable with keyboard selection", async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.goto(`${baseUrl}/hexnac-quest/analysis/`, { waitUntil: "domcontentloaded" });
+  await page.setInputFiles("#hexnac-file", {
+    name: "mobile-spectrum.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(
+      "id,f126,f138,f144,f168,f186\nfirst,0,100,0,0,0\nsecond,0.001,0.2500,0.005,0,0\nbad,,2,3,4,5",
+    ),
+  });
+  await page.waitForFunction(() => document.querySelector("#hexnac-status").dataset.state === "ready");
+  const secondRow = page.locator("#hexnac-preview-body tr").nth(1);
+  await secondRow.evaluate((row) => {
+    row.scrollIntoView({ block: "center", behavior: "instant" });
+    row.focus({ preventScroll: true });
+  });
+  const scrollBefore = await page.evaluate(() => scrollY);
+  await page.keyboard.press("Space");
+  assert.equal(await page.locator("#hexnac-selected-row strong").textContent(), "second");
+  assert.match(await page.locator("#hexnac-selected-row span").textContent(), /CSV row 3/);
+  assert.deepEqual(await page.locator("#hexnac-spectrum-values dd").allTextContents(), ["0.001", "0.2500", "0.005", "0", "0"]);
+  assert.equal(await secondRow.getAttribute("aria-current"), "true");
+  assert.equal(await page.locator("#hexnac-preview-body tr").first().getAttribute("aria-current"), null);
+  await page.waitForTimeout(100);
+  assert.ok(Math.abs(await page.evaluate(() => scrollY) - scrollBefore) < 2, "Space should select without scrolling the page");
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    const layout = await page.evaluate(() => {
+      const table = document.querySelector(".hq-skipped-table");
+      const region = table.parentElement;
+      const reason = table.querySelector("tbody td:last-child").getBoundingClientRect();
+      const regionBounds = region.getBoundingClientRect();
+      return {
+        viewport: innerWidth,
+        document: document.documentElement.scrollWidth,
+        region: region.clientWidth,
+        content: region.scrollWidth,
+        reasonFits: reason.left >= regionBounds.left && reason.right <= regionBounds.right,
+        labelSize: parseFloat(getComputedStyle(document.querySelector(".hq-spectrum-labels")).fontSize),
+      };
+    });
+    assert.equal(layout.document, layout.viewport);
+    assert.ok(layout.content <= layout.region + 1, `skipped reasons overflow at ${width}px`);
+    assert.ok(layout.reasonFits, `skipped reason is clipped at ${width}px`);
+    assert.ok(layout.labelSize >= 13, "fragment labels should remain readable");
+  }
+  await page.close();
+});
+
 test("cancels active prediction, discards output, and permits selecting the same file again", async () => {
   const page = await browser.newPage();
   await page.goto(`${baseUrl}/hexnac-quest/analysis/`, {
     waitUntil: "domcontentloaded",
   });
-  await page.setInputFiles(
-    "#hexnac-file",
-    path.join(STATIC_ROOT, "static/hexnac-quest/example_input_data.csv"),
-  );
+  // Keep prediction active long enough for a user click across browser engines.
+  // The 10,000-row golden corpus can finish before Cancel receives the click.
+  const input = {
+    name: "cancellable.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(`id,f126,f138,f144,f168,f186\n${"row,1,2,3,4,5\n".repeat(250000)}`),
+  };
+  await page.setInputFiles("#hexnac-file", input);
   await page.waitForFunction(
     () => document.querySelector("#hexnac-status").dataset.state === "ready",
   );
@@ -185,10 +242,7 @@ test("cancels active prediction, discards output, and permits selecting the same
   assert.equal(await page.locator("#hexnac-results-body tr").count(), 0);
   assert.equal(await page.locator("#hexnac-run").isDisabled(), true);
   assert.equal(await page.locator("#hexnac-file").inputValue(), "");
-  await page.setInputFiles(
-    "#hexnac-file",
-    path.join(STATIC_ROOT, "static/hexnac-quest/example_input_data.csv"),
-  );
+  await page.setInputFiles("#hexnac-file", input);
   await page.waitForFunction(
     () => document.querySelector("#hexnac-status").dataset.state === "ready",
   );

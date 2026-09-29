@@ -1,3 +1,8 @@
+<script>
+  if (new URLSearchParams(window.location.search).get("q")) {
+    document.body.classList.add("has-search-query", "atlas-query-pending");
+  }
+</script>
 <section class="search-page-heading">
   <div class="container">
     <p class="eyebrow">O-GlcNAcAtlas 5.0</p>

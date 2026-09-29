@@ -2,6 +2,7 @@
   <script src="/static/js/table-utils.js"></script>
   <script>
     const interactomeSearchTable = window.OglcnacTables.create("search_result", {
+      mobileColumns: [3, 4, 5, 1],
       filename: "ogt-pin-search.csv"
     });
 
@@ -16,12 +17,13 @@
           const uniprot = document.createElement("a");
           uniprot.href = `https://www.uniprot.org/uniprot/${encodeURIComponent(uuid)}`;
           uniprot.rel = "noopener";
-          uniprot.textContent = "UniProt ";
+          uniprot.textContent = "UniProt";
+          cell.classList.add("record-link-pair");
           cell.appendChild(uniprot);
           const detail = document.createElement("a");
           detail.href = `/ogt-pin/detail/?id=${encodeURIComponent(uuid)}`;
           const strong = document.createElement("strong");
-          strong.textContent = uuid;
+          strong.textContent = `${uuid} · View evidence`;
           detail.appendChild(strong);
           cell.appendChild(detail);
         }
@@ -39,11 +41,13 @@
       ];
     }
 
+    let searchGeneration = 0;
     async function runInteractomeSearch(event) {
       if (event) {
         event.preventDefault();
       }
       const form = document.getElementById("interactome-search-form");
+      const generation = ++searchGeneration;
       const term = form.q.value.trim();
       const field = form.field.value;
       if (!term) {
@@ -53,6 +57,7 @@
       interactomeSearchTable.setLoading("Loading OGT-PIN records…");
       try {
         const results = await window.OglcnacStaticData.searchOgtPin(term, field);
+        if (generation !== searchGeneration) return;
         interactomeSearchTable.setRows(results.map(interactomeSearchRow), {
           preserveState: false
         });
@@ -62,6 +67,7 @@
           `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`
         );
       } catch (error) {
+        if (generation !== searchGeneration) return;
         interactomeSearchTable.setError(
           "OGT-PIN records could not be loaded. Please try again."
         );

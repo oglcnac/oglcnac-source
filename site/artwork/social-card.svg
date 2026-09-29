@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#071a27"/>
+  <g fill="none" stroke="#245660" stroke-width="2">
+    <path d="M873 50 1015 132v164l-142 82-142-82V132Z"/>
+    <path d="m1015 296 142 82v164l-142 82-142-82V378Z"/>
+  </g>
+  <g transform="translate(80 78)">
+    <path d="M36 0 67 18v36L36 72 5 54V18Z" fill="none" stroke="#5ec9ba" stroke-width="6" stroke-linejoin="round"/>
+    <circle cx="36" cy="36" r="11" fill="#fff"/>
+    <text x="98" y="50" fill="#fff" font-family="DejaVu Sans,sans-serif" font-weight="700" font-size="40">oglcnac.org</text>
+  </g>
+  <text x="80" y="281" fill="#fff" font-family="DejaVu Sans,sans-serif" font-weight="700" font-size="64">O-GlcNAc research,</text>
+  <text x="80" y="364" fill="#fff" font-family="DejaVu Sans,sans-serif" font-weight="700" font-size="64">connected.</text>
+  <text x="82" y="432" fill="#b6ced6" font-family="DejaVu Sans,sans-serif" font-size="27">Curated evidence · Protein interactions · Site prediction</text>
+  <path d="M80 495h1040" stroke="#245660" stroke-width="2"/>
+  <text x="82" y="556" fill="#5ec9ba" font-family="DejaVu Sans,sans-serif" font-weight="700" font-size="23">O-GlcNAcAtlas   ·   OGT-PIN   ·   PRED-DL   ·   HexNAcQuest</text>
+</svg>

@@ -2,7 +2,8 @@
 <script src="/static/js/table-utils.js"></script>
 <script>
 const atlasBrowseTable = window.OglcnacTables.create("search_result", {
-  filename: "oglcnac-atlas-browse.csv"
+  mobileColumns: [0, 2, 3, 4],
+      filename: "oglcnac-atlas-browse.csv"
 });
 
 function atlasBrowseRow(record) {
@@ -29,7 +30,9 @@ function atlasBrowseRow(record) {
   ];
 }
 
+let browseGeneration = 0;
 async function loadBrowse(species) {
+  const generation = ++browseGeneration;
   const selectedSpecies = species || "Human";
   atlasBrowseTable.context = selectedSpecies;
   document.querySelectorAll(".species-filter [data-species]").forEach((button) => {
@@ -48,11 +51,13 @@ async function loadBrowse(species) {
       selectedSpecies,
       ""
     );
+    if (generation !== browseGeneration) return;
     atlasBrowseTable.setRows(results.map(atlasBrowseRow), {
       context: selectedSpecies,
       preserveState: false
     });
   } catch (error) {
+    if (generation !== browseGeneration) return;
     atlasBrowseTable.context = selectedSpecies;
     atlasBrowseTable.setError(
       "Atlas browse records could not be loaded. Please try again."

@@ -33,7 +33,7 @@ dirty tree or a local commit that is not `origin/master`.
 
 The script performs the following bounded workflow:
 
-1. Builds and audits the complete site in a temporary directory.
+1. Builds and audits the public-only artifact in a temporary directory; unpublished research pages, scripts, data, and styles are excluded.
 2. Temporarily clones `https://github.com/oglcnac/oglcnac.git`.
 3. Replaces that clone's public files with the reviewed build.
 4. Commits a `Source-Commit: <sha>` trailer and pushes `master`.

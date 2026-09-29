@@ -28,24 +28,36 @@
         <figure class="evidence-figure">
           <h2>Distribution of 1,095 high-stringency interacting proteins</h2>
           <a class="figure-link" href="/static/img/interactome-figure1.svg" target="_blank" rel="noopener" aria-label="Open the interacting-protein distribution figure at full resolution">
-            <img src="/static/img/interactome-figure1.svg" alt="Publication figure showing the species distribution of 1,095 high-stringency interacting proteins of OGT and its orthologues">
+            <img data-deferred-src="/static/img/interactome-figure1.svg" alt="Publication figure showing the species distribution of 1,095 high-stringency interacting proteins of OGT and its orthologues">
           </a>
           <figcaption>
             Distribution figure preserved unchanged from the OGT-PIN
             publication materials.
-          </figcaption>
+          <a class="figure-full-size" href="/static/img/interactome-figure1.svg" target="_blank" rel="noopener">Open full-size figure</a></figcaption>
         </figure>
         <figure class="evidence-figure network-figure">
           <h2>A human OGT interaction network</h2>
           <a class="figure-link" href="/static/img/OGT-Interactome-760.svg" target="_blank" rel="noopener" aria-label="Open the human OGT interaction network at full resolution">
-            <img src="/static/img/OGT-Interactome-760.svg" alt="Publication network figure showing experimentally identified human OGT interaction proteins">
+            <img data-deferred-src="/static/img/OGT-Interactome-760.svg" alt="Publication network figure showing experimentally identified human OGT interaction proteins" width="793.27997" height="759.99999">
           </a>
           <figcaption>
             Human OGT interaction network preserved unchanged as an
             evidence-bearing publication figure.
-          </figcaption>
+          <a class="figure-full-size" href="/static/img/OGT-Interactome-760.svg" target="_blank" rel="noopener">Open full-size figure</a></figcaption>
         </figure>
       </div>
     </details>
   </div>
 </section>
+
+<script>
+  document.querySelectorAll(".historical-figures").forEach((details) => {
+    details.addEventListener("toggle", () => {
+      if (!details.open) return;
+      details.querySelectorAll("img[data-deferred-src]").forEach((img) => {
+        img.src = img.dataset.deferredSrc;
+        delete img.dataset.deferredSrc;
+      });
+    });
+  });
+</script>

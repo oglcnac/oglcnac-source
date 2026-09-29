@@ -2,12 +2,13 @@
     <script src="/static/js/table-utils.js"></script>
     <script>
         const detailParams = new URLSearchParams(window.location.search);
-        const INTERACTOME_UUID_B = detailParams.get("id") || decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "Q9H1M0");
-        document.getElementById("interactome-title").textContent = INTERACTOME_UUID_B;
+        const detailPath = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "");
+        const INTERACTOME_UUID_B = (detailParams.get("id") || (!["detail", "index.html"].includes(detailPath) ? detailPath : "")).trim();
+        document.getElementById("interactome-title").textContent = INTERACTOME_UUID_B || "Find an interaction record";
 
         const interactomeDetailTable = window.OglcnacTables.create(
             "interactome",
-            { filename: `${INTERACTOME_UUID_B}-ogt-pin.csv` }
+            { mobileColumns: [0, 2, 3, 8], filename: `${INTERACTOME_UUID_B}-ogt-pin.csv` }
         );
   const interactomeRecordState = document.createElement("p");
   interactomeRecordState.setAttribute("data-record-state", "ogt-pin");
@@ -17,6 +18,18 @@
             interactomeRecordState
         );
 
+        const recovery = document.createElement("div");
+        recovery.className = "record-recovery";
+        const example = document.createElement("a");
+        example.href = "/ogt-pin/detail/?id=Q9H1M0";
+        example.textContent = "Explore example Q9H1M0";
+        const retry = document.createElement("button");
+        retry.type = "button";
+        retry.textContent = "Retry loading record";
+        retry.hidden = true;
+        retry.addEventListener("click", loadInteractomeDetail);
+        recovery.append(example, retry);
+        interactomeRecordState.after(recovery);
         function interactomeDetailRow(record) {
             return [
                 record.uuid_b,
@@ -38,6 +51,13 @@
         }
 
         async function loadInteractomeDetail() {
+            document.querySelector(".interactome-detail-page .detail-section").hidden = true;
+            retry.hidden = true;
+            if (!INTERACTOME_UUID_B) {
+                interactomeRecordState.dataset.state = "initial";
+                interactomeRecordState.textContent = "Search for an interactor above, or open an example to explore the curated interaction evidence.";
+                return;
+            }
             interactomeRecordState.dataset.state = "loading";
             interactomeRecordState.textContent = "Loading interaction record…";
             interactomeDetailTable.setLoading("Loading interaction evidence…");
@@ -52,6 +72,8 @@
                     interactomeDetailTable.setRows([]);
                     return;
                 }
+                document.querySelector(".interactome-detail-page .detail-section").hidden = false;
+                recovery.hidden = true;
                 interactomeDetailTable.setRows(
                     payload.records.map(interactomeDetailRow)
                 );
@@ -59,6 +81,7 @@
                 interactomeRecordState.textContent =
                     `${payload.records.length.toLocaleString()} interaction evidence records loaded.`;
             } catch (error) {
+                retry.hidden = false;
                 interactomeRecordState.dataset.state = "error";
                 interactomeRecordState.textContent =
                     "This OGT-PIN record could not be loaded. Please try again.";

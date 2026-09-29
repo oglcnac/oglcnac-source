@@ -148,11 +148,16 @@
       }
       this.options = {
         emptyMessage: "No matching records.",
+        initialMessage: "Search above to find curated records.",
         filename: `${this.table.id}.csv`,
         pageSize: 10,
         pageSizes: [10, 25, 50, 100],
         ...(options || {}),
       };
+      if (this.options.mobileColumns && browser.matchMedia("(max-width:700px)").matches && !(options && options.pageSize)) {
+        this.options.pageSize = 5;
+        this.options.pageSizes = [5, 10, 25, 50, 100];
+      }
       this.headers = Array.from(this.table.querySelectorAll("thead th")).map(
         (header) => header.textContent.trim(),
       );
@@ -167,6 +172,7 @@
       this.sortColumn = null;
       this.sortDirection = "asc";
       this.loading = false;
+      this.initial = true;
       this.error = "";
       this.context = "";
       this.buildControls();
@@ -178,6 +184,7 @@
     buildControls() {
       const controls = browser.document.createElement("div");
       controls.className = "native-table-controls";
+      this.controls = controls;
 
       const filterLabel = browser.document.createElement("label");
       filterLabel.className = "native-table-filter";
@@ -200,6 +207,34 @@
       actions.append(this.copyButton, this.csvButton);
       controls.append(filterLabel, actions);
 
+      if (this.options.mobileColumns) {
+        const sortLabel = browser.document.createElement("label");
+        sortLabel.className = "native-mobile-sort";
+        sortLabel.textContent = "Sort records ";
+        this.mobileSort = browser.document.createElement("select");
+        const original = browser.document.createElement("option");
+        original.value = "";
+        original.textContent = "Original order";
+        this.mobileSort.appendChild(original);
+        this.headers.forEach((label, index) => {
+          ["asc", "desc"].forEach((direction) => {
+            const option = browser.document.createElement("option");
+            option.value = `${index}:${direction}`;
+            option.textContent = `${label} · ${direction === "asc" ? "ascending" : "descending"}`;
+            this.mobileSort.appendChild(option);
+          });
+        });
+        this.mobileSort.addEventListener("change", () => {
+          const [column, direction] = this.mobileSort.value.split(":");
+          this.sortColumn = column === "" ? null : Number(column);
+          this.sortDirection = direction || "asc";
+          this.page = 0;
+          this.render();
+        });
+        sortLabel.appendChild(this.mobileSort);
+        controls.appendChild(sortLabel);
+      }
+
       this.status = browser.document.createElement("p");
       this.status.className = "native-table-status";
       this.status.setAttribute("data-table-status-for", this.table.id);
@@ -212,6 +247,7 @@
 
       this.pagination = browser.document.createElement("div");
       this.pagination.className = "native-table-pagination";
+      this.pagination.setAttribute("data-table-pagination-for", this.table.id);
       this.previousButton = button("Previous");
       this.nextButton = button("Next");
       this.pageStatus = browser.document.createElement("span");
@@ -238,11 +274,35 @@
         this.table.parentElement.classList.contains("table-scroll")
           ? this.table.parentElement
           : this.table;
+      this.tableContainer = tableContainer;
+      this.scrollHint = browser.document.createElement(tableContainer === this.table ? "caption" : "p");
+      this.scrollHint.className = "table-scroll-hint";
+      this.scrollHint.textContent = "↔ Scroll horizontally to view every field.";
+      this.scrollHint.id = `${this.table.id}-scroll-hint`;
+      this.scrollHint.hidden = true;
+      tableContainer.setAttribute("aria-describedby", this.scrollHint.id);
+      tableContainer.prepend(this.scrollHint);
+      const updateOverflow = () => {
+        this.scrollHint.hidden = !this.totalRows || tableContainer.clientWidth === 0 || tableContainer.scrollWidth <= tableContainer.clientWidth + 1;
+      };
+      this.updateOverflow = () => browser.requestAnimationFrame(updateOverflow);
+      if (browser.ResizeObserver) {
+        this.resizeObserver = new browser.ResizeObserver(updateOverflow);
+        this.resizeObserver.observe(tableContainer);
+      }
+      if (this.options.mobileColumns) {
+        tableContainer.classList.add("has-record-cards");
+        this.cards = browser.document.createElement("div");
+        this.cards.className = "native-record-cards";
+        this.cards.setAttribute("role", "region");
+        this.cards.setAttribute("aria-label", `${this.options.label || "Curated"} records`);
+        tableContainer.after(this.cards);
+      }
       tableContainer.parentNode.insertBefore(controls, tableContainer);
       tableContainer.parentNode.insertBefore(this.status, tableContainer);
       tableContainer.parentNode.insertBefore(
         this.pagination,
-        tableContainer.nextSibling,
+        (this.cards || tableContainer).nextSibling,
       );
       tableContainer.parentNode.insertBefore(
         this.actionStatus,
@@ -327,6 +387,7 @@
     }
 
     setRows(rows, options) {
+      this.initial = false;
       const preserveState = Boolean(options && options.preserveState);
       if (!preserveState) {
         this.resetState();
@@ -351,9 +412,16 @@
     }
 
     setLoading(message) {
+      this.initial = false;
       this.loading = true;
       this.error = "";
       this.body.replaceChildren();
+      if (this.cards) this.cards.replaceChildren();
+      this.controls.hidden = false;
+      this.controls.style.visibility = "hidden";
+      this.pagination.hidden = true;
+      this.tableContainer.hidden = true;
+      this.scrollHint.hidden = true;
       this.status.dataset.tableState = "loading";
       this.status.textContent = message || "Loading records…";
       this.setControlsDisabled(true);
@@ -361,6 +429,7 @@
     }
 
     setError(message) {
+      this.initial = false;
       this.rows = [];
       this.filteredRows = [];
       this.visibleRows = [];
@@ -408,10 +477,14 @@
         const row = this.body.insertRow();
         values.forEach((value) => renderCell(row, value));
       });
+      this.renderCards();
 
       if (this.error) {
         this.status.dataset.tableState = "error";
         this.status.textContent = this.error;
+      } else if (this.initial) {
+        this.status.dataset.tableState = "initial";
+        this.status.textContent = this.options.initialMessage;
       } else if (!this.filteredRows.length) {
         this.status.dataset.tableState = "empty";
         this.status.textContent = this.options.emptyMessage;
@@ -427,7 +500,50 @@
       this.csvButton.disabled = !this.filteredRows.length;
       this.previousButton.disabled = this.page === 0;
       this.nextButton.disabled = this.page + 1 >= pageCount;
+      this.controls.hidden = !this.totalRows;
+      this.controls.style.visibility = "";
+      this.pagination.hidden = !this.totalRows;
+      this.tableContainer.hidden = !this.totalRows;
+      if (this.mobileSort) this.mobileSort.value = this.sortColumn === null ? "" : `${this.sortColumn}:${this.sortDirection}`;
       this.updateSortHeaders();
+      this.updateOverflow();
+    }
+
+    renderCards() {
+      if (!this.cards) return;
+      this.cards.replaceChildren();
+      this.visibleRows.forEach((values, rowIndex) => {
+        const article = browser.document.createElement("article");
+        article.className = "native-record-card";
+        article.setAttribute("aria-label", `Record ${this.page * this.pageSize + rowIndex + 1}`);
+        const fields = (indices) => {
+          const list = browser.document.createElement("dl");
+          indices.forEach((index) => {
+            const group = browser.document.createElement("div");
+            const label = browser.document.createElement("dt");
+            label.textContent = this.options.mobileLabels?.[index] || this.headers[index];
+            const value = browser.document.createElement("dd");
+            const temporaryRow = browser.document.createElement("tr");
+            renderCell(temporaryRow, values[index]);
+            value.className = temporaryRow.firstChild.className;
+            value.append(...temporaryRow.firstChild.childNodes);
+            if (!value.textContent.trim()) value.textContent = "Not reported";
+            group.append(label, value);
+            list.appendChild(group);
+          });
+          return list;
+        };
+        article.appendChild(fields(this.options.mobileColumns));
+        const remaining = this.headers.map((_, i) => i).filter((i) => !this.options.mobileColumns.includes(i));
+        if (remaining.length) {
+          const details = browser.document.createElement("details");
+          const summary = browser.document.createElement("summary");
+          summary.textContent = "All record fields";
+          details.append(summary, fields(remaining));
+          article.appendChild(details);
+        }
+        this.cards.appendChild(article);
+      });
     }
 
     async copyVisibleRows() {

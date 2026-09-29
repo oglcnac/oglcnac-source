@@ -36,12 +36,22 @@ class LocalAssetParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.urls: List[str] = []
+        self.links: List[str] = []
+        self.identifiers: Set[str] = set()
 
     def handle_starttag(
         self, tag: str, attrs: List[Tuple[str, str | None]]
     ) -> None:
         attributes = dict(attrs)
-        for name in ("href", "src", "action", "poster"):
+        if attributes.get("id"):
+            self.identifiers.add(str(attributes["id"]))
+        if tag == "a" and attributes.get("name"):
+            self.identifiers.add(str(attributes["name"]))
+        if tag in {"a", "area", "form"}:
+            target = attributes.get("href") if tag != "form" else attributes.get("action")
+            if target:
+                self.links.append(str(target))
+        for name in ("href", "src", "action", "poster", "data-deferred-src"):
             if attributes.get(name):
                 self.urls.append(str(attributes[name]))
         if attributes.get("srcset"):
@@ -49,6 +59,8 @@ class LocalAssetParser(HTMLParser):
                 url = candidate.strip().split(maxsplit=1)[0]
                 if url:
                     self.urls.append(url)
+        if tag == "meta" and attributes.get("property") == "og:image" and attributes.get("content"):
+            self.urls.append(str(attributes["content"]))
 
 
 AUDITED_ASSET_SUFFIXES = {
@@ -84,8 +96,8 @@ def local_path(root: Path, source: Path, raw_url: str) -> Path | None:
     if (
         not url
         or url.startswith("#")
-        or parsed.scheme
-        or parsed.netloc
+        or (parsed.scheme and parsed.scheme not in {"http", "https"})
+        or (parsed.netloc and parsed.netloc != "oglcnac.org")
         or url.startswith(("data:", "mailto:", "tel:"))
     ):
         return None
@@ -170,7 +182,7 @@ def public_asset_findings(root: Path) -> List[str]:
     return findings
 
 
-def route_findings(root: Path, site_config: Path) -> List[str]:
+def route_findings(root: Path, site_config: Path, *, public_only: bool = False) -> List[str]:
     try:
         configuration = json.loads(site_config.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -178,6 +190,8 @@ def route_findings(root: Path, site_config: Path) -> List[str]:
     findings: List[str] = []
     configured_outputs: Set[str] = set()
     for page in configuration.get("pages", []):
+        if public_only and (page.get("section") == "research" or page.get("visibility") == "preview" or str(page.get("route", "")).startswith("/research/")):
+            continue
         route = str(page.get("route", "<missing route>"))
         output = str(page.get("output", "<missing output>"))
         configured_outputs.add(output)
@@ -188,6 +202,61 @@ def route_findings(root: Path, site_config: Path) -> List[str]:
     }
     for output in sorted(actual_outputs.difference(configured_outputs)):
         findings.append(f"unconfigured public HTML output: {output}")
+    return findings
+
+
+def internal_link_findings(root: Path) -> List[str]:
+    """Resolve local routes and literal fragments; query parameters never excuse a missing target."""
+    findings: List[str] = []
+    documents = {}
+    for source in sorted(root.rglob("*.html")):
+        parser = LocalAssetParser()
+        parser.feed(source.read_text(encoding="utf-8"))
+        documents[source] = parser
+    for source, parser in list(documents.items()):
+        for raw_url in parser.links:
+            parsed = urlsplit(raw_url)
+            if parsed.scheme not in {"", "http", "https"} or (parsed.netloc and parsed.netloc != "oglcnac.org"):
+                continue
+            if not parsed.path:
+                target = source
+            else:
+                relative = local_path(root, source, raw_url)
+                if relative is None:
+                    continue
+                target = root / relative
+                if target.is_dir() or not target.suffix:
+                    target = target / "index.html"
+            label = source.relative_to(root).as_posix()
+            if not target.is_file():
+                findings.append(f"{label}: missing internal link target: {raw_url}")
+            elif parsed.fragment and target.suffix in {".html", ".svg"}:
+                fragment = unquote(parsed.fragment)
+                # Browser text fragments use text matching, not element IDs.
+                if fragment.startswith(":~:text="):
+                    continue
+                fragment = fragment.split(":~:text=", 1)[0]
+                if target not in documents:
+                    target_parser = LocalAssetParser()
+                    target_parser.feed(target.read_text(encoding="utf-8"))
+                    documents[target] = target_parser
+                if fragment not in documents[target].identifiers:
+                    findings.append(f"{label}: missing static fragment: {raw_url}")
+    return sorted(set(findings))
+
+
+def public_scope_findings(root: Path) -> List[str]:
+    findings = []
+    for path in sorted(root.rglob("*")):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(root).as_posix()
+        if relative.startswith(("research/", "static/functional/", "static/js/functional-")):
+            findings.append(f"research preview asset in public output: {relative}")
+        if path.suffix in {".html", ".css", ".js", ".xml"}:
+            text = path.read_text(encoding="utf-8")
+            if re.search(r"/research/functional/|/static/functional/|/static/js/functional-|\.functional-", text):
+                findings.append(f"research preview reference in public output: {relative}")
     return findings
 
 
@@ -207,6 +276,16 @@ def parse_arguments(arguments: Iterable[str]) -> argparse.Namespace:
         "--audit-routes",
         action="store_true",
         help="Reject configured routes without output and unconfigured HTML.",
+    )
+    parser.add_argument(
+        "--public-only",
+        action="store_true",
+        help="Audit only public configured routes and reject research preview leakage.",
+    )
+    parser.add_argument(
+        "--audit-links",
+        action="store_true",
+        help="Check local route/file links and static fragments, including same-page fragments.",
     )
     parser.add_argument(
         "--site-config",
@@ -244,12 +323,23 @@ def main(arguments: Iterable[str] | None = None) -> int:
                 print(f"  {finding}", file=sys.stderr)
             return 1
     if options.audit_routes:
-        findings = route_findings(options.root, options.site_config)
+        findings = route_findings(options.root, options.site_config, public_only=options.public_only)
         if findings:
             print("Public route audit failed:", file=sys.stderr)
             for finding in findings:
                 print(f"  {finding}", file=sys.stderr)
             return 1
+    for enabled, label, audit in (
+        (options.audit_links, "Internal link audit", internal_link_findings),
+        (options.public_only, "Public release scope audit", public_scope_findings),
+    ):
+        if enabled:
+            findings = audit(options.root)
+            if findings:
+                print(f"{label} failed:", file=sys.stderr)
+                for finding in findings:
+                    print(f"  {finding}", file=sys.stderr)
+                return 1
     print("Site QA checks passed.")
     return 0
 

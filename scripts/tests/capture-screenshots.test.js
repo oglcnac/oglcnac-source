@@ -8,17 +8,19 @@ const path = require("path");
 const {
   baselineCaptures,
   captures,
+  previewCaptures,
+  selectCaptures,
   contactSheetMarkup,
   viewports,
 } = require("../capture_screenshots.js");
 
 const root = path.resolve(__dirname, "../..");
 
-test("visual audit covers every configured route and required dynamic state", () => {
+test("visual audit covers every public configured route and required dynamic state", () => {
   const site = JSON.parse(
     fs.readFileSync(path.join(root, "site/site.json"), "utf8"),
   );
-  const configured = new Set(site.pages.map((page) => page.route));
+  const configured = new Set(site.pages.filter((page) => page.section !== "research" && page.visibility !== "preview" && !page.route.startsWith("/research/")).map((page) => page.route));
   const capturedRoutes = new Set(captures.map((capture) => capture.route));
   const capturedPaths = new Set(
     captures.map((capture) => new URL(capture.route, "https://example.test").pathname),
@@ -58,6 +60,16 @@ test("visual audit covers every configured route and required dynamic state", ()
   const names = captures.map((capture) => capture.name);
   assert.equal(new Set(names).size, names.length, "capture names must be unique");
   for (const state of requiredStates) assert.ok(names.includes(state), state);
+});
+
+test("research visual capture is an explicit preview opt-in", () => {
+  for (const mode of ["audit", "baseline"]) {
+    assert.ok(selectCaptures(mode).every((capture) => !capture.route.startsWith("/research/")));
+    const selected = selectCaptures(mode, true);
+    for (const preview of previewCaptures) assert.ok(selected.includes(preview));
+    assert.equal(new Set(selected.map((capture) => capture.name)).size, selected.length);
+  }
+  assert.ok(previewCaptures.some((capture) => capture.route === "/research/functional/"));
 });
 
 test("visual audit locks 4K, wide, desktop, and mobile viewports and contact sheets", () => {

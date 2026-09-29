@@ -108,6 +108,9 @@ def main():
 
     print("\nSTATIC DATA AND PREDICTION ASSETS")
     static_paths = [
+        "/static/data/atlas-v2/manifest.json",
+        "/static/data/atlas-v2/index.json",
+        "/static/data/atlas-v2/peptides.json",
         "/static/data/atlas-records.json",
         "/static/data/atlas-records.json.gz",
         "/static/data/atlas-release-v1.json",

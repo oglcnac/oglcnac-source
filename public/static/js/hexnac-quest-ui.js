@@ -19,6 +19,8 @@
     skippedPager: document.querySelector("#hexnac-skipped-pager"),
     resultsPager: document.querySelector("#hexnac-results-pager"),
     spectrum: document.querySelector("#hexnac-spectrum"),
+    selectedRow: document.querySelector("#hexnac-selected-row"),
+    spectrumValues: document.querySelector("#hexnac-spectrum-values"),
     previewCard: document.querySelector("#hexnac-preview-card"),
     skippedCard: document.querySelector("#hexnac-skipped-card"),
     resultsCard: document.querySelector("#hexnac-results-card"),
@@ -46,6 +48,8 @@
     elements.skippedBody.replaceChildren();
     elements.resultsBody.replaceChildren();
     elements.spectrum.replaceChildren();
+    elements.selectedRow.textContent = "";
+    elements.spectrumValues.replaceChildren();
     elements.previewCard.hidden = true;
     elements.skippedCard.hidden = true;
     elements.resultsCard.hidden = true;
@@ -93,33 +97,42 @@
 
   function drawSpectrum(row) {
     const namespace = "http://www.w3.org/2000/svg";
-    const width = 560;
-    const height = 250;
+    const width = 320;
+    const height = 168;
     const values = featureNames.map((name) => Number(row.numeric[name]));
-    const maximum = Math.max(...values, 1);
+    const maximum = Math.max(...values) || 1;
     elements.spectrum.replaceChildren();
+    elements.spectrumValues.replaceChildren();
+    elements.selectedRow.replaceChildren();
+    const selectedId = document.createElement("strong");
+    selectedId.textContent = row.id || "Unnamed spectrum";
+    const sourceRow = document.createElement("span");
+    sourceRow.textContent = `CSV row ${row.rowNumber}`;
+    elements.selectedRow.append(selectedId, sourceRow);
     elements.spectrum.setAttribute(
       "aria-label",
       `Oxonium-ion intensities for ${row.id || "the selected row"}`,
     );
     values.forEach((value, index) => {
-      const barHeight = (value / maximum) * 160;
-      const x = 44 + index * 102;
+      const barHeight = (value / maximum) * 144;
+      const x = 16 + index * 64;
       const rect = document.createElementNS(namespace, "rect");
       rect.setAttribute("x", x);
-      rect.setAttribute("y", 190 - barHeight);
-      rect.setAttribute("width", 54);
+      rect.setAttribute("y", 160 - barHeight);
+      rect.setAttribute("width", 32);
       rect.setAttribute("height", barHeight);
       rect.setAttribute("fill", colors[index]);
       const title = document.createElementNS(namespace, "title");
       title.textContent = `${featureNames[index]}: ${row[featureNames[index]]}`;
       rect.append(title);
-      const label = document.createElementNS(namespace, "text");
-      label.setAttribute("x", x + 27);
-      label.setAttribute("y", 218);
-      label.setAttribute("text-anchor", "middle");
-      label.textContent = featureNames[index].slice(1);
-      elements.spectrum.append(rect, label);
+      elements.spectrum.append(rect);
+      const entry = document.createElement("div");
+      const ion = document.createElement("dt");
+      ion.textContent = `m/z ${featureNames[index].slice(1)}`;
+      const intensity = document.createElement("dd");
+      intensity.textContent = row[featureNames[index]];
+      entry.append(ion, intensity);
+      elements.spectrumValues.append(entry);
     });
     elements.spectrum.setAttribute("viewBox", `0 0 ${width} ${height}`);
   }
@@ -134,16 +147,24 @@
     const select = () => {
       document
         .querySelectorAll("#hexnac-preview-body tr")
-        .forEach((candidate) => candidate.classList.remove("selected"));
+        .forEach((candidate) => {
+          candidate.classList.remove("selected");
+          candidate.removeAttribute("aria-current");
+        });
       tr.classList.add("selected");
+      tr.setAttribute("aria-current", "true");
       drawSpectrum(row);
     };
     tr.addEventListener("click", select);
     tr.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") select();
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        select();
+      }
     });
-    if (absoluteIndex === 0) {
+    if (absoluteIndex % PAGE_SIZE === 0) {
       tr.classList.add("selected");
+      tr.setAttribute("aria-current", "true");
       drawSpectrum(row);
     }
     return tr;

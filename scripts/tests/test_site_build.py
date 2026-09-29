@@ -16,7 +16,7 @@ from scripts.smoke_static_site import LinkParser as SmokeLinkParser
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-FRONTEND_ROOT = REPOSITORY_ROOT / "dist"
+FRONTEND_ROOT = Path(os.environ.get("SITE_TEST_ROOT", REPOSITORY_ROOT / "dist"))
 BUILD_SCRIPT = REPOSITORY_ROOT / "scripts" / "build_site.py"
 QA_SCRIPT = REPOSITORY_ROOT / "scripts" / "check_site.py"
 STATIC_SMOKE_SCRIPT = REPOSITORY_ROOT / "scripts" / "smoke_static_site.py"
@@ -54,6 +54,8 @@ GENERATED_HTML = (
 )
 
 GENERATED_ARTWORK = (
+    "static/img/favicon.svg",
+    "static/img/social-card.png",
     "static/img/ogt-pin-overview.svg",
     "static/img/pred-dl-workflow.svg",
     "static/img/suite-hero.svg",
@@ -66,7 +68,7 @@ GENERATED_ARTWORK = (
 
 GENERATED_OUTPUTS = (
     GENERATED_HTML
-    + ("static/css/app.css", "static/.site-build-assets.json")
+    + ("static/css/app.css", "static/.site-build-assets.json", "sitemap.xml", "robots.txt")
     + GENERATED_ARTWORK
 )
 
@@ -345,7 +347,7 @@ class AccessibilityParser(HTMLParser):
             self.controls.append((tag, normalized, nested_label))
         if tag == "img":
             self.images.append(normalized)
-            source = normalized.get("src", "")
+            source = normalized.get("src") or normalized.get("data-deferred-src", "")
             if any(parent == "figure" for parent, _ in self.stack):
                 self.figure_sources[source] = False
         if tag == "figcaption":
@@ -361,7 +363,7 @@ class AccessibilityParser(HTMLParser):
             for index in range(len(self.stack) - 1, -1, -1):
                 parent, parent_attrs = self.stack[index]
                 if parent == "figure":
-                    parent_attrs["data-figure-source"] = normalized.get("src", "")
+                    parent_attrs["data-figure-source"] = normalized.get("src") or normalized.get("data-deferred-src", "")
                     break
         if tag == "table":
             has_scroll_region = any(
@@ -388,6 +390,8 @@ class AccessibilityParser(HTMLParser):
 
 
 def run_build(*arguments: str) -> subprocess.CompletedProcess[str]:
+    if os.environ.get("SITE_TEST_ROOT") and "--output-root" not in arguments:
+        arguments = (*arguments, "--output-root", str(FRONTEND_ROOT))
     return subprocess.run(
         [sys.executable, "-S", str(BUILD_SCRIPT), *arguments],
         cwd=REPOSITORY_ROOT,

@@ -35,11 +35,12 @@ BUILD_DIRECTORY="$WORK_DIRECTORY/site"
 DEPLOY_DIRECTORY="$WORK_DIRECTORY/deploy"
 
 python3 "$REPOSITORY_ROOT/scripts/build_site.py" \
-  --output-root "$BUILD_DIRECTORY"
+  --public-only --output-root "$BUILD_DIRECTORY"
 python3 -S "$REPOSITORY_ROOT/scripts/check_site.py" \
   --forbid-external-runtime \
   --audit-assets \
   --audit-routes \
+  --audit-links --public-only \
   "$BUILD_DIRECTORY"
 
 git clone --quiet --branch "$DEPLOY_BRANCH" "$DEPLOY_REPOSITORY_URL" "$DEPLOY_DIRECTORY"

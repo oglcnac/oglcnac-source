@@ -6,7 +6,7 @@ const fs = require("node:fs/promises");
 const playwright = require("playwright");
 
 const ROOT = path.resolve(__dirname, "../..");
-const STATIC_ROOT = path.join(ROOT, "dist");
+const STATIC_ROOT = process.env.SITE_STATIC_ROOT || path.join(ROOT, "dist");
 const GOLDEN = require("./fixtures/prediction-golden.json");
 const MIME_TYPES = {
   ".bin": "application/octet-stream",
@@ -217,3 +217,85 @@ test(
     await page.close();
   },
 );
+
+async function installControllableWorker(page) {
+  await page.addInitScript(() => {
+    window.testWorkers = [];
+    window.Worker = class extends EventTarget {
+      constructor() { super(); window.testWorkers.push(this); }
+      postMessage(message) { this.job = message; }
+      terminate() { this.terminated = true; }
+      fail() { this.dispatchEvent(new ErrorEvent("error", { message: "Delayed worker startup failure", cancelable: true })); }
+      complete() { this.dispatchEvent(new MessageEvent("message", { data: { type: "result", jobId: this.job.jobId, results: [{ id: "RETRY", position: 15, residue: "S", score: "0.796", confidence: "+" }] } })); }
+    };
+  });
+}
+
+test("cancelled workers cannot overwrite cancellation or a newer prediction and failed workers can retry", async () => {
+  const page = await browser.newPage();
+  await installControllableWorker(page);
+  await page.goto(`${baseUrl}/pred_dl/input_fasta/`);
+  await page.fill("#message", ">RETRY\nAAAAAAAAAAAAAASAAAAAAAAAAAAAA");
+  await page.click('#prediction-text-form button[type="submit"]');
+  await page.click("#prediction-cancel");
+  await page.evaluate(() => { window.testWorkers[0].fail(); window.testWorkers[0].complete(); });
+  assert.equal(await page.locator("#prediction-error").textContent(), "Prediction cancelled.");
+  assert.equal(await page.locator("#prediction-results-body tr").count(), 0);
+  await page.click('#prediction-text-form button[type="submit"]');
+  await page.evaluate(() => window.testWorkers[0].fail());
+  assert.equal(await page.locator("#prediction-error").isVisible(), false);
+  assert.equal(await page.locator("#prediction-cancel").isEnabled(), true);
+  await page.evaluate(() => window.testWorkers[1].fail());
+  assert.match(await page.locator("#prediction-error").textContent(), /Try submitting again/);
+  await page.click('#prediction-text-form button[type="submit"]');
+  await page.evaluate(() => window.testWorkers[2].complete());
+  await page.waitForSelector("#prediction-results-body tr");
+  assert.equal(await page.locator("#prediction-error").isVisible(), false);
+  assert.equal(await page.evaluate(() => window.testWorkers.length), 3);
+  await page.close();
+});
+
+test("mobile input stays compact and input methods share species without losing text", async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await installControllableWorker(page);
+  await page.goto(`${baseUrl}/pred_dl/input_fasta/`);
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    const input = await page.locator("#message").boundingBox();
+    const run = await page.locator('#prediction-text-form button[type="submit"]').boundingBox();
+    assert.ok(input.y <= 480, `${width}px FASTA input starts at ${input.y}`);
+    assert.ok(run.y <= 800, `${width}px Run starts at ${run.y}`);
+  }
+  await page.fill("#message", ">KEPT\nSTST");
+  await page.check('#prediction-text-form input[value="mouse"]');
+  await page.click("#prediction-upload-mode");
+  assert.equal(await page.locator("#prediction-text-form").isHidden(), true);
+  assert.equal(await page.locator('#prediction-file-form input[value="mouse"]').isChecked(), true);
+  await page.click("#prediction-paste-mode");
+  assert.equal(await page.inputValue("#message"), ">KEPT\nSTST");
+  await page.click('#prediction-text-form button[type="submit"]');
+  await page.evaluate(() => window.testWorkers[0].complete());
+  const resultCard = page.locator("#prediction-results-card .native-record-card").first();
+  await resultCard.waitFor();
+  assert.match(await resultCard.innerText(), /0\.796/);
+  assert.match(await resultCard.innerText(), /Confidence\s+\+/);
+  assert.match(await resultCard.innerText(), /Position\s+15/);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.close();
+});
+
+test("upload mode predicts the selected mouse model and exports its result", { timeout: 120000 }, async () => {
+  const page = await browser.newPage();
+  await page.goto(`${baseUrl}/pred_dl/input_fasta/`);
+  await page.click("#prediction-upload-mode");
+  await page.check('#prediction-file-form input[value="mouse"]');
+  await page.setInputFiles("#fasta-file", { name: "mouse.fasta", mimeType: "text/plain", buffer: Buffer.from(">UPLOAD\nAAAAAAAAAAAAAASAAAAAAAAAAAAAA") });
+  await page.click('#prediction-file-form button[type="submit"]');
+  await page.waitForSelector("#prediction-results-body tr", { timeout: 120000 });
+  assert.match(await page.locator("#prediction-results-body").textContent(), /UPLOAD15S0\.709\+/);
+  const promise = page.waitForEvent("download");
+  await page.click('[data-table-csv-for="prediction-results-table"]');
+  const download = await promise;
+  assert.match(await fs.readFile(await download.path(), "utf8"), /UPLOAD,15,S,0\.709,\+/);
+  await page.close();
+});

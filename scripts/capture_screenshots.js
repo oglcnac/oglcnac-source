@@ -11,6 +11,7 @@ const outputDir = path.resolve(
 );
 const strict = process.env.SCREENSHOT_STRICT !== "0";
 const captureMode = process.env.SCREENSHOT_MODE || "audit";
+const includePreview = process.argv.includes("--include-preview") || process.env.SCREENSHOT_INCLUDE_PREVIEW === "1";
 
 const viewports = [
   ["4k", { width: 3840, height: 2160 }],
@@ -31,7 +32,7 @@ const waitForTable = (id) => async (page) => {
 };
 
 const waitForSelector = (selector) => async (page) => {
-  await page.locator(selector).first().waitFor({ timeout: 60000 });
+  await page.locator(selector).first().waitFor({ state: selector.endsWith(" tr") ? "attached" : "visible", timeout: 60000 });
 };
 
 const captures = [
@@ -62,7 +63,7 @@ const captures = [
       await page.click("#workbench-sample");
       await page.click('#workbench-form button[type="submit"]');
     },
-    ready: waitForSelector("#workbench-table tbody tr"),
+    ready: async (page) => page.waitForFunction(() => document.querySelectorAll("#workbench-table tbody tr").length > 0),
   },
   {
     group: "workbench",
@@ -104,7 +105,7 @@ const captures = [
     route: "/atlas/search/?q=P18583&field=accession",
     name: "atlas-search-error",
     prepare: async (page) => {
-      await page.route("**/static/data/atlas-records.json*", (route) =>
+      await page.route("**/static/data/atlas-v2/manifest.json*", (route) =>
         route.fulfill({ status: 503, body: "visual audit fixture" }),
       );
     },
@@ -292,10 +293,19 @@ const captures = [
   { group: "hexnac", route: "/hexnac-quest/contact/", name: "hexnac-contact" },
 ];
 
+const previewCaptures = [
+  { group: "suite", route: "/research/functional/", name: "functional-preview", ready: waitForSelector("#functional-table tbody tr") },
+];
+
 const baselineCaptures = captures.filter(
   (capture) =>
     !/(?:navigation-open|results|empty|error|result)$/.test(capture.name),
 );
+
+function selectCaptures(mode = "audit", withPreview = false) {
+  const publicCaptures = mode === "baseline" ? baselineCaptures : captures;
+  return withPreview ? [...publicCaptures, ...previewCaptures] : [...publicCaptures];
+}
 
 function cleanName(name) {
   return name.replace(/[^a-z0-9-]+/gi, "-").toLowerCase();
@@ -477,6 +487,7 @@ async function captureState(
     ) {
       status = "runtime error";
     }
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await page.screenshot({
       path: filePath,
       fullPage: true,
@@ -550,8 +561,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const browser = await chromium.launch({ headless: true });
   const report = [];
-  const selectedCaptures =
-    captureMode === "baseline" ? baselineCaptures : captures;
+  const selectedCaptures = selectCaptures(captureMode, includePreview);
 
   for (const [viewportName, viewport] of viewports) {
     for (const capture of selectedCaptures) {
@@ -573,6 +583,7 @@ async function main() {
   const payload = {
     baseUrl,
     captureMode,
+    includePreview,
     generatedAt: new Date().toISOString(),
     summary: {
       states: selectedCaptures.length,
@@ -599,6 +610,8 @@ if (require.main === module) {
 module.exports = {
   baselineCaptures,
   captures,
+  previewCaptures,
+  selectCaptures,
   cleanName,
   contactSheetMarkup,
   viewports,

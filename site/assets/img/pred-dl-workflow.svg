@@ -34,10 +34,10 @@
       <rect x="524" y="350" width="348" height="42" rx="10" fill="#edf1fb"/>
       <rect x="128" y="408" width="348" height="42" rx="10" fill="#edf1fb"/>
       <rect x="524" y="408" width="348" height="42" rx="10" fill="#edf1fb"/>
-      <text x="302" y="378" fill="#243b6d" text-anchor="middle"><tspan font-weight="700">Word embedding</tspan> (Word2Vec)</text>
-      <text x="698" y="378" fill="#243b6d" text-anchor="middle"><tspan font-weight="700">Sequence information</tspan> (one-hot)</text>
-      <text x="302" y="436" fill="#243b6d" text-anchor="middle"><tspan font-weight="700">Evolutionary information</tspan> (BLOSUM62)</text>
-      <text x="698" y="436" fill="#243b6d" text-anchor="middle"><tspan font-weight="700">Physicochemical properties</tspan> (AAindex)</text>
+      <text x="302" y="369" fill="#243b6d" text-anchor="middle" font-size="16.5"><tspan font-weight="700">Word embedding</tspan><tspan x="302" dy="18">Word2Vec</tspan></text>
+      <text x="698" y="369" fill="#243b6d" text-anchor="middle" font-size="16.5"><tspan font-weight="700">Sequence information</tspan><tspan x="698" dy="18">one-hot</tspan></text>
+      <text x="302" y="427" fill="#243b6d" text-anchor="middle" font-size="16.5"><tspan font-weight="700">Evolutionary information</tspan><tspan x="302" dy="18">BLOSUM62</tspan></text>
+      <text x="698" y="427" fill="#243b6d" text-anchor="middle" font-size="16.5"><tspan font-weight="700">Physicochemical properties</tspan><tspan x="698" dy="18">AAindex</tspan></text>
     </g>
 
     <path d="M500 470v38" fill="none" stroke="#7182a5" stroke-width="4" marker-end="url(#arrow)"/>

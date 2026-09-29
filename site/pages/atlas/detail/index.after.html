@@ -74,9 +74,11 @@
   }
 
   const atlasPeptideTable = window.OglcnacTables.create("detail1", {
+    mobileColumns: [4, 1, 2],
     filename: `${ATLAS_ACCESSION}-peptides.csv`
   });
   const atlasEvidenceTable = window.OglcnacTables.create("detail2", {
+    mobileColumns: [1, 4, 9, 3],
     filename: `${ATLAS_ACCESSION}-evidence.csv`
   });
   const atlasExportTable = window.OglcnacTables.create("detail3", {
@@ -89,6 +91,23 @@
   document.querySelector(".atlas-detail-page .detail-hero").appendChild(
     atlasRecordState
   );
+
+  const atlasRecovery = document.createElement("div");
+  atlasRecovery.className = "record-recovery";
+  const exampleRecord = document.createElement("a");
+  exampleRecord.href = "/atlas/detail/?id=P18583";
+  exampleRecord.textContent = "Explore example P18583";
+  const retryRecord = document.createElement("button");
+  retryRecord.type = "button";
+  retryRecord.textContent = "Retry loading record";
+  retryRecord.hidden = true;
+  retryRecord.addEventListener("click", loadAtlasDetail);
+  atlasRecovery.append(exampleRecord, retryRecord);
+  atlasRecordState.after(atlasRecovery);
+  function showAtlasContent(visible) {
+    document.querySelectorAll(".atlas-detail-page .detail-section").forEach(section => { section.hidden = !visible; });
+    atlasRecovery.hidden = visible;
+  }
 
   function setAtlasTablesLoading() {
     atlasPeptideTable.setLoading("Loading peptide records…");
@@ -115,6 +134,7 @@
       document.getElementById("protein-sequence").textContent =
         "Protein sequence for this entry is not available in the local Atlas snapshot or UniProt. The curated evidence below remains complete.";
     } else {
+      document.getElementById("sequence-summary").textContent = `· ${fasta.split("\n").slice(1).join("").replace(/\s/g, "").length.toLocaleString()} residues`;
       document.getElementById("protein-sequence").innerHTML = formatSequence(
         fasta,
         payload.positions || []
@@ -123,6 +143,13 @@
   }
 
   async function loadAtlasDetail() {
+    showAtlasContent(false);
+    retryRecord.hidden = true;
+    if (!ATLAS_ACCESSION) {
+      atlasRecordState.dataset.state = "initial";
+      atlasRecordState.textContent = "Search for a protein above, or open an example to explore its sequence and curated evidence.";
+      return;
+    }
     atlasRecordState.dataset.state = "loading";
     atlasRecordState.textContent = "Loading Atlas record…";
     setAtlasTablesLoading();
@@ -135,6 +162,7 @@
         "This Atlas record could not be loaded. Please try again.";
       document.getElementById("protein-sequence").textContent =
         "Protein sequence is unavailable because the record could not be loaded.";
+      retryRecord.hidden = false;
       setAtlasTablesError();
       return;
     }
@@ -151,14 +179,23 @@
       return;
     }
 
+    showAtlasContent(true);
     atlasPeptideTable.setRows(payload.records.map(atlasPeptideRow));
     atlasEvidenceTable.setRows(payload.records.map(atlasEvidenceRow));
     atlasExportTable.setRows(payload.records.map(atlasExportRow));
     atlasRecordState.dataset.state = "ready";
     atlasRecordState.textContent =
-      `${payload.records.length.toLocaleString()} curated Atlas records loaded.`;
+      `${payload.records.length.toLocaleString()} curated Atlas records loaded · ${(payload.positions || []).length} distinct reported positions.`;
     document.getElementById("protein-sequence").textContent =
       "Loading protein sequence from the local Atlas snapshot…";
+    let jumps = document.querySelector(".record-jumps");
+    if (!jumps) {
+      jumps = document.createElement("nav");
+      jumps.className = "record-jumps";
+      jumps.setAttribute("aria-label", "Record sections");
+      jumps.innerHTML = '<a href="#atlas-peptides">Peptides</a><a href="#atlas-evidence">Evidence</a><a href="#atlas-all-fields">Export all fields</a>';
+      atlasRecordState.after(jumps);
+    }
     loadAtlasSequence(payload);
   }
 

@@ -25,24 +25,27 @@
   <div class="container">
     <div class="detail-hero">
       <p class="section-label">O-GlcNAcAtlas record</p>
-      <h1 id="atlas-accession-title">P18583</h1>
+      <h1 id="atlas-accession-title">Find an Atlas record</h1>
       <p>Protein sequence and curated O-GlcNAcylation evidence for this accession.</p>
     </div>
 
-    <div class="detail-section">
+    <div class="detail-section" hidden>
       <div class="detail-section-heading">
         <span>Sequence</span>
         <h2>Protein sequence</h2>
       </div>
-      <pre id="protein-sequence" class="sequence-viewer" role="status" aria-live="polite">Loading protein sequence…</pre>
+      <details class="sequence-disclosure"><summary>View protein sequence <span id="sequence-summary"></span></summary>
+      <p>Curated positions are highlighted in red and underlined.</p>
+      <pre id="protein-sequence" class="sequence-viewer" tabindex="0" role="region" aria-label="Protein sequence with curated modification sites">Loading protein sequence…</pre></details>
     </div>
 
 <script src="/static/js/static-data.js"></script>
 <script src="/static/js/table-utils.js"></script>
 <script>
   const detailParams = new URLSearchParams(window.location.search);
-  const ATLAS_ACCESSION = detailParams.get("id") || decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "P18583");
-  document.getElementById("atlas-accession-title").textContent = ATLAS_ACCESSION;
+  const detailPath = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "");
+  const ATLAS_ACCESSION = (detailParams.get("id") || (!["detail", "index.html"].includes(detailPath) ? detailPath : "")).trim();
+  document.getElementById("atlas-accession-title").textContent = ATLAS_ACCESSION || "Find an Atlas record";
 
   function formatSequence(seq, positions) {
       const lines = seq.split("\n");
@@ -55,7 +58,7 @@
       for (let i = 0; i < sequenceBody.length; i++) {
           let char = escapeHtml(sequenceBody[i]);
           if (positions.includes(i + 1)) {
-              char = `<span style="color: #ee4b2b;">${char}</span>`;
+              char = `<span class="sequence-site">${char}</span>`;
           }
           formatted += char;
           count++;
@@ -84,10 +87,10 @@
 
 
 
-    <div class="detail-section">
+    <div class="detail-section" hidden>
       <div class="detail-section-heading">
         <span>Peptides</span>
-        <h2>Peptide information</h2>
+        <h2 id="atlas-peptides">Peptide information</h2>
       </div>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas peptide information table">
       <table class="table detail-table" id="detail1">
@@ -105,10 +108,10 @@
       </div>
     </div>
 
-    <div class="detail-section">
+    <div class="detail-section" hidden>
       <div class="detail-section-heading">
         <span>Evidence</span>
-        <h2>O-GlcNAcylation information</h2>
+        <h2 id="atlas-evidence">O-GlcNAcylation information</h2>
       </div>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas O-GlcNAcylation evidence table">
       <table class="table detail-table" id="detail2">
@@ -147,7 +150,7 @@
 
 
 
-    <div class="detail-section detail-export-section">
+    <div class="detail-section detail-export-section" id="atlas-all-fields" hidden>
       <div class="detail-section-heading">
         <span>Export</span>
         <h2>All curated fields</h2>

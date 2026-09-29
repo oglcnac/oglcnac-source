@@ -11,6 +11,15 @@ from pathlib import Path
 from unittest import mock
 from urllib.error import URLError
 
+from scripts.build_atlas_delivery import (
+    METADATA_FIELDS,
+    accession_bucket,
+    build_delivery,
+    compressed,
+    encoded,
+    write_delivery,
+)
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 GENERATOR = REPOSITORY_ROOT / "scripts" / "generate_static_data.py"
@@ -429,6 +438,75 @@ class StaticDataGeneratorTests(unittest.TestCase):
                     3,
                     0.25,
                 )
+
+
+class AtlasDeliveryTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        root = REPOSITORY_ROOT / "public/static/data"
+        cls.records = json.loads((root / "atlas-records.json").read_text())
+        cls.snapshot = json.loads((root / "atlas-sequences-v1.json").read_text())
+        cls.delivery = build_delivery(cls.records, cls.snapshot)
+
+    def test_every_full_record_sequence_and_provenance_survives_bucketing(self):
+        rows = []
+        sequences = {}
+        missing = []
+        excluded = {key: [] for key in self.snapshot["excluded_identifiers"]}
+        for name, bucket in self.delivery.items():
+            if not name.startswith("records/"):
+                continue
+            for accession, records in bucket["records"].items():
+                self.assertEqual(name, f"records/{accession_bucket(accession)}.json")
+                rows.extend(records)
+            snapshot = bucket["snapshot"]
+            self.assertEqual(snapshot["provenance"], self.snapshot["provenance"])
+            self.assertEqual(snapshot["coverage"], self.snapshot["coverage"])
+            sequences.update(snapshot["sequences"])
+            missing.extend(snapshot["missing_accessions"])
+            for key in excluded:
+                excluded[key].extend(snapshot["excluded_identifiers"][key])
+        self.assertEqual([record for index, record in sorted(rows)], self.records)
+        self.assertEqual(sorted(index for index, record in rows), list(range(len(self.records))))
+        self.assertEqual(sequences, self.snapshot["sequences"])
+        self.assertEqual(sorted(missing), sorted(self.snapshot["missing_accessions"]))
+        for key in excluded:
+            self.assertEqual(sorted(excluded[key]), sorted(self.snapshot["excluded_identifiers"][key]))
+
+    def test_projection_and_peptide_indexes_preserve_every_source_value_and_order(self):
+        index = self.delivery["index.json"]
+        peptides = self.delivery["peptides.json"]
+        record_id = 0
+        for row, record in enumerate(self.records):
+            record_id += index["id_deltas"][row]
+            self.assertEqual(record_id, record["id"])
+            self.assertEqual(index["positions"][row], record["position_in_protein"])
+            self.assertEqual(index["metadata"][index["metadata_rows"][row]], tuple(record[field] for field in METADATA_FIELDS))
+            self.assertEqual(peptides["values"][peptides["rows"][row]], record["peptide_seq"])
+        self.assertLess(len(compressed(encoded(index))), 480000)
+        self.assertLess(len(compressed(encoded(self.delivery[f"records/{accession_bucket('P18583')}.json"]))), 50000)
+
+    def test_derived_assets_are_deterministic_and_stale_data_is_rejected(self):
+        records = [
+            {"id": 1, "accession": "../unsafe/α", "species": "human", "peptide_seq": "MST", "position_in_protein": "2"},
+            {"id": 10, "accession": "P12345-2", "species": "mouse", "peptide_seq": None, "position_in_protein": "3"},
+        ]
+        snapshot = {"sequences": {"P12345-2": "MST"}, "missing_accessions": []}
+        first = build_delivery(records, snapshot)
+        self.assertEqual(first, build_delivery(records, snapshot))
+        self.assertNotEqual(first["manifest.json"]["revision"], build_delivery(records, {})["manifest.json"]["revision"])
+        self.assertTrue(all(".." not in name and "α" not in name for name in first))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertEqual(write_delivery(root, records, snapshot), [])
+            self.assertEqual(write_delivery(root, records, snapshot, check=True), [])
+            asset = root / "atlas-v2/index.json"
+            gzip_asset = Path(str(asset) + ".gz")
+            self.assertEqual(gzip.decompress(gzip_asset.read_bytes()), asset.read_bytes())
+            self.assertEqual(gzip_asset.read_bytes()[4:8], b"\0\0\0\0")
+            self.assertEqual(gzip_asset.read_bytes()[9], 255)
+            asset.write_text("{}")
+            self.assertTrue(any("stale" in finding for finding in write_delivery(root, records, snapshot, check=True)))
 
 
 if __name__ == "__main__":

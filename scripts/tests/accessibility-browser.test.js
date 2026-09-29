@@ -8,7 +8,7 @@ const { AxeBuilder } = require("@axe-core/playwright");
 
 const ROOT = path.resolve(__dirname, "../..");
 const STATIC_ROOT = path.join(ROOT, "dist");
-const routes = require(path.join(ROOT, "site/site.json")).pages.map((page) => page.output === "404.html" ? "/404.html" : page.route);
+const routes = require(path.join(ROOT, "site/site.json")).pages.filter(page => process.env.ACCESSIBILITY_INCLUDE_PREVIEW === "1" || !page.route.startsWith("/research/")).map((page) => page.output === "404.html" ? "/404.html" : page.route);
 const MIME = { ".css": "text/css", ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png" };
 let server; let browser; let baseUrl;
 const browserName = process.env.ACCESSIBILITY_BROWSER || "chromium";
@@ -68,7 +68,7 @@ for (const viewport of viewports) {
     await waitForRouteReady(page, "/analysis/");
     await page.click("#workbench-sample");
     await page.click('#workbench-form button[type="submit"]');
-    await page.waitForSelector("#workbench-table tbody tr", { timeout: 120000 });
+    await page.waitForSelector("#workbench-table tbody tr", { state: "attached", timeout: 120000 });
     assert.deepEqual(await wcagViolations(page), []);
     await page.fill("#workbench-fasta", ">invalid\nABCZ");
     await page.click('#workbench-form button[type="submit"]');
@@ -76,4 +76,31 @@ for (const viewport of viewports) {
     assert.deepEqual(await wcagViolations(page), []);
     await context.close();
   });
+}
+
+// The useful scientific answer and recovery states must be audited, not just
+// the initial empty forms. Capture fixtures are shared with the visual review.
+const auditedStates = require("../capture_screenshots.js").captures.filter((capture) =>
+  /search-results|search-empty|search-error|^atlas-detail$|^ogt-pin-detail$|pred-dl-result|pred-dl-error|hexnac-result|hexnac-error|publication-figures/.test(capture.name)
+);
+for (const viewport of viewports) {
+  for (const state of auditedStates) {
+    test(`${state.name} has no WCAG A/AA violations at ${viewport.name} width`, { timeout: 180000 }, async () => {
+      const context = await browser.newContext({ viewport, reducedMotion: "reduce" });
+      const page = await context.newPage();
+      try {
+        if (state.prepare) await state.prepare(page);
+        await page.goto(baseUrl + state.route);
+        if (state.act) await state.act(page);
+        if (state.ready) await state.ready(page);
+        if (state.name === "atlas-detail") {
+          await page.locator(".sequence-disclosure summary").click();
+          await page.waitForFunction(() => document.getElementById("protein-sequence").textContent.startsWith(">"));
+        }
+        assert.deepEqual(await wcagViolations(page), []);
+      } finally {
+        await context.close();
+      }
+    });
+  }
 }

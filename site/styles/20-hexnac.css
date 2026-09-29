@@ -221,8 +221,9 @@
   border-left: 4px solid var(--hq-purple);
 }
 
-.hq-analysis-grid {
+.hexnac-section .hq-analysis-grid {
   align-items: start;
+  gap: 24px;
 }
 
 .hq-table-wrap {
@@ -261,12 +262,123 @@
 #hexnac-spectrum {
   display: block;
   width: 100%;
-  min-height: 250px;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
 }
 
 #hexnac-spectrum text {
   fill: #493d56;
   font: 15px Arial, Helvetica, sans-serif;
+}
+
+.hexnac-section .hq-upload-card .hq-actions {
+  margin-top: 16px;
+}
+
+.hexnac-section .hq-upload-card .hq-status {
+  margin-top: 12px;
+}
+
+.hexnac-section .hq-upload-card progress {
+  display: block;
+  height: 8px;
+  margin-top: 12px;
+}
+
+.hexnac-section .hq-upload-card .hq-privacy-note {
+  margin-top: 12px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.hexnac-section .hq-analysis-grid h2,
+.hexnac-section .hq-results-section h2,
+#hexnac-skipped-card h2 {
+  margin-bottom: 12px;
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+  line-height: 1.25;
+}
+
+.hq-selected-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0 0 16px;
+  overflow-wrap: anywhere;
+}
+
+.hq-selected-row strong {
+  min-width: 0;
+  color: #322646;
+}
+
+.hq-selected-row span {
+  color: #665b73;
+  font-size: 0.85rem;
+}
+
+.hq-spectrum-plot {
+  max-width: 460px;
+  margin: 0 auto 16px;
+}
+
+.hq-spectrum-labels {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid #c9c2d1;
+  padding-top: 8px;
+  text-align: center;
+  color: #493d56;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hq-spectrum-axis {
+  margin: 6px 0 0;
+  text-align: center;
+  color: #665b73;
+  font-size: 0.8rem;
+}
+
+.hq-spectrum-values {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hq-spectrum-values > div {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid #e6e0eb;
+}
+
+.hq-spectrum-values dt {
+  color: #493d56;
+  font-weight: 600;
+}
+
+.hq-spectrum-values dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.hexnac-section .hq-skipped-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.hexnac-section .hq-skipped-table th:first-child {
+  width: 6rem;
+}
+
+.hexnac-section .hq-skipped-table :is(th, td) {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .hq-pager {
@@ -343,6 +455,76 @@
   object-fit: contain;
 }
 
+.hq-workflow-diagram {
+  margin: 0;
+  padding: 20px;
+  border: 1px solid #ded6e8;
+  border-radius: 10px;
+  background: #faf8fd;
+}
+
+.hq-figure-link {
+  display: block;
+  min-width: 0;
+}
+
+.hq-figure-link span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.875rem;
+}
+
+.hq-workflow-diagram figcaption {
+  margin-bottom: 16px;
+  color: #4d2d80;
+  font-weight: 750;
+}
+
+.hq-workflow-diagram ol {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: workflow;
+}
+
+.hq-workflow-diagram li {
+  position: relative;
+  min-width: 0;
+  padding: 0 0 0 34px;
+  counter-increment: workflow;
+}
+
+.hq-workflow-diagram li::before {
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #fff;
+  background: #6741a5;
+  font-size: 0.8rem;
+  content: counter(workflow);
+}
+
+.hq-workflow-diagram :is(strong, span) {
+  display: block;
+}
+
+.hq-workflow-diagram span {
+  margin-top: 3px;
+  color: #665b73;
+  font-size: 0.875rem;
+}
+
+.hq-workflow-diagram code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .hq-contact-card {
   max-width: 700px;
 }
@@ -382,5 +564,9 @@
 
   .hq-tutorial-step img {
     margin-bottom: 16px;
+  }
+
+  .hq-workflow-diagram {
+    margin-bottom: 20px;
   }
 }

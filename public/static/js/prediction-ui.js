@@ -26,11 +26,12 @@
 
   function setBusy(busy) {
     document
-      .querySelectorAll('.prediction-card button[type="submit"]')
+      .querySelectorAll('.prediction-card button[type="submit"], .prediction-card input, .analysis-input-choice button')
       .forEach((button) => {
         button.disabled = busy;
       });
     document.getElementById("prediction-cancel").disabled = !busy;
+    document.getElementById("message").readOnly = busy;
   }
 
   function showStatus(phase, completed, total) {
@@ -105,6 +106,9 @@
       return;
     }
     if (message.type === "error") {
+      const failedWorker = worker;
+      worker = null;
+      if (failedWorker) failedWorker.terminate();
       finishJob();
       showPredictionError(message.message || "Prediction failed.");
     }
@@ -112,12 +116,20 @@
 
   function predictionWorker() {
     if (!worker) {
-      worker = new Worker("/static/js/prediction-worker.js");
-      worker.addEventListener("message", handleWorkerMessage);
-      worker.addEventListener("error", () => {
+      const currentWorker = new Worker("/static/js/prediction-worker.js");
+      worker = currentWorker;
+      currentWorker.addEventListener("message", (event) => {
+        if (worker === currentWorker && activeJobId) handleWorkerMessage(event);
+      });
+      currentWorker.addEventListener("error", (event) => {
+        event.preventDefault();
+        if (worker !== currentWorker) return;
+        worker = null;
+        currentWorker.terminate();
+        if (!activeJobId) return;
         finishJob();
         showPredictionError(
-          "The local prediction engine could not start. Please reload and try again.",
+          "The local prediction engine could not start. Try submitting again.",
         );
       });
     }
@@ -150,20 +162,45 @@
     activeJobId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     setBusy(true);
     showStatus("validating", 0, 1);
-    predictionWorker().postMessage({
-      type: "predict",
-      jobId: activeJobId,
-      species,
-      fasta,
-    });
+    try {
+      predictionWorker().postMessage({
+        type: "predict",
+        jobId: activeJobId,
+        species,
+        fasta,
+      });
+    } catch (error) {
+      if (worker) worker.terminate();
+      worker = null;
+      finishJob();
+      showPredictionError("The local prediction engine could not start. Try submitting again.");
+    }
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     resultsTable = window.OglcnacTables.create("prediction-results-table", {
       filename: "oglcnac-pred-dl-results.csv",
+      label: "Predicted site",
+      mobileColumns: [0, 1, 2, 3, 4],
+      mobileLabels: { 3: "Prediction score", 4: "Confidence" },
     });
     const textForm = document.getElementById("prediction-text-form");
     const fileForm = document.getElementById("prediction-file-form");
+    const pasteMode = document.getElementById("prediction-paste-mode");
+    const uploadMode = document.getElementById("prediction-upload-mode");
+    function chooseInput(upload) {
+      textForm.hidden = upload;
+      fileForm.hidden = !upload;
+      pasteMode.setAttribute("aria-pressed", String(!upload));
+      uploadMode.setAttribute("aria-pressed", String(upload));
+    }
+    pasteMode.addEventListener("click", () => chooseInput(false));
+    uploadMode.addEventListener("click", () => chooseInput(true));
+    document.querySelectorAll('.prediction-card input[name="drone"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        document.querySelectorAll(`.prediction-card input[name="drone"][value="${input.value}"]`).forEach((matching) => { matching.checked = true; });
+      });
+    });
     textForm.addEventListener("submit", (event) => {
       event.preventDefault();
       submitPrediction(
@@ -174,20 +211,20 @@
     fileForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const file = event.currentTarget.querySelector('input[type="file"]').files[0];
+      const species = selectedSpecies(event.currentTarget);
       if (!file) {
         showPredictionError("FASTA file is required.");
         return;
       }
-      submitPrediction(
-        selectedSpecies(event.currentTarget),
-        await file.text(),
-      );
+      try { submitPrediction(species, await file.text()); }
+      catch (error) { showPredictionError("The FASTA file could not be read. Choose the file again."); }
     });
     document.getElementById("prediction-cancel").addEventListener("click", () => {
       if (activeJobId && worker) {
-        worker.terminate();
+        const cancelledWorker = worker;
         worker = null;
         finishJob();
+        cancelledWorker.terminate();
         showPredictionError("Prediction cancelled.");
       }
     });

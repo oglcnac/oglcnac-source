@@ -7,7 +7,7 @@ const path = require("node:path");
 const playwright = require("playwright");
 
 const ROOT = path.resolve(__dirname, "../..");
-const STATIC_ROOT = path.join(ROOT, "dist");
+const STATIC_ROOT = process.env.SITE_STATIC_ROOT || path.join(ROOT, "dist");
 const requestedBrowserName = process.env.SITE_BROWSER || "chromium";
 const browserType = playwright[requestedBrowserName];
 if (!browserType) {
@@ -21,6 +21,9 @@ const MIME_TYPES = {
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".wasm": "application/wasm",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
 };
 
 let server;
@@ -256,26 +259,20 @@ test("native table headers expose the active sort direction", async () => {
   await page.close();
 });
 
-test("wide result tables keep readable headers inside a horizontal scroll region", async () => {
+test("mobile OGT-PIN cards show the searched interactor and preserve every field", async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(`${baseUrl}/ogt-pin/search/?q=Q9H1M0&field=uuid_b`);
   await waitForTable(page, "search_result");
-
-  const layout = await page.evaluate(() => {
-    const table = document.querySelector("#search_result");
-    const region = table.closest(".table-scroll");
-    const widths = Array.from(table.querySelectorAll("thead th")).map(
-      (header) => Math.round(header.getBoundingClientRect().width),
-    );
-    return {
-      regionWidth: Math.round(region.getBoundingClientRect().width),
-      tableWidth: Math.round(table.getBoundingClientRect().width),
-      minimumHeaderWidth: Math.min(...widths),
-    };
-  });
-
-  assert.ok(layout.tableWidth > layout.regionWidth, layout);
-  assert.ok(layout.minimumHeaderWidth >= 120, layout);
+  const card = page.locator(".native-record-card").first();
+  assert.equal(await card.isVisible(), true);
+  assert.match(await card.textContent(), /Q9H1M0.*View evidence/);
+  assert.match(await card.textContent(), /NUP62CL/);
+  await card.locator("summary").click();
+  assert.equal(await card.locator("dt").count(), 6);
+  assert.equal(await page.locator("#search_result").isVisible(), false);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  const targets = await card.locator("a").evaluateAll(links => links.map(link => ({height:link.getBoundingClientRect().height, label:link.textContent})));
+  assert.ok(targets.every(target => target.height >= 24), JSON.stringify(targets));
   await page.close();
 });
 
@@ -320,7 +317,7 @@ test(
         "WILL-HIDE-REPLACEMENT",
       );
       await page.selectOption(
-        `[data-table-status-for="${tableId}"] + * + .native-table-pagination select`,
+        `[data-table-pagination-for="${tableId}"] select`,
         "25",
       );
       await page.click(`#${tableId} thead th:first-child button`);
@@ -470,30 +467,13 @@ test("known and missing Atlas and OGT-PIN detail records have explicit states", 
 
 test("Atlas evidence renders completely while a missing local sequence fallback is pending", async () => {
   const page = await browser.newPage();
-  await page.route("**/static/data/atlas-sequences-v1.json", (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        schema_version: 1,
-        coverage: {
-          candidate_accessions: 1,
-          resolved_accessions: 0,
-          missing_accessions: 1,
-          non_uniprot_identifiers: 0,
-          unresolved_identifiers: 0,
-          blank_accession_records: 0,
-        },
-        missing_accessions: ["P18583"],
-        excluded_identifiers: {
-          non_uniprot: [],
-          unresolved: [],
-          blank_accession_record_ids: [],
-        },
-        sequences: {},
-      }),
-    }),
-  );
+  await page.route("**/static/data/atlas-v2/records/*.json*", async (route) => {
+    const response = await route.fetch();
+    const bucket = await response.json();
+    delete bucket.snapshot.sequences.P18583;
+    bucket.snapshot.missing_accessions.push("P18583");
+    await route.fulfill({ response, json: bucket });
+  });
   let releaseFallback;
   const fallbackReleased = new Promise((resolve) => {
     releaseFallback = resolve;
@@ -529,7 +509,7 @@ test("Atlas evidence renders completely while a missing local sequence fallback 
   assert.equal(evidence.recordState, "ready");
 
   await assert.doesNotReject(() =>
-    page.getByText(/Protein sequence.*not available/i).waitFor(),
+    page.getByText(/Protein sequence.*not available/i).waitFor({ state: "attached" }),
   );
   await page.close();
 });
@@ -566,8 +546,10 @@ test("OGT-PIN statistics filters the readable network and preserves publication 
   await page.selectOption("#ogt-network-species", { label: "Mus musculus (Mouse)" });
   await page.waitForFunction(() => !document.querySelector("#ogt-summary-metrics")?.textContent.includes("3,757"));
   assert.ok(await page.locator("#ogt-network-nodes a").count() > 0);
+  assert.equal(await page.evaluate(() => performance.getEntriesByType("resource").some(entry => entry.name.includes("OGT-Interactome-760.svg"))), false);
   await page.locator(".historical-figures > summary").click();
-  assert.equal(await page.locator('.historical-figures img[src="/static/img/OGT-Interactome-760.svg"]').isVisible(), true);
+  await page.waitForFunction(() => document.querySelector(".historical-figures img[src*=\"OGT-Interactome-760\"]")?.naturalWidth > 0);
+  assert.equal(await page.locator('.historical-figures img[src^="/static/img/OGT-Interactome-760.svg"]').isVisible(), true);
   await page.close();
 });
 
@@ -583,7 +565,7 @@ test("result surfaces announce empty and data-load error states", async () => {
     /No matching records/i,
   );
 
-  await page.route("**/static/data/atlas-records.json", (route) =>
+  await page.route("**/static/data/atlas-v2/manifest.json*", (route) =>
     route.fulfill({ status: 503, body: "unavailable" }),
   );
   await page.reload();
@@ -703,12 +685,12 @@ test("portal navigation stays fixed while each tool has its own navigation regio
     );
 
     assert.ok(
-      layout.tool.right <= layout.portal.left - 20,
-      `${route} tool navigation should have a distinct region before portal navigation`,
+      layout.tool.top >= layout.portal.bottom,
+      `${route} section navigation should sit below the primary navigation`,
     );
     assert.ok(
-      Math.abs((layout.tool.left + layout.tool.right) / 2 - (layout.panel.left + layout.portal.left - 24) / 2) <= 32,
-      `${route} tool navigation should be centered in its region`,
+      Math.abs(layout.tool.left - layout.panel.left) <= 1,
+      `${route} section navigation should align with the navigation panel`,
     );
   }
 
@@ -744,8 +726,9 @@ test("tool home pages expose every resource without opening the header menu", as
     ],
   };
   for (const width of [1024, 390]) {
-    const page = await browser.newPage({ viewport: { width, height: 844 } });
     for (const [route, links] of Object.entries(expected)) {
+      // Each route is an independent directory check; navigation behavior has its own tests.
+      const page = await browser.newPage({ viewport: { width, height: 844 } });
       await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
       for (const href of links) {
         const link = page.locator(
@@ -762,8 +745,8 @@ test("tool home pages expose every resource without opening the header menu", as
           `${route} hides ${href} in main content at ${width}px`,
         );
       }
+      await page.close();
     }
-    await page.close();
   }
 });
 
@@ -1060,7 +1043,7 @@ test("shared title surfaces are compact and leave room for useful content", asyn
   await page.close();
 });
 
-test("long-form tutorials use a centered wide reading surface on desktop", async () => {
+test("long-form tutorials align headings and body in a readable centered column", async () => {
   const routes = ["/atlas/tutorial/", "/ogt-pin/tutorial/", "/pred_dl/tutorial/"];
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 
@@ -1075,8 +1058,13 @@ test("long-form tutorials use a centered wide reading surface on desktop", async
         containerWidth: Math.round(containerBounds.width),
         panelCenter: Math.round((panelBounds.left + panelBounds.right) / 2),
         containerCenter: Math.round((containerBounds.left + containerBounds.right) / 2),
+        headingLeft: panel.querySelector("h2").getBoundingClientRect().left,
+        paragraphLeft: panel.querySelector("p").getBoundingClientRect().left,
+        textWidth: panel.querySelector("p").getBoundingClientRect().width,
       };
     });
+    assert.ok(Math.abs(layout.headingLeft - layout.paragraphLeft) <= 1, JSON.stringify(layout));
+    assert.ok(layout.textWidth <= 820, JSON.stringify(layout));
     assert.equal(
       layout.panelWidth,
       layout.containerWidth,
@@ -1119,7 +1107,7 @@ test("tutorial glossaries use compact two-column entries without repeated divide
 });
 
 test("desktop result tables keep titles, controls, and record counts on one compact row", async () => {
-  const routes = ["/atlas/browse/?species=Human", "/atlas/search/", "/ogt-pin/search/"];
+  const routes = ["/atlas/browse/?species=Human", "/atlas/search/?q=P18583&field=accession", "/ogt-pin/search/?q=Q9H1M0&field=uuid_b"];
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 
   for (const route of routes) {
@@ -1188,8 +1176,10 @@ test("all public content pages reflow without horizontal overflow", async () => 
     "/hexnac-quest/contact/",
   ];
   for (const width of [390, 320]) {
-    const page = await browser.newPage({ viewport: { width, height: 844 } });
     for (const route of routes) {
+      // Isolate layout checks across engines. The local WPE runtime can crash on
+      // repeated navigation even with plain HTML (documented in visual-review).
+      const page = await browser.newPage({ viewport: { width, height: 844 } });
       await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
       const overflow = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
@@ -1215,8 +1205,8 @@ test("all public content pages reflow without horizontal overflow", async () => 
         overflow.document <= overflow.viewport && overflow.body <= overflow.viewport,
         `${route} overflows at ${width}px: ${JSON.stringify(overflow)}`,
       );
+      await page.close();
     }
-    await page.close();
   }
 });
 
@@ -1245,8 +1235,8 @@ test("mobile page titles remain compact, contained, and separated from adjacent 
     "/hexnac-quest/tutorial/",
     "/hexnac-quest/contact/",
   ];
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   for (const route of routes) {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await page.goto(`${baseUrl}${route}`, { waitUntil: "load" });
     const result = await page.evaluate(() => {
       const title = document.querySelector("h1");
@@ -1305,6 +1295,91 @@ test("mobile page titles remain compact, contained, and separated from adjacent 
       [],
       `${route} mobile H1 overlaps adjacent copy: ${JSON.stringify(result)}`,
     );
+    await page.close();
+  }
+});
+
+test("all navigation destinations remain available across the complete responsive range", async () => {
+  const page = await browser.newPage({ reducedMotion: "reduce" });
+  for (const width of [320, 390, 768, 1100, 1150, 1279, 1280, 1440, 1600, 1920, 3840]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto(`${baseUrl}/atlas/`);
+    const toggle = page.locator(".site-nav-disclosure > summary");
+    if (await toggle.isVisible()) { await toggle.focus(); await page.keyboard.press("Enter"); }
+    assert.equal(await page.locator(".site-workbench-link").isVisible(), true, `Workbench missing at ${width}`);
+    for (const link of await page.locator("header a").all()) assert.equal(await link.isVisible(), true, `Hidden navigation at ${width}`);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Overflow at ${width}`);
+    if (width < 1280) {
+      const panelWidth = await page.locator(".site-nav-panel").evaluate(element => element.getBoundingClientRect().width);
+      assert.ok(panelWidth >= width * .8, `Menu too narrow at ${width}`);
+    }
   }
   await page.close();
+});
+
+test("initial and missing-identifier pages offer recovery without empty data tools", async () => {
+  const page = await browser.newPage();
+  for (const route of ["/atlas/search/", "/ogt-pin/search/", "/atlas/detail/", "/ogt-pin/detail/"]) {
+    const requestedData = [];
+    const record = request => { if (request.url().includes("/static/data/")) requestedData.push(request.url()); };
+    page.on("request", record);
+    await page.goto(baseUrl + route);
+    assert.equal(await page.locator(".native-table-controls:visible").count(), 0);
+    assert.equal(await page.locator("table:visible").count(), 0);
+    assert.doesNotMatch(await page.locator("h1").textContent(), /^detail$/i);
+    assert.deepEqual(requestedData, []);
+    page.off("request", record);
+  }
+  await page.close();
+});
+
+test("Atlas transient load failure retries successfully without reload", async () => {
+  const page = await browser.newPage();
+  let failed = false;
+  await page.route("**/static/data/atlas-v2/manifest.json*", async route => {
+    if (!failed) { failed = true; await route.fulfill({ status: 503, body: "transient fixture" }); }
+    else await route.continue();
+  });
+  await page.goto(`${baseUrl}/atlas/browse/`);
+  await page.waitForSelector('[data-table-state="error"]');
+  await page.locator('[data-species="mouse"]').click();
+  await page.waitForSelector('[data-table-state="ready"]');
+  assert.ok(await page.evaluate(() => window.OglcnacTables.get("search_result").totalRows > 0));
+  await page.close();
+});
+
+test("Atlas query layout stays stable while table scripts are delayed", async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  let releaseScripts;
+  const scriptGate = new Promise(resolve => { releaseScripts = resolve; });
+  const intercepted = page.waitForRequest("**/static/js/table-utils.js*");
+  await page.route("**/static/js/table-utils.js*", async route => {
+    await scriptGate;
+    await route.continue();
+  });
+  try {
+    await page.goto(`${baseUrl}/atlas/search/?q=P18583&field=accession`, { waitUntil: "commit" });
+    await intercepted;
+    await page.locator(".table-results-section").waitFor({ state: "attached" });
+    const before = await page.evaluate(() => ({
+      formTop: document.querySelector("#atlas-search-form").getBoundingClientRect().top,
+      resultsTop: document.querySelector(".table-results-section").getBoundingClientRect().top,
+      footerTop: document.querySelector("footer").getBoundingClientRect().top,
+      viewportHeight: window.innerHeight,
+    }));
+    assert.ok(before.footerTop >= before.viewportHeight, "Pending results reserve space before external scripts arrive");
+    releaseScripts();
+    await waitForTable(page, "search_result");
+    const after = await page.evaluate(() => ({
+      formTop: document.querySelector("#atlas-search-form").getBoundingClientRect().top,
+      resultsTop: document.querySelector(".table-results-section").getBoundingClientRect().top,
+      total: window.OglcnacTables.get("search_result").totalRows,
+    }));
+    assert.ok(after.total > 0, "Delayed scripts still complete the query");
+    assert.ok(Math.abs(after.formTop - before.formTop) <= 1, "Search form must not jump after script initialization");
+    assert.ok(Math.abs(after.resultsTop - before.resultsTop) <= 1, "Result section must not jump after script initialization");
+  } finally {
+    releaseScripts();
+    await page.close();
+  }
 });

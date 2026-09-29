@@ -4,12 +4,13 @@
     "styles/20-hexnac.css",
     "styles/30-polish.css",
     "styles/40-shell.css",
-    "styles/50-publication.css"
+    "styles/50-publication.css",
+    "styles/55-analysis.css"
   ],
   "primary_navigation": [
     ["Home", "/", "home"],
     ["Atlas", "/atlas/", "atlas"],
-    ["OGT-PIN", "/ogt-pin", "ogt-pin"],
+    ["OGT-PIN", "/ogt-pin/", "ogt-pin"],
     ["PRED-DL", "/pred_dl/", "pred-dl"],
     ["HexNAcQuest", "/hexnac-quest/", "hexnac-quest"]
   ],

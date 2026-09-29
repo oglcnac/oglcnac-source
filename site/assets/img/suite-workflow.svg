@@ -16,7 +16,7 @@
       <rect x="48" y="204" width="282" height="92" rx="15"/>
       <rect x="48" y="324" width="282" height="92" rx="15"/>
     </g>
-    <g fill="#132b40" font-size="20" font-weight="700">
+    <g fill="#132b40" font-size="18" font-weight="700">
       <text x="74" y="122">Experimental evidence</text>
       <text x="74" y="242">Protein sequence</text>
       <text x="74" y="362">MS/MS intensities</text>
@@ -29,8 +29,8 @@
     <g fill="none" stroke="#91a5b5" stroke-linecap="round" stroke-width="2.5" marker-end="url(#arrow)">
       <path d="M330 130h42v-10h20"/>
       <path d="M330 130h42v94h20"/>
-      <path data-flow="protein-to-pred-dl" d="M330 250h62"/>
-      <path d="M330 370h42v94h20"/>
+      <path data-flow="protein-to-pred-dl" d="M330 250h28v78h34"/>
+      <path d="M330 370h42v62h20"/>
     </g>
     <g fill="#fff" stroke-width="2.5">
       <rect x="402" y="84" width="286" height="72" rx="14" stroke="#3478bd"/>
@@ -38,7 +38,7 @@
       <rect x="402" y="292" width="286" height="72" rx="14" stroke="#4f70c2"/>
       <rect x="402" y="396" width="286" height="72" rx="14" stroke="#7655a6"/>
     </g>
-    <g fill="#132b40" font-size="20" font-weight="700">
+    <g fill="#132b40" font-size="18" font-weight="700">
       <text x="428" y="128">O-GlcNAcAtlas</text>
       <text x="428" y="232">OGT-PIN</text>
       <text x="428" y="336">O-GlcNAcPRED-DL</text>

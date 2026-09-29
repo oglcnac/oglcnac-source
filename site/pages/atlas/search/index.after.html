@@ -2,6 +2,7 @@
   <script src="/static/js/table-utils.js"></script>
   <script>
     const atlasSearchTable = window.OglcnacTables.create("search_result", {
+      mobileColumns: [0, 2, 3, 4],
       filename: "oglcnac-atlas-search.csv"
     });
 
@@ -27,20 +28,25 @@
       ];
     }
 
+    let searchGeneration = 0;
     async function runAtlasSearch(event) {
       if (event) {
         event.preventDefault();
       }
       const form = document.getElementById("atlas-search-form");
+      const generation = ++searchGeneration;
       const term = form.q.value.trim();
       const field = form.field.value;
       if (!term) {
         atlasSearchTable.setRows([]);
+        document.body.classList.remove("atlas-query-pending");
         return;
       }
       atlasSearchTable.setLoading("Loading Atlas records…");
+      document.body.classList.remove("atlas-query-pending");
       try {
         const results = await window.OglcnacStaticData.searchAtlas(term, field);
+        if (generation !== searchGeneration) return;
         atlasSearchTable.setRows(results.map(atlasSearchRow), {
           preserveState: false
         });
@@ -50,6 +56,7 @@
           `${window.location.pathname}?q=${encodeURIComponent(term)}&field=${encodeURIComponent(field)}`
         );
       } catch (error) {
+        if (generation !== searchGeneration) return;
         atlasSearchTable.setError(
           "Atlas records could not be loaded. Please try again."
         );
@@ -60,7 +67,6 @@
     atlasSearchForm.addEventListener("submit", runAtlasSearch);
     const atlasSearchParams = new URLSearchParams(window.location.search);
     if (atlasSearchParams.get("q")) {
-      document.body.classList.add("has-search-query");
       atlasSearchForm.q.value = atlasSearchParams.get("q");
       if (atlasSearchParams.get("field")) {
         atlasSearchForm.field.value = atlasSearchParams.get("field");
