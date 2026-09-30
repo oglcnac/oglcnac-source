@@ -1,0 +1,8 @@
+<section class="atlas-tools-heading"><div class="container"><p class="eyebrow">O-GlcNAcAtlas · Literature</p><h1>Explore the evidence by study</h1><p>Find a publication and follow its reported proteins, modification sites and experimental context.</p></div></section>
+<section class="atlas-tools-page"><div class="container">
+<form id="studies-form" class="study-filters"><div><label for="studies-query">Title, author, PMID or DOI</label><input type="search" id="studies-query" placeholder="Search the Atlas literature"></div><div><label for="studies-year">Publication year</label><select id="studies-year"><option value="">All years</option></select></div><div><label for="studies-species">Reported species</label><select id="studies-species"><option value="">All species</option></select></div><button type="submit">Find studies</button><button type="button" id="studies-reset">Reset</button></form>
+<p id="studies-status" class="atlas-tool-status" role="status">Loading publications…</p><button type="button" id="studies-retry" hidden>Retry loading studies</button>
+<p class="study-directory-note">Counts describe Atlas records linked to each PMID. A record citing several papers appears under each paper. This directory covers the Atlas snapshot; it is not a complete literature search.</p>
+<ol id="studies-list" class="study-list" aria-label="Atlas source publications"></ol>
+<nav class="study-pagination" aria-label="Publication result pages"><button type="button" id="studies-previous" disabled>Previous</button><span id="studies-page"></span><button type="button" id="studies-next" disabled>Next</button></nav>
+</div></section>

@@ -4,7 +4,7 @@
   const table=OglcnacTables.create('collection_table',{label:'Collection proteins',filename:'atlas-collection.csv',mobileColumns:[0,1,2,3,4]});
   let active=new URLSearchParams(location.search).get('collection')||'',epoch=0,lastUndo=null;
   const status=text=>{el('collections-status').textContent=text;};
-  function selection(){el('collection-selection').textContent=`${selected.size} selected. Choose 2–4 to compare.`;el('collection-compare').disabled=selected.size<2||selected.size>4;el('collection-remove').disabled=!selected.size;document.querySelectorAll('[data-select-accession]').forEach(input=>{input.checked=selected.has(input.dataset.selectAccession);});}
+  function selection(){el('collection-selection').textContent=`${selected.size} selected. Choose 2–4 to compare.`;el('collection-compare').disabled=selected.size<2||selected.size>4;el('collection-remove').disabled=!selected.size;el('collection-analyze').disabled=!selected.size;document.querySelectorAll('[data-select-accession]').forEach(input=>{input.checked=selected.has(input.dataset.selectAccession);});}
   function save(fn,message){try{store.update(fn);status(message);render();return true;}catch(e){status(e.message);return false;}}
   function setActive(id,push=true){active=id;selected.clear();const params=new URLSearchParams();if(id)params.set('collection',id);const url=location.pathname+(params.size?'?'+params:'');if(push&&url!==location.pathname+location.search)history.pushState(null,'',url);el('collection-confirm').hidden=true;render();}
   async function render(){
@@ -25,6 +25,7 @@
   el('collection-select-all').addEventListener('click',()=>{try{store.read().collections.find(c=>c.id===active)?.accessions.forEach(id=>selected.add(id));selection();}catch(e){status(e.message);}});
   el('collection-clear').addEventListener('click',()=>{selected.clear();selection();});
   el('collection-compare').addEventListener('click',()=>{if(selected.size>=2&&selected.size<=4)location.href=T.compareURL([...selected]);});
+  el('collection-analyze').addEventListener('click',()=>{if(selected.size)location.href=OglcnacResearch.analysisURL([...selected]);});
   el('collection-remove').addEventListener('click',()=>{const ids=[...selected],target=active;if(save(data=>{const c=data.collections.find(c=>c.id===target);if(!c)throw Error('Collection no longer exists.');c.accessions=c.accessions.filter(id=>!selected.has(id));c.updated=new Date().toISOString();return data;},`${ids.length} proteins removed. You can undo this removal.`)){lastUndo={target,ids};selected.clear();el('collection-undo').hidden=false;}});
   el('collection-delete').addEventListener('click',()=>{el('collection-confirm').hidden=false;el('collection-delete-cancel').focus();});
   el('collection-delete-cancel').addEventListener('click',()=>{el('collection-confirm').hidden=true;el('collection-delete').focus();});

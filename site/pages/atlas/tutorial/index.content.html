@@ -66,6 +66,19 @@
       </ol>
       <p>Records without a single numeric position, or whose positions fall outside the available sequence, are retained in the tables. Entries without an available sequence still provide their curated evidence. <strong>Download complete record</strong> and <strong>All record fields</strong> always retain every source row, including rows outside the selected position.</p>
 
+      <h2 id="research-workflows">Take a protein set into analysis</h2>
+      <p>Search suggestions show reported genes, protein names, accessions and species. Use the arrow keys and Enter to choose a suggestion, or submit a query in the selected search field. A gene name can match several proteins; check the accession and species before selecting.</p>
+      <ol>
+        <li>Select proteins in search results and save them to a collection. Open <a href="/atlas/collections/">My collections</a>, select the proteins you want, and choose <strong>Analyze selected</strong>. A protein record also offers <strong>Analyze in Workbench</strong>.</li>
+        <li>Check the sequence-preparation outcomes. Compatible inputs from one species fill FASTA automatically. For mixed or incomplete sets, choose a human or mouse group. Missing sequences and unsupported species remain listed; isoforms are not substituted.</li>
+        <li>Inspect the FASTA and species model, then run the analysis. Matching Atlas sites link back to their experimental evidence. Predictions remain separate from evidence.</li>
+      </ol>
+      <h2 id="study-explorer">Browse the source studies</h2>
+      <p>The <a href="/atlas/publications/">publication directory</a> searches the studies represented in Atlas by title, author, PMID or DOI. Each study page shows its reported proteins, numeric positions, methods and samples. You can save proteins to a collection or download all original study evidence. A source row citing several papers appears under each paper; study counts should not be added as independent observations.</p>
+      <h2 id="research-exports">Export figures and reproducible reports</h2>
+      <p>Below a protein map, open <strong>Export a scientific figure</strong>. Set the first and last residue, use the current map region, or choose the full protein. Preview the figure and download SVG or a high-resolution PNG. The figure preserves the record-wide evidence filters, original coordinates, source-residue conflicts, compatible annotations and source information. Separate table searches do not change its evidence scope.</p>
+      <p><strong>Export research report</strong> downloads a ZIP containing data, available sequences, filters, citations, versions and file checksums. Protein reports contain complete and record-wide-filtered evidence. Workbench reports contain the actual submitted FASTA, complete and filtered predictions, model configuration and source evidence from the completed run. Later edits to the input form do not change that run's report. Reports are created in your browser; keep a copy with your project files.</p>
+
       <h2>Search tips</h2>
       <ul>
         <li>Use <strong>Search</strong> in the site header from any page, or press <kbd>/</kbd> outside an input field. Press <kbd>Escape</kbd> to close it.</li>

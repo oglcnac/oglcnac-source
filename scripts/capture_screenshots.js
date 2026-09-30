@@ -90,6 +90,8 @@ const captures = [
   { group: "atlas", route: "/atlas/search/", name: "atlas-search", aboveFold: ".search-form" },
   { group: "atlas", route: "/atlas/collections/", name: "atlas-collections", aboveFold: "#collection-list" },
   { group: "atlas", route: "/atlas/compare/?ids=P12270,P18583,O15294", name: "atlas-compare", ready: waitForSelector('#comparison-grid[data-ready="true"]') },
+  { group: "atlas", route: "/atlas/publications/", name: "atlas-publications", ready: waitForSelector('#studies-list[data-ready="true"]') },
+  { group: "atlas", route: "/atlas/study/?pmid=20068230", name: "atlas-study", ready: waitForSelector('#study-content[data-ready="true"]') },
   { group: "atlas", route: "/atlas/review/", name: "atlas-review", ready: waitForTable("review_table") },
   {
     group: "atlas",

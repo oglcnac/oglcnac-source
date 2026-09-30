@@ -84,6 +84,14 @@
     const copied = await window.OglcnacProteinViewer.copyText(ATLAS_ACCESSION);
     document.getElementById('atlas-copy-status').textContent = copied ? `Accession ${ATLAS_ACCESSION} copied.` : `Copy this accession: ${ATLAS_ACCESSION}`;
   });
+  function atlasResearchContext() {
+    return {accession:ATLAS_ACCESSION,name:atlasCompleteRecords[0]?.protein_name||'',species:atlasView.values(atlasCompleteRecords,'species').join(' / '),sequence:atlasProteinViewer?.getSequence()||'',fasta:atlasFasta,sequence_source:{kind:atlasFasta.startsWith('>local|'+ATLAS_ACCESSION+'|')?'atlas-snapshot':atlasFasta?'uniprot-fallback':'unavailable',label:atlasFasta.startsWith('>local|'+ATLAS_ACCESSION+'|')?'Tracked Atlas sequence':atlasFasta?'UniProt FASTA (live or browser cache)':'No sequence available',header:atlasFasta.split('\n')[0]||''},records:[...(atlasAppliedBase||atlasCompleteRecords)],allRecords:[...atlasCompleteRecords],filteredRecords:[...(atlasAppliedRows||atlasCompleteRecords)],filters:{...(atlasEvidenceController?.getFilters()||{})},position:atlasProteinViewer?.getSelection(),url:location.href,annotation:atlasFeatureViewer?.getExport()||{state:'unavailable',metadata:null}};
+  }
+  OglcnacProteinFigure.mount(document.getElementById('atlas-figure-export'),atlasResearchContext,()=>atlasProteinViewer?.getViewRange()||{start:1,end:0});
+  document.getElementById('atlas-report').addEventListener('click',async()=>{
+    const button=document.getElementById('atlas-report'),status=document.getElementById('atlas-copy-status'),context=atlasResearchContext();button.disabled=true;status.textContent='Preparing a research report with original records, sequence, filters and provenance…';
+    try{const report=await OglcnacResearchReports.protein(context);OglcnacResearch.download(ATLAS_ACCESSION.replace(/[^a-zA-Z0-9_.-]/g,'_')+'-research-report.zip',report);status.textContent='Research report exported. The ZIP contains complete and filtered evidence, available sequence, annotations, citations and checksums.';}catch(error){status.textContent=error.message;}finally{button.disabled=false;}
+  });
   document.getElementById('atlas-download-fasta').addEventListener('click', () => atlasProteinViewer?.downloadFasta());
   document.getElementById('atlas-copy-fasta').addEventListener('click', async () => {
     const copied = await window.OglcnacProteinViewer.copyText(atlasFasta.trim() + '\n');
@@ -274,6 +282,7 @@
 
     showAtlasContent(true);
     populateAtlasIdentity(payload);
+    document.getElementById("atlas-analyze").href=OglcnacResearch.analysisURL([ATLAS_ACCESSION]);
     atlasFeatureViewer = window.OglcnacProteinFeatures.create(document.getElementById('atlas-feature-viewer'), { accession: ATLAS_ACCESSION });
     atlasEvidenceController = window.OglcnacAtlasEvidence.create(document.getElementById('atlas-filters'), {
       records: payload.records,

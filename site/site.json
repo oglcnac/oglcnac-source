@@ -10,7 +10,8 @@
     "styles/58-resource-workspace.css",
     "styles/59-protein-viewer.css",
     "styles/61-atlas-evidence.css",
-    "styles/62-atlas-tools.css"
+    "styles/62-atlas-tools.css",
+    "styles/63-research-workflows.css"
   ],
   "primary_navigation": [
     ["Home", "/", "home"],
@@ -28,6 +29,7 @@
       ["Search", "/atlas/search/"],
       ["Browse", "/atlas/browse/"],
       ["Collections", "/atlas/collections/"],
+      ["Publications", "/atlas/publications/"],
       ["Tutorial", "/atlas/tutorial/"],
       ["Download", "/atlas/download/"],
       ["Contact", "/atlas/contact/"]
@@ -86,6 +88,12 @@
         "/static/js/prediction-core.js",
         "/static/js/static-data.js",
         "/static/js/workbench-core.js",
+        "/static/js/table-utils.js",
+        "/static/js/atlas-tools.js",
+        "/static/js/atlas-evidence.js",
+        "/static/js/research-workflows.js",
+        "/static/js/workbench-prepare.js",
+        "/static/js/research-reports.js",
         "/static/js/workbench-ui.js"
       ]
     },
@@ -355,6 +363,24 @@
       "route": "/atlas/review/",
       "title": "Mapping review | O-GlcNAcAtlas",
       "description": "Inspect the mapping audit, check the original evidence and keep a traceable record of your decisions.",
+      "section": "atlas",
+      "body_class": "site-body section-body atlas-section",
+      "main_class": "site-main"
+    },
+    {
+      "output": "atlas/publications/index.html",
+      "route": "/atlas/publications/",
+      "title": "Publications | O-GlcNAcAtlas",
+      "description": "Find the source studies represented in O-GlcNAcAtlas and explore their reported proteins and sites.",
+      "section": "atlas",
+      "body_class": "site-body section-body atlas-section",
+      "main_class": "site-main"
+    },
+    {
+      "output": "atlas/study/index.html",
+      "route": "/atlas/study/",
+      "title": "Study evidence | O-GlcNAcAtlas",
+      "description": "Inspect the original Atlas evidence associated with a source publication.",
       "section": "atlas",
       "body_class": "site-body section-body atlas-section",
       "main_class": "site-main"

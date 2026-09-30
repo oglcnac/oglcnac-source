@@ -15,6 +15,8 @@ const pages = [
   '/atlas/collections/',
   '/atlas/compare/',
   '/atlas/review/',
+  '/atlas/publications/',
+  '/atlas/study/',
   '/atlas/tutorial/',
   '/atlas/download/',
   '/atlas/contact/',

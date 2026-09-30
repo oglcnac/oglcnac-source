@@ -296,6 +296,7 @@
       setSequence(value) { fasta = value || ""; sequencePending = false; model = summarize(records, sequenceFromFasta(fasta)); evidenceModel = summarize(evidenceRecords, model.sequence); populatePositions(); render(); notify(); },
       setEvidence(rows) { evidenceRecords = rows; evidenceModel = summarize(rows, model.sequence); populatePositions(); render(); },
       select: choose,
+      getViewRange() { const width=el("tracks").getBoundingClientRect().width;const half=Math.max(8,Math.min(36,Math.floor((width-28)/20)));return view==="region"&&getSite()?.mapped?{start:Math.max(1,selected-half),end:Math.min(model.sequence.length,selected+half)}:{start:1,end:model.sequence.length}; },
       getSelection() { return selected; },
       getSequence() { return model.sequence; },
       downloadFasta() { if (model.sequence) download(fasta.trim() + "\n", `${safeFilename(options.accession)}.fasta`, "text/plain;charset=utf-8"); },

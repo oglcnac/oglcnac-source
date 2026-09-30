@@ -76,7 +76,7 @@
     }
     select.addEventListener('change',()=>choose(select.value===''?-1:Number(select.value)));
     const resize=new browser.ResizeObserver(draw);resize.observe(element);
-    return {setMetadata(value){metadata=value;metadataReady=true;update();},setSequence(value){sequence=value;sequenceReady=true;update();},setSelection(value){selection=value;selected();},destroy(){destroyed=true;epoch++;resize.disconnect();}};
+    return {getExport(){return {state,metadata:state==='verified'?metadata:null};},setMetadata(value){metadata=value;metadataReady=true;update();},setSequence(value){sequence=value;sequenceReady=true;update();},setSelection(value){selection=value;selected();},destroy(){destroyed=true;epoch++;resize.disconnect();}};
   }
   return {TYPES,features,verify,overlap,lanes,create};
 });

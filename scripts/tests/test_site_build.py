@@ -26,6 +26,8 @@ GENERATED_HTML = (
     "analysis/index.html",
     "atlas/browse/index.html",
     "atlas/collections/index.html",
+    "atlas/publications/index.html",
+    "atlas/study/index.html",
     "atlas/compare/index.html",
     "atlas/review/index.html",
     "atlas/contact/index.html",

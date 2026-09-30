@@ -101,7 +101,7 @@
         const actions=browser.document.createElement('div');actions.className='atlas-citation-actions';
         const evidence=browser.document.createElement('button');evidence.type='button';evidence.textContent='View evidence';evidence.setAttribute('aria-label',`View ${rows.length} evidence records for PMID ${pmid}`);evidence.addEventListener('click',()=>{filters.pmid=pmid;push('atlas-evidence');render();browser.document.getElementById('atlas-evidence').scrollIntoView({block:'start'});browser.document.getElementById('atlas-evidence-heading').focus({preventScroll:true});});
         const copy=browser.document.createElement('button');copy.type='button';copy.textContent=known?'Copy citation':'Copy PMID link';copy.setAttribute('aria-label',`${copy.textContent} for PMID ${pmid}`);copy.addEventListener('click',async()=>{const ok=await browser.OglcnacProteinViewer.copyText(citation(known?paper:{pmid}));options.publicationStatus.textContent=ok?`Citation for PMID ${pmid} copied.`:'Copying is unavailable in this browser. Open the PMID link for citation details.';});
-        actions.append(evidence,copy);item.append(content,actions);list.append(item);
+        const study=browser.document.createElement('a');study.href='/atlas/study/?pmid='+pmid;study.textContent='Explore this study';actions.append(evidence,copy,study);item.append(content,actions);list.append(item);
         if(focusPmid===pmid){const target=focusAction?.startsWith('Copy')?copy:evidence;target.focus({preventScroll:true});}
       }
     }
