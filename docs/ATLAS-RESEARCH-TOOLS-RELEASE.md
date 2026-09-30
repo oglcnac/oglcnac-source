@@ -30,6 +30,16 @@ All meet the release targets: median LCP ≤2.5 s, maximum CLS ≤0.1 and usable
 
 ## Publication
 
-Publication verification is pending. Deployment must use Yaoxiang Li's established author and committer identity. Completion requires source CI, exact artifact/repository parity, live route checks and live browser workflows.
+Published on 2026-09-30.
+
+- Implementation source: `69f239b15dbf3cc348f4743f267a0220eeb23aa5`.
+- GitHub Pages artifact: `09e3ad0a0bae63790e3922f3875f992fe3652919`.
+- Both commits use Yaoxiang Li `<liyaoxiang@outlook.com>` as author and committer, with no AI contributor trailer. Both repositories list only the human GitHub contributor.
+- All 1,290 published repository files exactly match the reviewed artifact. All 169 changed files fetched through the live domain match as well (HTML comparison accounts for Cloudflare email protection).
+- All 21 research-tool checks pass against the live site in Chromium, Firefox and WebKit: 63 live checks, including local collection/review save and restore in disposable browser contexts.
+- The 65 visual states were repeated on the live site, with no page overflow, clipped controls or browser errors. All 29 top-level routes in the live smoke suite returned 200, and Atlas/OGT detail, prediction and HexNAcQuest interaction checks passed. The static artifact smoke suite passed too.
+- Required source checks: [Static site quality](https://github.com/oglcnac/oglcnac-source/actions/runs/36746778212), [Prediction browser smoke](https://github.com/oglcnac/oglcnac-source/actions/runs/36746778057), [HexNAcQuest browser smoke](https://github.com/oglcnac/oglcnac-source/actions/runs/36746778079). The [Pages deployment](https://github.com/oglcnac/oglcnac/actions/runs/36746804576) succeeded.
+
+Release changes were also merged into the working workspace with backups and three-way conflict checks, preserving unrelated research work. Collections and curator decisions remain local browser data; no scientific corrections were published.
 
 Detailed logs, screenshots and performance JSON are retained in the server workspace under `visual-review/research-tools-20260930/`. The implementation/storage contract and reproducible commands are in [ATLAS-RESEARCH-TOOLS.md](ATLAS-RESEARCH-TOOLS.md).
