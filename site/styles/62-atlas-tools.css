@@ -1,0 +1,148 @@
+/* Connected Atlas research workflows. Keep controls plain and data prominent. */
+.atlas-tools-heading { background:#edf3f7; border-bottom:1px solid var(--line); padding:28px 0 0; }
+.atlas-tools-heading h1 { font-size:clamp(1.6rem,3vw,2.2rem); margin:6px 0 10px; letter-spacing:-.025em; }
+.atlas-tools-heading p:not(.eyebrow) { color:#425f71; max-width:780px; font-size:.95rem; }
+.atlas-tool-nav { display:flex; gap:8px 24px; flex-wrap:wrap; margin-top:15px; }
+.atlas-tool-nav a { display:inline-flex; align-items:center; min-height:44px; font-size:.84rem; font-weight:600; }
+.atlas-tools-page { padding:26px 0 56px; }
+.atlas-tools-page .container { max-width:1440px; }
+.atlas-tools-page h2 { font-size:1.25rem; margin:0 0 16px; }
+.atlas-tools-page h3 { font-size:1rem; margin:24px 0 12px; }
+.atlas-tools-page p,.atlas-tools-page li { font-size:.88rem; line-height:1.65; }
+.atlas-tools-page button,.atlas-tools-page input:not([type=checkbox]),.atlas-tools-page select,.atlas-tools-page textarea,
+.atlas-batch input,.atlas-batch textarea,.atlas-batch button,.atlas-selection-bar button,.atlas-save-controls input,.atlas-save-controls select,.atlas-batch-report button {
+ min-height:44px; padding:9px 12px; border:1px solid #9fb2bf; border-radius:3px; background:#fff; color:#243f50; font:inherit; font-size:.85rem; max-width:100%; }
+.atlas-tools-page button,.atlas-batch button,.atlas-selection-bar button,.atlas-batch-report button { color:#174f75; font-weight:600; cursor:pointer; }
+.atlas-tools-page button:hover,.atlas-selection-bar button:hover { background:#edf4f7; border-color:#477c9e; }
+.atlas-tools-page button:disabled,.atlas-selection-bar button:disabled { color:#536778; background:#f3f5f6; cursor:default; }
+.atlas-tools-page input[type=checkbox],.atlas-accession-cell input { width:18px; height:18px; accent-color:#236d77; flex:0 0 auto; }
+.atlas-tool-actions,.atlas-save-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0; }
+.atlas-tool-actions a { display:inline-flex; align-items:center; min-height:44px; font-size:.85rem; }
+.atlas-local-note { padding:14px 18px; border-left:3px solid #357c76; background:#f0f6f6; font-size:.86rem; line-height:1.65; margin-bottom:20px; }
+.atlas-tool-status { color:#3b5e72; font-size:.84rem; min-height:1.5em; margin:8px 0; overflow-wrap:anywhere; }
+.atlas-file-button { display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:.85rem; }
+.atlas-file-button input { width:245px; }
+.atlas-tools-page label { font-size:.84rem; font-weight:600; }
+.atlas-tools-page label>input,.atlas-tools-page label>select,.atlas-tools-page label>textarea { display:block; margin-top:7px; width:100%; }
+.atlas-tools-page summary,.atlas-save-disclosure summary,.atlas-batch summary,.atlas-batch-report summary { min-height:44px; padding:11px 0; cursor:pointer; font-size:.85rem; color:#174f75; font-weight:600; }
+.atlas-batch { max-width:820px; margin-top:8px; }
+.atlas-batch form { border-left:3px solid #357c76; padding:6px 0 5px 18px; }
+.atlas-batch textarea { display:block; width:100%; margin:7px 0; resize:vertical; }
+.atlas-batch p,.atlas-batch label { font-size:.83rem; }
+.atlas-batch input[type=file] { display:block; margin-top:6px; width:100%; }
+#atlas-context-filters { display:contents; }
+.atlas-filter-sidebar .atlas-filter-fields select { width:100%; text-overflow:ellipsis; }
+.atlas-selection-bar { border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:4px 0; margin:16px 0; }
+.atlas-selection-bar strong { font-size:.82rem; margin-right:4px; }
+.atlas-save-controls p { flex-basis:100%; margin:0; }
+.atlas-save-disclosure>p { font-size:.8rem; color:#526778; }
+.atlas-batch-report { padding:0 14px 12px; border:1px solid var(--line); margin:12px 0; background:#fafcfd; }
+.atlas-accession-cell { display:flex; align-items:center; gap:10px; min-height:44px; }
+.atlas-accession-cell input { cursor:pointer; margin:0; }
+.atlas-accession-cell a { overflow-wrap:anywhere; font-weight:600; }
+.atlas-select-protein { display:flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; cursor:pointer; }
+.atlas-collection-layout { display:grid; grid-template-columns:245px minmax(0,1fr); gap:30px; margin-top:26px; }
+.atlas-collection-layout aside { padding-right:24px; border-right:1px solid var(--line); }
+#collection-list button { display:block; text-align:left; width:100%; margin-bottom:8px; overflow-wrap:anywhere; }
+#collection-list button[aria-current=true] { color:#145866; border-color:#357c76; background:#edf6f5; }
+#collection-create { display:grid; gap:10px; margin-top:24px; }
+#collection-content { min-width:0; }
+#collection-name { flex:1; min-width:120px; }
+.atlas-confirm { border:1px solid #baa37b; padding:14px; background:#faf7ef; margin:18px 0; }
+.atlas-confirm button { margin:0 6px 6px 0; }
+.atlas-comparison-form { max-width:820px; }
+#compare-ids { flex:1; min-width:180px; }
+.atlas-comparison-note { padding:14px 16px; border-left:3px solid #357c76; background:#f0f6f6; margin:20px 0; }
+.atlas-comparison-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border-top:1px solid var(--line); margin-top:24px; }
+.atlas-comparison-grid[data-count="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.atlas-comparison-grid[data-count="4"] { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.atlas-comparison-protein { min-width:0; padding:24px 20px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); }
+.atlas-comparison-protein:first-child { border-left:1px solid var(--line); }
+.atlas-comparison-protein h2 { color:#174f75; margin-bottom:8px; font-size:1.2rem; }
+.atlas-comparison-protein .atlas-comparison-name { min-height:4.95em; font-weight:600; margin:0; }
+.atlas-comparison-identity { color:#526778; min-height:3.3em; }
+.atlas-comparison-protein>a { font-size:.83rem; display:inline-flex; align-items:center; min-height:44px; }
+.atlas-comparison-metrics { margin:18px 0; }
+.atlas-comparison-metrics>div { display:flex; justify-content:space-between; gap:10px; border-bottom:1px solid #e2e8ec; padding:9px 0; }
+.atlas-comparison-metrics dt { font-size:.78rem; color:#526778; font-weight:400; }
+.atlas-comparison-metrics dd { font-size:.86rem; font-weight:600; margin:0; text-align:right; }
+.atlas-comparison-track { display:block; width:100%; height:auto; margin:20px 0 12px; }
+.atlas-comparison-track text { font:12px Arial,sans-serif; fill:#425f71; }
+.atlas-comparison-protein .atlas-comparison-caption { font-size:.77rem; color:#526778; }
+.atlas-comparison-protein ul { padding-left:18px; }
+.atlas-comparison-protein li { font-size:.8rem; overflow-wrap:anywhere; margin:7px 0; }
+.atlas-coordinate-list { max-height:280px; overflow:auto; }
+.atlas-comparison-protein details { border-top:1px solid var(--line); }
+.atlas-comparison-missing { padding:24px 12px; background:#f3f6f8; min-height:130px; }
+.atlas-review-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:25px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.atlas-review-metrics>div { padding:18px; border-right:1px solid var(--line); }
+.atlas-review-metrics dt { font-size:.8rem; color:#526778; }
+.atlas-review-metrics dd { font-size:1.65rem; margin:6px 0 0; font-weight:600; color:#174f75; }
+.atlas-review-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin:8px 0 18px; }
+.atlas-review-case { margin:35px 0 0; border-top:3px solid #357c76; padding-top:25px; scroll-margin-top:30px; }
+.atlas-review-case h2 { font-size:1.4rem; overflow-wrap:anywhere; }
+.atlas-review-conflict { background:#faf6ed; border-left:3px solid #a15b16; padding:12px 16px; }
+.atlas-review-columns { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:36px; }
+.atlas-review-source { border-bottom:1px solid var(--line); padding:0 0 20px; margin-bottom:20px; }
+.atlas-review-source h4 { margin:0 0 10px; font-size:.9rem; }
+.atlas-review-source p,.atlas-review-source a { font-size:.82rem; }
+.atlas-review-source a { display:block; margin:8px 0; overflow-wrap:anywhere; }
+.atlas-review-peptide { display:block; white-space:normal; overflow-wrap:anywhere; padding:12px; background:#f1f5f7; font-size:.83rem; }
+#review-decision { display:grid; gap:16px; padding:20px; background:#f6f9fa; border:1px solid var(--line); }
+#review-decision p { margin:0; font-size:.8rem; }
+#review-decision textarea { resize:vertical; }
+.atlas-review-history { margin-top:30px; padding-top:20px; border-top:1px solid var(--line); }
+.atlas-review-history ol { padding-left:22px; }
+.atlas-review-history li { padding:12px 0; }
+.atlas-review-history li p { margin:5px 0; overflow-wrap:anywhere; }
+.atlas-review-history li a { margin-right:16px; }
+.atlas-detail-page .atlas-save-controls { padding:12px; background:#f0f6f6; }
+@media(max-width:1100px) { .atlas-comparison-grid[data-count="4"] { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:800px) {
+ .atlas-collection-layout { grid-template-columns:minmax(0,1fr); gap:24px; }
+ .atlas-collection-layout aside { border-right:0; border-bottom:1px solid var(--line); padding:0 0 20px; }
+ .atlas-review-columns { grid-template-columns:minmax(0,1fr); gap:10px; }
+ .atlas-review-filters { grid-template-columns:minmax(0,1fr); gap:12px; }
+ .atlas-review-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .atlas-comparison-grid[data-count="3"] { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:600px) {
+ .atlas-tools-heading { padding-top:22px; }
+ .atlas-tools-page { padding-top:20px; }
+ .atlas-tool-nav { gap:0 20px; }
+ .atlas-comparison-grid,.atlas-comparison-grid[data-count="4"] { grid-template-columns:minmax(0,1fr); }
+ .atlas-comparison-protein { border-left:1px solid var(--line); padding:20px 16px; }
+ .atlas-comparison-protein .atlas-comparison-name,.atlas-comparison-identity { min-height:0; }
+ .atlas-tool-actions>label,.atlas-save-controls>input,.atlas-save-controls>select { width:100%; }
+ .atlas-review-metrics>div { padding:14px 10px; }
+ .atlas-review-metrics dt { min-height:2.8em; }
+ #review-decision { padding:16px; }
+ .atlas-batch form { padding-left:12px; }
+}
+.atlas-query-bar .atlas-tool-nav { margin-top:0; }
+.atlas-query-bar .atlas-query-examples { margin:4px 0 10px; }
+.atlas-search-results>.atlas-tool-status:empty { min-height:0; margin:0; }
+.atlas-accession-cell label { display:flex; align-items:center; min-width:32px; min-height:44px; }
+@media(min-width:901px) { #atlas_proteins th:first-child,#atlas_proteins td:first-child { min-width:145px; } }
+.section-body .atlas-tools-page .native-table-actions button { min-height:44px; }
+@media(max-width:600px) {
+ #atlas-selection-bar>.atlas-tool-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+ #atlas-selection-bar>.atlas-tool-actions>strong { grid-column:1/-1; }
+ #atlas-selection-bar>.atlas-tool-actions>button { font-size:.8rem; padding:8px; height:100%; min-height:48px; }
+}
+.atlas-comparison-loading #comparison-grid { min-height:550px; }
+.atlas-tools-page label>input,.atlas-tools-page label>select,.atlas-tools-page label>textarea { font-weight:400; }
+.atlas-accession-cell a { white-space:nowrap; }
+#collection_table { min-width:720px; }
+#collection_table th:first-child { width:80px; }
+#collection_table th:nth-child(2) { width:120px; }
+#collection_table th:nth-child(4) { width:100px; }
+#collection_table th:nth-child(5) { width:150px; }
+#collection_table td:nth-child(2) { white-space:nowrap; }
+@media(min-width:901px) {
+ .atlas-query-bar .atlas-batch:not([open]) { display:inline-block; vertical-align:top; margin:0 24px 0 0; }
+ .atlas-query-bar .atlas-tool-nav { display:inline-flex; vertical-align:top; }
+}
+.section-body .atlas-comparison-context { padding:0; margin:0; }
+.section-body .atlas-review-columns>section { padding:0; }
+.section-body #collection-content { padding-top:0; }

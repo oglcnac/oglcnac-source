@@ -20,6 +20,12 @@
         1980s.
       </p>
 
+      <h2 id="research-tools">From search to a working set</h2>
+      <p>Use <strong>Search a list of accessions</strong> on the <a href="/atlas/search/">search page</a> to paste or upload up to 500 entries. Matching is exact and case-insensitive; isoforms stay separate. The batch report identifies duplicates, invalid inputs and accessions absent from this release. Comma, whitespace and semicolon delimiters are supported, with an optional accession column header.</p>
+      <p>Select proteins using the checkboxes or <strong>Select all matches</strong>. Selection persists across filters within that search. Save a named collection to revisit it later. <a href="/atlas/collections/">My collections</a> supports renaming, removing members and JSON backup/restore. Restoring a conflicting collection keeps both versions. Collections are stored only in this browser; clearing browser data removes them.</p>
+      <p><a href="/atlas/compare/">Compare</a> two to four proteins to inspect their evidence, samples, sequence coverage and verified annotations. Each protein has its own coordinate axis. These tracks are not a sequence alignment, and the number of records is not a measurement of modification abundance. Exact coordinates and source papers are available in expandable lists.</p>
+      <p><a href="/atlas/review/">Mapping review</a> lists the source–sequence residue conflicts identified by the audit. Inspect the original peptide, its matching status and the source publication before recording a decision. A correction proposal requires a different positive coordinate, supporting PMID, reviewer and rationale. Decisions are local drafts, saved in an append-only history; they never modify published Atlas records. Export the history to share it with collaborators. Restoration requires the same audit revision and rejects altered historical entries.</p>
+      <p>Publication years come from verified cached PubMed metadata. Records with missing dates appear under <strong>Year unavailable</strong>. With both a PMID and year selected, the year must belong to that publication. <strong>Export matching evidence</strong> exports every original field for the sidebar-filtered evidence; each table's CSV additionally follows that table's own text filter.</p>
       <h2>Terms used in O-GlcNAcAtlas</h2>
       <p>O-GlcNAcAtlas provides the following information:</p>
       <ul class="terms-list">
@@ -45,7 +51,7 @@
         <li>Obtain a protein name, gene symbol, accession, or peptide sequence of interest.</li>
         <li>Choose the matching search field. Specific identifiers such as a gene symbol or accession generally produce more focused results; for example, use <code>MAPT</code> or <code>P10636</code> for human tau.</li>
         <li>Start with the <strong>Proteins</strong> view for one entry per accession and species. Switch to <strong>Evidence records</strong> to see the individual source rows. Isoforms remain separate entries.</li>
-        <li>Use <strong>Refine results</strong> to filter by species or the presence of a position annotation. These filters apply to both views and are included in the page URL for sharing. The table search narrows the current view further.</li>
+        <li>Use <strong>Refine results</strong> to filter by species, position annotation, experimental method, sample, ambiguity, publication or verified publication year. These filters apply to both views and are included in the page URL for sharing. The table search narrows the current view further.</li>
         <li>Open an accession for its identity, sequence, peptides, evidence, and source publications. Numeric position counts and sequence highlights use positive integers; mixed-format source annotations remain available in the evidence.</li>
         <li>Copy the visible rows or download the filtered result as CSV. On a record, <strong>Download complete record</strong> includes every source row and field, regardless of table filters or hidden columns. <strong>Reset table</strong> restores its original view.</li>
       </ol>

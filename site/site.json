@@ -9,7 +9,8 @@
     "styles/56-home.css",
     "styles/58-resource-workspace.css",
     "styles/59-protein-viewer.css",
-    "styles/61-atlas-evidence.css"
+    "styles/61-atlas-evidence.css",
+    "styles/62-atlas-tools.css"
   ],
   "primary_navigation": [
     ["Home", "/", "home"],
@@ -26,6 +27,7 @@
       ["Statistics", "/atlas/statistics/"],
       ["Search", "/atlas/search/"],
       ["Browse", "/atlas/browse/"],
+      ["Collections", "/atlas/collections/"],
       ["Tutorial", "/atlas/tutorial/"],
       ["Download", "/atlas/download/"],
       ["Contact", "/atlas/contact/"]
@@ -328,6 +330,33 @@
       "description": "Contact the HexNAcQuest team and access source and citation information.",
       "section": "hexnac-quest",
       "body_class": "site-body section-body hexnac-section",
+      "main_class": "site-main"
+    },
+    {
+      "output": "atlas/collections/index.html",
+      "route": "/atlas/collections/",
+      "title": "My collections | O-GlcNAcAtlas",
+      "description": "Save accessions in this browser, revisit their evidence and compare a few proteins at a time.",
+      "section": "atlas",
+      "body_class": "site-body section-body atlas-section",
+      "main_class": "site-main"
+    },
+    {
+      "output": "atlas/compare/index.html",
+      "route": "/atlas/compare/",
+      "title": "Compare proteins | O-GlcNAcAtlas",
+      "description": "Compare two to four Atlas proteins. Each retains its own sequence coordinates and experimental context.",
+      "section": "atlas",
+      "body_class": "site-body section-body atlas-section",
+      "main_class": "site-main"
+    },
+    {
+      "output": "atlas/review/index.html",
+      "route": "/atlas/review/",
+      "title": "Mapping review | O-GlcNAcAtlas",
+      "description": "Inspect the mapping audit, check the original evidence and keep a traceable record of your decisions.",
+      "section": "atlas",
+      "body_class": "site-body section-body atlas-section",
       "main_class": "site-main"
     }
   ]

@@ -58,7 +58,7 @@
         if(selectedAudit){text+=` At position ${selectedAudit.position}, the source reports ${selectedAudit.reported_residues.join('/')} and the sequence contains ${selectedAudit.snapshot_residue}. `;
           text+=selectedAudit.classification==='consistent_peptide_candidate'?`Exact peptide matching suggests position ${selectedAudit.candidate_positions.join(', ')} for the conflicting records. This is an audit candidate, not a corrected site.`:selectedAudit.classification==='partial_peptide_support'?`Some conflicting records have a unique peptide match at ${selectedAudit.candidate_positions.join(', ')}; the evidence is insufficient to assign a corrected site.`:'Peptide matching does not establish a consistent alternative position.';
         }
-        el('audit').append(browser.document.createTextNode(text+' '));const link=browser.document.createElement('a');link.href='/static/data/atlas-enrichment/mapping-audit.json';link.textContent='Download the complete mapping audit (JSON)';link.download='atlas-mapping-audit.json';el('audit').append(link);
+        el('audit').append(browser.document.createTextNode(text+' '));const link=browser.document.createElement('a');link.href='/static/data/atlas-enrichment/mapping-audit.json';link.textContent='Download the complete mapping audit (JSON)';link.download='atlas-mapping-audit.json';el('audit').append(link);const review=browser.document.createElement('a');review.href='/atlas/review/?id='+encodeURIComponent(options.accession)+(selectedAudit?'&site='+selectedAudit.position:'&site='+audit[0].position);review.textContent='Open curator review';el('audit').append(browser.document.createTextNode(' · '),review);
       }draw();
     }
     async function update(){

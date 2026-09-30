@@ -192,3 +192,10 @@ test('representative browse, accession search, peptide search and detail stay be
     assert.ok(!requests.some((url) => url.endsWith('/atlas-records.json') || url.endsWith('/atlas-sequences-v1.json')));
   }
 });
+
+test('complete evidence exports retain source records whose accession is unreported', async () => {
+  const { api } = canonicalApi();
+  const actual = await api.loadAtlasRecordsForAccessions(['']);
+  assert.deepEqual(plain(actual), canonicalRecords.filter(record => record.accession === ''));
+  assert.equal(actual.length, 4);
+});

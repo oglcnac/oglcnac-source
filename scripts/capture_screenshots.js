@@ -88,6 +88,9 @@ const captures = [
     ready: waitForSelector('[data-atlas-release-state="ready"]'),
   },
   { group: "atlas", route: "/atlas/search/", name: "atlas-search", aboveFold: ".search-form" },
+  { group: "atlas", route: "/atlas/collections/", name: "atlas-collections", aboveFold: "#collection-list" },
+  { group: "atlas", route: "/atlas/compare/?ids=P12270,P18583,O15294", name: "atlas-compare", ready: waitForSelector('#comparison-grid[data-ready="true"]') },
+  { group: "atlas", route: "/atlas/review/", name: "atlas-review", ready: waitForTable("review_table") },
   {
     group: "atlas",
     route: "/atlas/search/?q=P18583&field=accession",

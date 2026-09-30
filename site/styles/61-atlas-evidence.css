@@ -3,7 +3,7 @@
 .evidence-filter-heading,.evidence-filter-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .evidence-filter-heading h2 { margin:0; font-size:1.15rem; }
 .atlas-detail-page .evidence-filter-panel button,.atlas-detail-page .atlas-citation button { min-height:44px; padding:8px 12px; background:white; color:var(--brand-blue); border:1px solid var(--line-strong); border-radius:3px; font-size:.82rem; }
-.evidence-filter-fields { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:16px 0; }
+.evidence-filter-fields { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:14px; margin:16px 0; }
 .evidence-filter-fields label,.feature-selector { display:flex; flex-direction:column; gap:7px; font-size:.8rem; font-weight:600; min-width:0; }
 .evidence-filter-fields select,.feature-selector select { display:block; width:100%; min-width:0; max-width:100%; min-height:44px; padding:9px 28px 9px 9px; background:white; color:var(--ink); border:1px solid var(--line-strong); border-radius:3px; font:inherit; font-weight:400; text-overflow:ellipsis; }
 .evidence-filter-footer p { margin:0; font-size:.83rem; color:#426273; }

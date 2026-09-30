@@ -3,7 +3,7 @@
 
 The original corpus and sequence snapshot remain authoritative and unchanged.
 Bucket records retain every source field and source row order; search projections
-contain exactly the fields displayed/exported by the existing search and browse UI.
+retain searchable identity fields plus dictionary-encoded experimental context.
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ from pathlib import Path
 
 DIRECTORY = "atlas-v2"
 METADATA_FIELDS = ("accession", "entry_name", "protein_name", "gene_name", "species")
+CONTEXT_FIELDS = ("method", "sample_type", "ambiguous", "pmid")
 ROW_CHUNK_SIZE = 1024
 
 
@@ -71,6 +72,13 @@ def compact_projection(records: list[dict]) -> dict:
         index["id_deltas"] = deltas
     else:
         index["ids"] = ids
+    # Independent dictionaries avoid repeating experimental context in each
+    # protein metadata tuple. The source row order remains the join key.
+    index["context"] = {}
+    for field in CONTEXT_FIELDS:
+        values = list(dict.fromkeys(record.get(field) for record in records))
+        lookup = {value: number for number, value in enumerate(values)}
+        index["context"][field] = {"values": values, "rows": [lookup[record.get(field)] for record in records]}
     return index
 
 
@@ -121,11 +129,12 @@ def build_delivery(records: list[dict], snapshot: dict | None) -> dict[str, obje
             for accession in accessions:
                 buckets[accession_bucket(accession)]["snapshot"]["excluded_identifiers"][category].append(accession)
 
-    source_hash = hashlib.sha256(encoded(records))
+    source_hash = hashlib.sha256(b"atlas-delivery-context-v2\n" + encoded(records))
     source_hash.update(encoded(snapshot))
     return {
         "manifest.json": {"schema_version": 1, "revision": source_hash.hexdigest()[:16], "record_count": len(records)},
         "index.json": compact_projection(records),
+        "accessions.json": sorted({record.get("accession") for record in records if record.get("accession")}),
         "peptides.json": {"schema_version": 1, "chunk_size": ROW_CHUNK_SIZE, "values": peptides, "rows": peptide_rows, "accessions": [sorted(values) for values in peptide_accessions]},
         **{
             f"rows/{start // ROW_CHUNK_SIZE:02x}.json": compact_projection(records[start:start + ROW_CHUNK_SIZE])

@@ -19,7 +19,7 @@
       <div><dt>Gene</dt><dd id="atlas-gene-name"></dd></div><div><dt>Species</dt><dd id="atlas-species"></dd></div>
     </dl>
     <div id="atlas-other-names" hidden></div>
-    <div class="record-actions" id="atlas-record-actions" hidden><button type="button" id="atlas-download-record">Download complete record</button><button type="button" id="atlas-copy-accession">Copy accession</button><a id="atlas-uniprot-link" href="https://www.uniprot.org/">View in UniProt <span aria-hidden="true">↗</span></a><a href="#atlas-publications">Source publications</a></div>
+    <div class="record-actions" id="atlas-record-actions" hidden><button type="button" id="atlas-download-record">Download complete record</button><button type="button" id="atlas-copy-accession">Copy accession</button><a id="atlas-uniprot-link" href="https://www.uniprot.org/">View in UniProt <span aria-hidden="true">↗</span></a><a href="#atlas-publications">Source publications</a><details class="atlas-save-disclosure"><summary>Save to collection</summary><div id="atlas-detail-save" class="atlas-save-controls"></div><a href="/atlas/collections/">My collections</a></details></div>
     <p id="atlas-copy-status" class="protein-action-status" role="status" aria-live="polite"></p>
     <dl class="protein-record-metrics" id="atlas-record-metrics" hidden><div><dt>Reported numeric positions</dt><dd id="atlas-position-count"></dd></div><div><dt>Evidence records</dt><dd id="atlas-record-count"></dd></div><div><dt>Source publications</dt><dd id="atlas-publication-count"></dd></div><div><dt>Sequence length</dt><dd id="atlas-length">Loading…</dd></div></dl>
    </header>
@@ -62,6 +62,7 @@
 <script src="/static/js/protein-viewer.js"></script>
 <script src="/static/js/atlas-evidence.js"></script>
 <script src="/static/js/protein-features.js"></script>
+<script src="/static/js/atlas-tools.js"></script>
 <script>
   const detailParams = new URLSearchParams(window.location.search);
   const detailPath = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "");
