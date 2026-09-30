@@ -1,6 +1,6 @@
 # Research workflows release goal
 
-Status: in progress. Approved scope: all five improvements; implementation, review, testing, deployment and live verification.
+Status: complete, 2026-09-30. All five improvements are implemented, reviewed, tested, deployed and verified on the live website. Completion evidence is recorded in `RESEARCH-WORKFLOWS-RELEASE.md`.
 
 ## Deliverables and acceptance criteria
 
