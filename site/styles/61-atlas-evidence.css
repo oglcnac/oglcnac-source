@@ -1,0 +1,45 @@
+/* Evidence controls and verified biological context share the record's restrained palette. */
+.atlas-detail-page .evidence-filter-panel { padding:18px 20px; border:1px solid var(--line); border-top:3px solid var(--brand-teal); background:#f6f9fa; }
+.evidence-filter-heading,.evidence-filter-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.evidence-filter-heading h2 { margin:0; font-size:1.15rem; }
+.atlas-detail-page .evidence-filter-panel button,.atlas-detail-page .atlas-citation button { min-height:44px; padding:8px 12px; background:white; color:var(--brand-blue); border:1px solid var(--line-strong); border-radius:3px; font-size:.82rem; }
+.evidence-filter-fields { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:16px 0; }
+.evidence-filter-fields label,.feature-selector { display:flex; flex-direction:column; gap:7px; font-size:.8rem; font-weight:600; min-width:0; }
+.evidence-filter-fields select,.feature-selector select { display:block; width:100%; min-width:0; max-width:100%; min-height:44px; padding:9px 28px 9px 9px; background:white; color:var(--ink); border:1px solid var(--line-strong); border-radius:3px; font:inherit; font-weight:400; text-overflow:ellipsis; }
+.evidence-filter-footer p { margin:0; font-size:.83rem; color:#426273; }
+.atlas-detail-page button:disabled { cursor:default; }
+.atlas-detail-page #atlas-publication-list { display:block; margin:18px 0; }
+.atlas-detail-page #atlas-publication-list > li { display:flex; gap:24px; justify-content:space-between; padding:20px 0; }
+.atlas-citation-content { min-width:0; }
+.atlas-citation h3 { margin:0 0 6px; font-size:1rem; line-height:1.55; font-weight:600; }
+.atlas-detail-page #atlas-publication-list .atlas-citation a { display:inline; min-height:0; overflow-wrap:anywhere; }
+.atlas-citation p { margin:5px 0; font-size:.8rem; line-height:1.65; }
+.atlas-citation-metadata { color:#526778; }
+.atlas-citation-support { color:#235e61; }
+.atlas-citation-identifiers { color:#526778; }
+.atlas-citation-actions { flex:0 0 150px; display:flex; flex-direction:column; align-self:flex-start; gap:8px; }
+.atlas-metadata-status,.feature-provenance,.feature-intro,.feature-overlap { font-size:.82rem; color:#526778; line-height:1.65; }
+.atlas-metadata-status { min-height:1.65em; }
+.feature-status { margin:0 0 12px; font-size:.85rem; color:#235e61; }
+#atlas-feature-viewer { min-width:0; }
+.protein-feature-map { display:block; width:100%; margin:14px 0 20px; }
+.protein-feature-map text { fill:#526778; font:12px Arial,sans-serif; }
+.feature-selection-line { stroke:#174d58; stroke-width:1.5; stroke-dasharray:4 3; }
+.feature-bar { cursor:pointer; }
+.feature-bar-selected { stroke:#142e41; stroke-width:2; }
+.feature-detail { padding:14px 16px; margin:12px 0; background:#f2f7f9; border-left:3px solid var(--brand-teal); font-size:.88rem; overflow-wrap:anywhere; }
+.feature-detail p { margin:5px 0 0; font-size:.8rem; }
+.feature-detail .feature-source-evidence { color:#526778; font-size:.76rem; }
+.feature-inventory { margin:16px 0; font-size:.82rem; }
+.feature-inventory summary { cursor:pointer; min-height:44px; padding:12px 0; color:var(--brand-blue); }
+.feature-inventory ul { padding-left:22px; }
+.feature-inventory li { margin-bottom:7px; overflow-wrap:anywhere; }
+.feature-audit { padding:14px 16px; border-left:3px solid #a76620; background:#faf7ef; font-size:.82rem; line-height:1.65; }
+@media(max-width:1200px) { .evidence-filter-fields { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) {
+ .atlas-detail-page .evidence-filter-panel { padding:14px; }
+ .evidence-filter-fields { grid-template-columns:minmax(0,1fr); gap:12px; }
+ .atlas-detail-page #atlas-publication-list > li { flex-direction:column; gap:12px; }
+ .atlas-citation-actions { flex:auto; flex-direction:row; flex-wrap:wrap; }
+}
+@media print { .evidence-filter-panel button,.atlas-citation-actions,.feature-selector { display:none; } }

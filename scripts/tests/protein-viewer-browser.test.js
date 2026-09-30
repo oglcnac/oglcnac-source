@@ -19,7 +19,7 @@ test.before(async () => {
     try{const body=await fs.readFile(filename);response.writeHead(200,{'Content-Type':MIME[path.extname(filename)]||'application/octet-stream'});response.end(body);}catch(_){response.writeHead(404).end();}
   });
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-  baseUrl=`http://127.0.0.1:${server.address().port}`;
+  baseUrl=process.env.SITE_BASE_URL||`http://127.0.0.1:${server.address().port}`;
   browser=await playwright[browserName].launch();
 });
 test.after(async()=>{if(browser)await browser.close();if(server)await new Promise(resolve=>server.close(resolve));});

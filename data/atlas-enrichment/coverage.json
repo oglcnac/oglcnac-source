@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "inputs": {
+    "atlas_records_sha256": "8afafee735320904d2069a88384341c826111ee5ad96dc49134c52ce572b0d65",
+    "atlas_sequences_sha256": "dd96bfdda5b9be9de74bbf7923c2af5fe5db5ac8ccdd67317dc4acac19b63272"
+  },
+  "records": 61035,
+  "accessions": 8881,
+  "pubmed_ids": 427,
+  "publication_statuses": {
+    "verified": 427
+  },
+  "protein_statuses": {
+    "not_uniprot": 1331,
+    "snapshot_unavailable": 311,
+    "verified": 7239
+  },
+  "uniprot_release": "2026_03",
+  "snapshot_provenance": {
+    "source": "UniProt REST API and/or curator-supplied local FASTA",
+    "retrieved_date": "2026-07-28",
+    "uniprot_release": "2026_02",
+    "uniprot_release_date": "10-June-2026",
+    "api_deployment_date": "10-July-2026",
+    "input_fastas": []
+  },
+  "verified_feature_count": 47776,
+  "mismatched_sites": 1046,
+  "mismatch_classifications": {
+    "consistent_peptide_candidate": 459,
+    "unresolved": 504,
+    "partial_peptide_support": 83
+  },
+  "mismatch_current_residue_matches": 0,
+  "original_source_values_changed": 0
+}

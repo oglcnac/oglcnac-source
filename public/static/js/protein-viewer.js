@@ -72,6 +72,7 @@
   function create(element, options) {
     const records = options.records;
     let model = summarize(records), selected = null, view = "full", fasta = "", sequencePending = true;
+    let evidenceRecords = records, evidenceModel = model;
     const getSite = () => model.sites.find(site => site.position === selected);
     const querySite = () => position(new browser.URL(browser.location.href).searchParams.get("site"));
     const requested = querySite();
@@ -123,7 +124,8 @@
       select.replaceChildren(all);
       for (const site of model.sites) {
         const option = browser.document.createElement("option"); option.value = site.position;
-        option.textContent = `${label(site)} · ${site.records.length} ${site.records.length === 1 ? "record" : "records"}`;
+        const count = evidenceModel.sites.find(item => item.position === site.position)?.records.length || 0;
+        option.textContent = `${label(site)} · ${count} ${count === 1 ? "record" : "records"}`;
         select.append(option);
       }
       select.value = selected || ""; select.disabled = !model.sites.length;
@@ -162,7 +164,7 @@
       const svg = el("overview"), width = svg.getBoundingClientRect().width, length = model.sequence.length;
       if (!width || !length) return;
       svg.replaceChildren(); svg.setAttribute("viewBox", `0 0 ${width} 62`);
-      svg.append(svgNode("title", {}, `${options.accession}: ${model.sites.filter(site => site.mapped).length} positions on a ${length}-residue sequence`));
+      svg.append(svgNode("title", {}, `${options.accession}: ${evidenceModel.sites.filter(site => site.mapped).length} matching positions on a ${length}-residue sequence`));
       const x = number => 12 + (number - 1) / Math.max(1, length - 1) * (width - 24);
       const site = getSite();
       if (site?.mapped) {
@@ -171,7 +173,7 @@
         svg.append(svgNode("rect", { x: x(start), y: 11, width: Math.max(3, x(end) - x(start)), height: 25, class: "protein-map-highlight" }));
       }
       svg.append(svgNode("line", { x1: 12, x2: width - 12, y1: 24, y2: 24, class: "protein-map-axis" }));
-      const candidates = model.sites.filter(site => site.mapped);
+      const candidates = evidenceModel.sites.filter(site => site.mapped);
       for (const candidate of candidates) svg.append(svgNode("rect", { x: x(candidate.position) - 1.5, y: candidate.position === selected ? 10 : 18, width: 3, height: candidate.position === selected ? 28 : 12, class: "protein-map-site" }));
       const count = length < 4 ? length : width < 450 ? 3 : 5;
       for (let index = 0; index < count; index++) {
@@ -186,14 +188,14 @@
       const site = getSite(), region = view === "region" && site?.mapped;
       const halfSpan = Math.max(8, Math.min(36, Math.floor((width - 28) / 20)));
       const start = region ? Math.max(1, selected - halfSpan) : 1, end = region ? Math.min(length, selected + halfSpan) : length;
-      const other = model.assignments.other > 0, height = other ? 197 : 159, axis = height - 28;
+      const other = evidenceModel.assignments.other > 0, height = other ? 197 : 159, axis = height - 28;
       svg.replaceChildren(); svg.setAttribute("viewBox", `0 0 ${width} ${height}`); svg.style.height = `${height}px`;
       svg.append(svgNode("title", {}, `Evidence positions ${start}–${end}; circles: unambiguous, squares: ambiguous${other ? ", diamonds: other or unspecified" : ""}`));
       const x = number => 14 + (number - start) / Math.max(1, end - start) * (width - 28);
       if (site?.mapped) svg.append(svgNode("rect", { x: x(selected) - 8, y: 24, width: 16, height: axis - 20, class: "protein-map-highlight" }));
       svg.append(svgNode("text", { x: width - 2, y: 14, "text-anchor": "end" }, `${start.toLocaleString()}–${end.toLocaleString()} aa`));
       for (const y of other ? [54, 90, 126] : [54, 90]) svg.append(svgNode("line", { x1: 14, x2: width - 14, y1: y, y2: y, class: "protein-map-axis" }));
-      const candidates = model.sites.filter(site => site.mapped && site.position >= start && site.position <= end);
+      const candidates = evidenceModel.sites.filter(site => site.mapped && site.position >= start && site.position <= end);
       for (const candidate of candidates) {
         const active = candidate.position === selected, coordinate = x(candidate.position);
         if (candidate.assignments.unambiguous) svg.append(svgNode("circle", { cx: coordinate, cy: 54, r: active ? 6 : 4, class: "protein-map-site" }));
@@ -233,7 +235,7 @@
       el("context-range").textContent = `${start.toLocaleString()}–${end.toLocaleString()}`;
     }
     function render() {
-      const site = getSite(), rows = selectedRecords(), counts = site ? site.assignments : model.assignments;
+      const site = getSite(), rows = selected ? evidenceRecords.filter(row => position(row.position_in_protein) === selected) : evidenceRecords, counts = assignments(rows);
       el("instruction").textContent = model.sites.length ? "Select a position to explore its sequence and filter the peptide, evidence, and publication sections." : "This entry has no single numeric site annotation. Explore its source evidence below.";
       select.value = selected || "";
       const index = model.sites.findIndex(candidate => candidate.position === selected);
@@ -251,14 +253,14 @@
         el(category).textContent = counts[category].toLocaleString();
         el(`${category}-bar`).style.width = `${rows.length ? counts[category] / rows.length * 100 : 0}%`;
       }
-      el("other-row").hidden = !counts.other; el("other-legend").hidden = !model.assignments.other;
+      el("other-row").hidden = !counts.other; el("other-legend").hidden = !evidenceModel.assignments.other;
       el("residue-note").hidden = !site?.mismatch;
       el("residue-note").textContent = site?.mismatch ? `Sequence residue: ${site.residue}. Source records report: ${site.reportedResidues.join(", ")}. Check the original evidence before interpreting this mapping.` : "";
       const notes = [];
       if (model.unplaced) notes.push(`${model.unplaced.toLocaleString()} records have no single numeric position`);
       if (model.outside) notes.push(`${model.outside.toLocaleString()} records have a position outside this sequence`);
       el("unmapped").hidden = !notes.length;
-      el("unmapped").textContent = notes.length ? `${notes.join("; ")}. These remain in the complete record and appear when all positions are shown.` : "";
+      el("unmapped").textContent = notes.length ? `${notes.join("; ")}. These remain in the complete record. Reset view includes all source evidence.` : "";
       const mismatches = model.sites.filter(candidate => candidate.mismatch).length;
       el("mapping-note").hidden = !mismatches;
       el("mapping-note").textContent = mismatches ? `At ${mismatches} reported ${mismatches === 1 ? "position" : "positions"}, a source residue differs from the available sequence. These positions are labelled by number; select one to inspect the difference.` : "";
@@ -266,7 +268,7 @@
       el("state").textContent = sequencePending ? "Loading protein sequence…" : !model.sequence ? "A protein map is unavailable because this entry has no available sequence. Its source evidence remains accessible below." : !model.sites.length ? "No single numeric modification positions are reported for this entry. Its source evidence remains accessible below." : "The reported positions fall outside the available sequence. Its source evidence remains accessible below.";
       el("drawing").hidden = !el("state").hidden;
       el("length").textContent = `${model.sequence.length.toLocaleString()} aa`;
-      el("selection-status").textContent = site ? `Showing ${rows.length.toLocaleString()} of ${records.length.toLocaleString()} records for ${label(site)} in the peptide, evidence, and publication sections. Complete-record downloads retain all ${records.length.toLocaleString()} records.` : `Showing all ${records.length.toLocaleString()} source records.`;
+      el("selection-status").textContent = site ? `Showing ${rows.length.toLocaleString()} of ${records.length.toLocaleString()} records for ${label(site)} in the peptide, evidence, and publication sections. Complete-record downloads retain all ${records.length.toLocaleString()} records.` : `Showing ${rows.length === records.length ? "all " : rows.length.toLocaleString() + " of "}${records.length.toLocaleString()} source records.`;
       element.dataset.state = sequencePending ? "loading" : model.sequence ? "ready" : "unavailable";
       element.dataset.position = selected || "";
       el("evidence-link").textContent = `View ${rows.length.toLocaleString()} evidence ${rows.length === 1 ? "record" : "records"} ↓`;
@@ -291,7 +293,8 @@
     populatePositions(); render(); notify();
     if (requested && selected === null) el("action-status").textContent = `Position ${requested} is not reported in this entry. Showing all source records.`;
     return {
-      setSequence(value) { fasta = value || ""; sequencePending = false; model = summarize(records, sequenceFromFasta(fasta)); populatePositions(); render(); notify(); },
+      setSequence(value) { fasta = value || ""; sequencePending = false; model = summarize(records, sequenceFromFasta(fasta)); evidenceModel = summarize(evidenceRecords, model.sequence); populatePositions(); render(); notify(); },
+      setEvidence(rows) { evidenceRecords = rows; evidenceModel = summarize(rows, model.sequence); populatePositions(); render(); },
       select: choose,
       getSelection() { return selected; },
       getSequence() { return model.sequence; },

@@ -8,7 +8,7 @@
 <section class="detail-page atlas-detail-page">
  <div class="container record-layout">
   <nav class="record-section-nav" aria-label="Record sections"><details><summary>On this record</summary><div class="section-index-links">
-    <a href="#atlas-overview">Overview</a><a href="#atlas-landscape">Modification map</a><a href="#atlas-sequence">Sequence</a><a href="#atlas-peptides">Peptides</a><a href="#atlas-evidence">Experimental evidence</a><a href="#atlas-all-fields">All record fields</a><a href="#atlas-publications">Publications</a>
+    <a href="#atlas-overview">Overview</a><a href="#atlas-filters">Evidence filters</a><a href="#atlas-landscape">Modification map</a><a href="#atlas-features">Domains &amp; regions</a><a href="#atlas-sequence">Sequence</a><a href="#atlas-peptides">Peptides</a><a href="#atlas-evidence">Experimental evidence</a><a href="#atlas-all-fields">All record fields</a><a href="#atlas-publications">Publications</a>
   </div></details><p>O-GlcNAcAtlas 5.0<br><a href="/atlas/tutorial/">Interpret this record</a></p></nav>
   <div class="record-main">
    <header class="detail-hero record-overview" id="atlas-overview">
@@ -23,9 +23,14 @@
     <p id="atlas-copy-status" class="protein-action-status" role="status" aria-live="polite"></p>
     <dl class="protein-record-metrics" id="atlas-record-metrics" hidden><div><dt>Reported numeric positions</dt><dd id="atlas-position-count"></dd></div><div><dt>Evidence records</dt><dd id="atlas-record-count"></dd></div><div><dt>Source publications</dt><dd id="atlas-publication-count"></dd></div><div><dt>Sequence length</dt><dd id="atlas-length">Loading…</dd></div></dl>
    </header>
+   <section class="detail-section evidence-filter-panel" id="atlas-filters" hidden></section>
    <section class="detail-section" id="atlas-landscape" hidden>
     <div class="detail-section-heading"><h2>Modification landscape</h2><a href="/atlas/tutorial/#protein-map">About this map</a></div>
     <div id="atlas-protein-viewer"></div>
+   </section>
+   <section class="detail-section" id="atlas-features" hidden>
+    <div class="detail-section-heading"><h2>Domains &amp; regions</h2><a href="/atlas/tutorial/#biological-context">About these annotations</a></div>
+    <div id="atlas-feature-viewer"></div>
    </section>
    <section class="detail-section" id="atlas-sequence" hidden>
     <div class="detail-section-heading"><h2>Protein sequence</h2></div>
@@ -38,7 +43,7 @@
     <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas peptide information table"><table class="table detail-table" id="detail1"><thead><tr><th>ID</th><th>Peptide Seq</th><th>Site Residue</th><th>Position in Peptide</th><th>Position in Protein</th></tr></thead><tbody id="atlas-peptide-rows"></tbody></table></div>
    </section>
    <section class="detail-section" id="atlas-evidence" hidden>
-    <div class="detail-section-heading"><h2>Experimental evidence</h2></div>
+    <div class="detail-section-heading"><h2 id="atlas-evidence-heading" tabindex="-1">Experimental evidence</h2></div>
     <p class="record-section-note">Each row retains its reported method, sample context, ambiguity, and source publication.</p>
     <p class="protein-table-selection" data-atlas-selection-note hidden></p>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Atlas O-GlcNAcylation evidence table"><table class="table detail-table" id="detail2"><thead><tr><th>ID</th><th>Method</th><th>Analytical Throughput</th><th>Ambiguity</th><th>Species</th><th>Sample Type</th><th>Condition</th><th>log2Ratio</th><th>P Value</th><th>Data Source PMID</th><th>Comments</th></tr></thead><tbody id="atlas-evidence-rows"></tbody></table></div>
@@ -47,7 +52,7 @@
     <div class="detail-section-heading"><h2>All record fields</h2></div><p class="detail-help">This table retains every field in the source records. Its CSV includes all fields, including columns hidden from view.</p>
     <div class="table-scroll" tabindex="0" role="region" aria-label="All curated Atlas fields table"><table class="table detail-table" id="detail3"><thead><tr></tr></thead><tbody id="atlas-export-rows"></tbody></table></div>
    </section>
-   <section class="detail-section record-publications" id="atlas-publications" hidden><div class="detail-section-heading"><h2>Source publications</h2></div><p id="atlas-publication-summary"></p><ul id="atlas-publication-list"></ul><a href="/citations/">How to cite O-GlcNAcAtlas</a></section>
+   <section class="detail-section record-publications" id="atlas-publications" hidden><div class="detail-section-heading"><h2>Source publications</h2></div><p id="atlas-publication-summary"></p><p id="atlas-publication-status" class="atlas-metadata-status" role="status" aria-live="polite"></p><ul id="atlas-publication-list"></ul><p class="atlas-metadata-status"><a href="/citations/">How to cite O-GlcNAcAtlas</a> · <a href="/licenses/">Metadata sources and terms</a></p></section>
   </div>
  </div>
 </section>
@@ -55,6 +60,8 @@
 <script src="/static/js/table-utils.js"></script>
 <script src="/static/js/record-view.js"></script>
 <script src="/static/js/protein-viewer.js"></script>
+<script src="/static/js/atlas-evidence.js"></script>
+<script src="/static/js/protein-features.js"></script>
 <script>
   const detailParams = new URLSearchParams(window.location.search);
   const detailPath = decodeURIComponent(window.location.pathname.split("/").filter(Boolean).pop() || "");

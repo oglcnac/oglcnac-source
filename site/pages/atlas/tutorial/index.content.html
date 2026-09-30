@@ -66,6 +66,16 @@
         <li>Check spelling carefully because there is no spell checker.</li>
         <li>Searches are not case-sensitive; <code>MAPT</code> and <code>mapt</code> are equivalent.</li>
       </ul>
+      <h2 id="evidence-filters">Follow evidence from a site to a study</h2>
+      <p>On each protein record, the evidence filters combine reported method, sample type, site assignment, and publication with the selected position. Option counts reflect the other filters. A zero count means that combination has no matching source rows. Reported composite method names are retained as recorded.</p>
+      <p>The map, peptide table, evidence table, and publication list follow these filters. “Show all positions” clears only the position; “Reset view” clears the position and every evidence filter. The address and “Copy view link” preserve your selection, and browser Back restores it. Each table also has its own text search for inspecting that table.</p>
+      <p>“Download matching records” includes all original fields for the evidence filter selection. Table CSV buttons export the rows matching that table's current search. “Download complete record” always preserves all source rows and fields, regardless of filters.</p>
+      <p>Publication titles, authors, journal, date, and available DOI are cached from PubMed. “Copy citation” copies a plain-text citation; “View evidence” adds that PMID to the current filters and opens the evidence table. Missing metadata retains the original PMID link.</p>
+      <h2 id="biological-context">Interpret domains, regions, and sequence checks</h2>
+      <p>The domains and regions panel uses cached UniProt annotations with exact coordinate boundaries. It includes domains, repeats, coiled coils, and annotated regions. The annotation menu and expandable list provide descriptions and coordinates without relying on the graphic. Source release, entry version, sequence version, and retrieval date accompany the panel.</p>
+      <p>Annotations are plotted only when the requested accession and the complete displayed sequence match the verified snapshot. A sequence change hides the coordinates. Canonical annotations are not transferred to a different isoform: an isoform is eligible only when UniProt explicitly identifies it as the displayed sequence and both sequences are identical.</p>
+      <p>A selected site may overlap an annotated region; that overlap does not establish a functional effect. Where a reported residue conflicts with the sequence, the panel does not assert a site-to-region association. Exact peptide searches can suggest candidate coordinates, but cannot independently verify a corrected biological site. All original evidence is preserved.</p>
+      <p>The <a href="/static/data/atlas-enrichment/mapping-audit.json" download>complete mapping audit (JSON)</a> records every conflicting position, per-record peptide checks, repeated or missing peptide matches, candidate coordinates, and unresolved cases.</p>
     </article>
   </div>
 </section>

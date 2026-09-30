@@ -8,7 +8,8 @@
     "styles/55-analysis.css",
     "styles/56-home.css",
     "styles/58-resource-workspace.css",
-    "styles/59-protein-viewer.css"
+    "styles/59-protein-viewer.css",
+    "styles/61-atlas-evidence.css"
   ],
   "primary_navigation": [
     ["Home", "/", "home"],
