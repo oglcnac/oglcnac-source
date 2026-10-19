@@ -21,6 +21,7 @@
     "test:accessibility:browser": "npm run build:site && node --test scripts/tests/accessibility-browser.test.js",
     "smoke:static": "npm run build:public && python3 scripts/smoke_static_site.py --static-root dist-public",
     "smoke:static:browser": "node scripts/smoke_static_site_browser.js",
+    "test:smoke:browser": "node --test scripts/tests/browser-smoke-navigation.test.js",
     "test:hexnac": "npm run test:hexnac:unit && npm run test:hexnac:browser",
     "test:hexnac:unit": "node --test scripts/tests/hexnac-quest-core.test.js",
     "test:hexnac:browser": "npm run build:site && node --test scripts/tests/hexnac-quest-browser.test.js",

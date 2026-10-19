@@ -2,6 +2,7 @@ const playwright = require('playwright');
 const {
   classifyHttpResponse,
   classifyRequestFailure,
+  createPageNavigator,
 } = require('./browser-smoke-core.js');
 
 const baseUrl = process.env.OGLCNAC_BASE_URL || 'https://oglcnac.org';
@@ -55,52 +56,51 @@ function isIgnoredRequest(url) {
   if (!browserType) throw new Error(`Unsupported SMOKE_BROWSER: ${browserName}`);
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
-  const page = await context.newPage();
-  page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
-  });
-  let currentNavigationId = 0;
-  const requestNavigationIds = new WeakMap();
-  page.on('request', (request) => {
-    requestNavigationIds.set(request, currentNavigationId);
-  });
-  page.on('requestfailed', (request) => {
-    if (isIgnoredRequest(request.url())) return;
-    const errorText = request.failure()?.errorText || 'unknown request failure';
-    const classification = classifyRequestFailure({
-      errorText,
-      resourceType: request.resourceType(),
-      navigationId: requestNavigationIds.get(request),
-      currentNavigationId,
+  const navigator = createPageNavigator(context, (page, lifecycle) => {
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(`console: ${message.text()}`);
     });
-    if (classification === 'fatal') {
-      failedRequests.push(`${request.method()} ${request.url()} ${errorText}`);
-    }
+    page.on('requestfailed', (request) => {
+      if (isIgnoredRequest(request.url())) return;
+      const errorText = request.failure()?.errorText || 'unknown request failure';
+      const classification = classifyRequestFailure({
+        errorText,
+        pageRetired: lifecycle.retired,
+      });
+      if (classification === 'fatal') {
+        failedRequests.push(`${request.method()} ${request.url()} ${errorText}`);
+      }
+    });
+    page.on('response', (response) => {
+      if (
+        !isIgnoredRequest(response.url()) &&
+        classifyHttpResponse(response.status()) === 'fatal'
+      ) {
+        failedResponses.push(`${response.status()} ${response.request().method()} ${response.url()}`);
+      }
+    });
+    page.on('request', (request) => {
+      if (request.url().includes('/api/data/')) {
+        apiDataRequests.push(request.url());
+      }
+      if (request.url().includes('api.oglcnac.org')) {
+        predictionApiRequests.push(request.url());
+      }
+      if (/cloudflareinsights\.com|\/cdn-cgi\/rum|google-analytics\.com|googletagmanager\.com/i.test(request.url())) {
+        trackingRequests.push(request.url());
+      }
+    });
   });
-  page.on('response', (response) => {
-    if (
-      !isIgnoredRequest(response.url()) &&
-      classifyHttpResponse(response.status()) === 'fatal'
-    ) {
-      failedResponses.push(`${response.status()} ${response.request().method()} ${response.url()}`);
-    }
-  });
-  page.on('request', (request) => {
-    if (request.url().includes('/api/data/')) {
-      apiDataRequests.push(request.url());
-    }
-    if (request.url().includes('api.oglcnac.org')) {
-      predictionApiRequests.push(request.url());
-    }
-    if (/cloudflareinsights\.com|\/cdn-cgi\/rum|google-analytics\.com|googletagmanager\.com/i.test(request.url())) {
-      trackingRequests.push(request.url());
-    }
-  });
+  let page;
+  async function goto(url, options) {
+    const visit = await navigator.goto(url, options);
+    page = visit.page;
+    return visit.response;
+  }
 
   for (const path of pages) {
-    currentNavigationId += 1;
-    const response = await page.goto(baseUrl + path, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    const response = await goto(baseUrl + path, { waitUntil: 'domcontentloaded', timeout: 45000 });
     const status = response && response.status();
     const title = await page.title();
     const h1 = await page.locator('h1').first().textContent().catch(() => '');
@@ -108,8 +108,7 @@ function isIgnoredRequest(url) {
     console.log(`PAGE ${status} ${path} | ${title} | ${String(h1).trim()}`);
   }
 
-  currentNavigationId += 1;
-  await page.goto(baseUrl + '/atlas/search/?q=P18583&field=accession', {
+  await goto(baseUrl + '/atlas/search/?q=P18583&field=accession', {
     waitUntil: 'domcontentloaded',
     timeout: 45000,
   });
@@ -118,8 +117,7 @@ function isIgnoredRequest(url) {
   });
   console.log(`ATLAS_SEARCH_ROWS ${await page.locator('#atlas-search-results tr').count()}`);
 
-  currentNavigationId += 1;
-  await page.goto(baseUrl + '/atlas/browse/?species=Human', {
+  await goto(baseUrl + '/atlas/browse/?species=Human', {
     waitUntil: 'domcontentloaded',
     timeout: 45000,
   });
@@ -128,8 +126,7 @@ function isIgnoredRequest(url) {
   });
   console.log(`ATLAS_BROWSE_ROWS ${await page.locator('#atlas-browse-results tr').count()}`);
 
-  currentNavigationId += 1;
-  await page.goto(baseUrl + '/ogt-pin/search/?q=Q9H1M0&field=uuid_b', {
+  await goto(baseUrl + '/ogt-pin/search/?q=Q9H1M0&field=uuid_b', {
     waitUntil: 'domcontentloaded',
     timeout: 45000,
   });
@@ -138,23 +135,20 @@ function isIgnoredRequest(url) {
   });
   console.log(`OGT_SEARCH_ROWS ${await page.locator('#interactome-search-results tr').count()}`);
 
-  currentNavigationId += 1;
-  await page.goto(baseUrl + '/atlas/detail/?id=P18583', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await goto(baseUrl + '/atlas/detail/?id=P18583', { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForFunction(() => document.querySelectorAll('#atlas-peptide-rows tr').length > 0, null, {
     timeout: 45000,
   });
   console.log(`ATLAS_DETAIL_PEPTIDE_ROWS ${await page.locator('#atlas-peptide-rows tr').count()}`);
   console.log(`ATLAS_DETAIL_SEQUENCE_CHARS ${await page.locator('#protein-sequence').textContent().then((text) => text.trim().length)}`);
 
-  currentNavigationId += 1;
-  await page.goto(baseUrl + '/ogt-pin/detail/?id=Q9H1M0', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await goto(baseUrl + '/ogt-pin/detail/?id=Q9H1M0', { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForFunction(() => document.querySelectorAll('#interactome-detail-rows tr').length > 0, null, {
     timeout: 45000,
   });
   console.log(`OGT_DETAIL_ROWS ${await page.locator('#interactome-detail-rows tr').count()}`);
 
-  currentNavigationId += 1;
-  await page.goto(baseUrl + '/pred_dl/input_fasta/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await goto(baseUrl + '/pred_dl/input_fasta/', { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.fill('#message', '>SEQ1\nAAAAAAAAAAAAAASAAAAAAAAAAAAAA');
   await page.click('#prediction-text-form button[type="submit"]');
   await page.waitForFunction(
@@ -175,8 +169,7 @@ function isIgnoredRequest(url) {
     throw new Error(`PRED-DL made API requests: ${predictionApiRequests.join(', ')}`);
   }
 
-  currentNavigationId += 1;
-  await page.goto(baseUrl + '/hexnac-quest/analysis/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await goto(baseUrl + '/hexnac-quest/analysis/', { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.setInputFiles('#hexnac-file', {
     name: 'smoke.csv',
     mimeType: 'text/csv',
@@ -211,6 +204,7 @@ function isIgnoredRequest(url) {
     throw new Error(`Production tracking requests are forbidden: ${trackingRequests.join(', ')}`);
   }
 
+  await navigator.close();
   await browser.close();
 
   if (errors.length || failedRequests.length || failedResponses.length) {
