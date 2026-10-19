@@ -14,6 +14,35 @@ async function study(p,pmid='20068230'){await p.goto(base+'/atlas/study/?pmid='+
 async function directory(p){await p.goto(base+'/atlas/publications/');await p.waitForSelector('#studies-list[data-ready=true]');}
 async function mockWorker(p){await p.addInitScript(()=>{window.Worker=class extends EventTarget{postMessage(job){if(job.type!=='predict')return;setTimeout(()=>{if(this.stopped)return;const core=window.OglcnacPredictionCore,records=core.validateFasta(job.fasta,job.species),results=core.createCandidates(records).map(c=>({...c,score:.5,confidence:'test fixture'}));this.dispatchEvent(new MessageEvent('message',{data:{type:'result',jobId:job.jobId,results}}));},10);}terminate(){this.stopped=true;}};});}
 
+test('opening a figure preserves edits made before its queued toggle event',async()=>{
+  const p=await page();await detail(p,'P49792');
+  await p.evaluate(()=>{
+    const panel=document.getElementById('atlas-figure-export');panel.open=true;
+    const start=document.getElementById('figure-start');start.value='700';start.dispatchEvent(new Event('input',{bubbles:true}));
+    window.figureToggled=new Promise(resolve=>panel.addEventListener('toggle',resolve,{once:true}));
+  });
+  await p.evaluate(()=>window.figureToggled.then(()=>true));
+  assert.equal(await p.inputValue('#figure-start'),'700');assert.equal(await p.inputValue('#figure-end'),'3224');
+  await p.fill('#figure-end','900');
+  await p.locator('#atlas-figure-export').evaluate(async panel=>{
+    panel.open=false;await new Promise(resolve=>panel.addEventListener('toggle',resolve,{once:true}));
+    panel.open=true;await new Promise(resolve=>panel.addEventListener('toggle',resolve,{once:true}));
+  });
+  assert.equal(await p.inputValue('#figure-start'),'700');assert.equal(await p.inputValue('#figure-end'),'900');
+});
+
+test('a figure download retains the range selected when export starts',async()=>{
+  const p=await page();await detail(p,'P49792');
+  await p.locator('#atlas-figure-export>summary').click();await p.fill('#figure-start','700');await p.fill('#figure-end','900');
+  let releaseManifest;const gate=new Promise(resolve=>{releaseManifest=resolve;});let requestedManifest;const requested=new Promise(resolve=>{requestedManifest=resolve;});
+  await p.route('**/atlas-research/manifest.json*',async route=>{requestedManifest();await gate;await route.continue();});
+  const pending=download(p,'#figure-svg');await requested;
+  try{await p.fill('#figure-start','100');await p.fill('#figure-end','200');}finally{releaseManifest();}
+  const exported=await pending;assert.equal(exported.name,'P49792-700-900.svg');
+  const range=await p.evaluate(svg=>JSON.parse(new DOMParser().parseFromString(svg,'image/svg+xml').querySelector('metadata').textContent).range,exported.body.toString());
+  assert.deepEqual(range,{start:700,end:900});
+});
+
 test('suggestions expose exact matches, keyboard selection, Escape and normal submission',async()=>{const p=await page();await p.goto(base+'/atlas/search/');const input=p.locator('#atlas-search-term');await input.fill('P12270');await p.waitForSelector('#atlas-suggestions:not([hidden])');assert.match(await p.locator('#atlas-suggestions li').first().innerText(),/P12270[\s\S]*human[\s\S]*Exact accession/);assert.equal(await input.getAttribute('aria-activedescendant'),null);await input.press('ArrowDown');assert.equal(await input.getAttribute('aria-activedescendant'),'atlas-suggestion-0');await input.press('Escape');assert.equal(await input.getAttribute('aria-expanded'),'false');await input.fill('OGT');await p.waitForSelector('#atlas-suggestions:not([hidden])');await input.press('ArrowDown');const id=await p.locator('#atlas-suggestions li[aria-selected=true] strong').innerText();await input.press('Enter');await p.waitForFunction(()=>!document.getElementById('atlas-selection-bar').hidden);assert.equal(new URL(p.url()).searchParams.get('q'),id);assert.equal(new URL(p.url()).searchParams.get('field'),'accession');});
 test('suggestions support pointer selection and failure leaves search usable',async()=>{const p=await page();await p.goto(base+'/atlas/search/');await p.fill('#atlas-search-term','P12270');await p.waitForSelector('#atlas-suggestions:not([hidden])');await p.locator('#atlas-suggestions li').first().click();await p.waitForFunction(()=>!document.getElementById('atlas-selection-bar').hidden);assert.match(p.url(),/q=P12270/);const q=await page();await q.route('**/atlas-research/proteins.json*',r=>r.abort());await q.goto(base+'/atlas/search/');await q.fill('#atlas-search-term','P12270');await q.waitForFunction(()=>document.getElementById('atlas-suggestion-status').textContent.includes('unavailable'));await q.locator('#atlas-search-form button').click();await q.waitForFunction(()=>!document.getElementById('atlas-selection-bar').hidden);assert.equal(await q.evaluate(()=>OglcnacTables.get('search_result').totalRows),source.filter(r=>r.accession==='P12270').length);});
 test('protein and collection analysis actions prepare exact sequences and expose missing entries',async()=>{const p=await page();await detail(p);await p.locator('#atlas-analyze').click();await p.waitForSelector('#workbench-preparation[data-ready=true]');assert.match(await p.inputValue('#workbench-fasta'),/>P12270/);await p.locator('#prepare-human').click();assert.equal((await p.inputValue('#workbench-fasta')).replace(/^>[^\n]+\n/,'').replace(/\s/g,''),snapshot.sequences.P12270);assert.equal(await p.inputValue('#workbench-species'),'human');assert.equal(await p.locator('#workbench-results').isVisible(),false);
