@@ -32,7 +32,8 @@ jobs:
     # browsers and OS libraries, avoiding slow/unsupported apt installations.
     container:
       image: mcr.microsoft.com/playwright:v1.60.0-noble
-      options: --init --ipc=host
+      # Match the owner of GitHub's mounted home/workspace for Firefox.
+      options: --init --ipc=host --user 1001
     timeout-minutes: 15
     strategy:
       fail-fast: false

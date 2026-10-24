@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -1622,18 +1623,26 @@ class SiteBuildTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_site_quality_workflow_audits_its_own_changes(self) -> None:
-        workflow = (
-            REPOSITORY_ROOT / ".github/workflows/site-quality.yml"
-        ).read_text(encoding="utf-8")
-
-        self.assertGreaterEqual(
-            workflow.count('      - ".github/workflows/**"'),
-            2,
-            "workflow-only pull requests and pushes must trigger site QA",
-        )
-        self.assertIn("npx playwright install --with-deps", workflow)
-        for browser in ("chromium", "firefox", "webkit"):
-            self.assertIn(f'"{browser}"', workflow)
+        lock = json.loads((REPOSITORY_ROOT / "package-lock.json").read_text())
+        version = lock["packages"]["node_modules/playwright"]["version"]
+        expected_image = f"mcr.microsoft.com/playwright:v{version}-noble"
+        for filename in (
+            "site-quality.yml", "prediction-browser-smoke.yml", "hexnac-quest-browser-smoke.yml",
+        ):
+            with self.subTest(workflow=filename):
+                workflow = (REPOSITORY_ROOT / ".github/workflows" / filename).read_text()
+                self.assertGreaterEqual(
+                    workflow.count('      - ".github/workflows/**"'),
+                    2,
+                    "workflow-only pull requests and pushes must trigger browser QA",
+                )
+                images = re.findall(r"^\s+image:\s+(\S+)", workflow, re.MULTILINE)
+                self.assertTrue(images, "browser jobs must use preinstalled browsers")
+                self.assertEqual(set(images), {expected_image}, "browser image and npm lockfile must match")
+                self.assertNotIn("ubuntu-latest", workflow)
+                self.assertNotIn("playwright install --with-deps", workflow)
+                for browser in ("chromium", "firefox", "webkit"):
+                    self.assertIn(f'"{browser}"', workflow)
 
     def test_static_smoke_is_portable_and_can_audit_a_selected_checkout(self) -> None:
         smoke = STATIC_SMOKE_SCRIPT.read_text(encoding="utf-8")
