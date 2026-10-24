@@ -3,6 +3,7 @@ name: Prediction browser smoke
 on:
   push:
     paths:
+      - ".github/workflows/**"
       - "site/pages/pred_dl/**"
       - "public/static/js/prediction-*.js"
       - "public/static/prediction/**"
@@ -12,6 +13,7 @@ on:
       - "package-lock.json"
   pull_request:
     paths:
+      - ".github/workflows/**"
       - "site/pages/pred_dl/**"
       - "public/static/js/prediction-*.js"
       - "public/static/prediction/**"
@@ -25,20 +27,27 @@ on:
 
 jobs:
   parity:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    # Keep this image aligned with the locked Playwright version. It includes
+    # browsers and OS libraries, avoiding slow/unsupported apt installations.
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --init --ipc=host
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         browser: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["chromium","firefox","webkit"]' || '["chromium"]') }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
       - run: npm ci
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: npm run test:prediction
         env:
           PREDICTION_BROWSER: ${{ matrix.browser }}

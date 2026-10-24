@@ -163,23 +163,33 @@ test("can cancel an in-browser prediction", async () => {
   await page.close();
 });
 
-test(
-  "matches every displayed row in the Python golden FASTA corpus",
-  { timeout: 180000 },
-  async () => {
-    const page = await browser.newPage();
-    const apiRequests = [];
-    page.on("request", (request) => {
-      if (request.url().includes("api.oglcnac.org")) {
-        apiRequests.push(request.url());
-      }
-    });
-    await page.route("https://api.oglcnac.org/**", (route) => route.abort());
-    await page.goto(`${baseUrl}/pred_dl/input_fasta/`, {
-      waitUntil: "domcontentloaded",
-    });
+// Large fixtures exercise over 1,200 sites. Give each real inference its own
+// budget and page so cached models from the previous species do not accumulate.
+for (const goldenCase of GOLDEN.cases) {
+  const inferenceTimeout = goldenCase.results.length > 1000 ? 240000 : 120000;
+  test(
+    `matches every displayed row in the Python golden FASTA corpus: ${goldenCase.name}`,
+    { timeout: inferenceTimeout + 30000 },
+    async (t) => {
+      const page = await browser.newPage();
+      t.after(() => page.close());
+      const apiRequests = [];
+      const failures = [];
+      page.on("pageerror", (error) => failures.push(error.message));
+      page.on("requestfailed", (request) => failures.push(`${request.url()}: ${request.failure()?.errorText}`));
+      page.on("response", (response) => {
+        if (response.status() >= 400) failures.push(`${response.status()} ${response.url()}`);
+      });
+      page.on("request", (request) => {
+        if (request.url().includes("api.oglcnac.org")) {
+          apiRequests.push(request.url());
+        }
+      });
+      await page.route("https://api.oglcnac.org/**", (route) => route.abort());
+      await page.goto(`${baseUrl}/pred_dl/input_fasta/`, {
+        waitUntil: "domcontentloaded",
+      });
 
-    for (const goldenCase of GOLDEN.cases) {
       const fasta = await fs.readFile(
         path.join(STATIC_ROOT, goldenCase.fasta_path),
         "utf8",
@@ -189,15 +199,28 @@ test(
       );
       await page.fill("#message", fasta);
       await page.click('#prediction-text-form button[type="submit"]');
-      await page.waitForFunction(
-        (expectedRows) =>
-          window.OglcnacTables &&
-          window.OglcnacTables.get("prediction-results-table") &&
-          window.OglcnacTables.get("prediction-results-table").totalRows ===
-            expectedRows,
-        goldenCase.results.length,
-        { timeout: 120000 },
-      );
+      try {
+        await page.waitForFunction(
+          (expectedRows) =>
+            getComputedStyle(document.querySelector("#prediction-error")).display !== "none" ||
+            (window.OglcnacTables &&
+              window.OglcnacTables.get("prediction-results-table") &&
+              window.OglcnacTables.get("prediction-results-table").totalRows === expectedRows),
+          goldenCase.results.length,
+          { timeout: inferenceTimeout },
+        );
+        assert.equal(await page.locator("#prediction-error").isVisible(), false,
+          await page.locator("#prediction-error").textContent());
+      } catch (error) {
+        const state = await page.evaluate(() => ({
+          phase: document.querySelector("#prediction-status-label").textContent,
+          progress: document.querySelector("#prediction-progress").getAttribute("aria-valuenow"),
+          error: document.querySelector("#prediction-error").textContent,
+          rows: window.OglcnacTables?.get("prediction-results-table")?.totalRows,
+        }));
+        t.diagnostic(JSON.stringify({ fixture: goldenCase.name, expectedRows: goldenCase.results.length, state, failures }));
+        throw error;
+      }
       const actual = await page.evaluate(() =>
         window.OglcnacTables
           .get("prediction-results-table")
@@ -211,12 +234,11 @@ test(
         record.confidence,
       ]);
       assert.deepEqual(actual, expected, goldenCase.name);
-    }
-
-    assert.deepEqual(apiRequests, []);
-    await page.close();
-  },
-);
+      assert.deepEqual(apiRequests, []);
+      assert.deepEqual(failures, []);
+    },
+  );
+}
 
 async function installControllableWorker(page) {
   await page.addInitScript(() => {

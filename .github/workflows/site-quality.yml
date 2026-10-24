@@ -39,7 +39,7 @@ on:
 
 jobs:
   repository:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -52,7 +52,12 @@ jobs:
       - run: npm run qa:public
 
   browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    # Keep this image aligned with the locked Playwright version. It includes
+    # browsers and OS libraries, avoiding slow/unsupported apt installations.
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --init --ipc=host
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -64,8 +69,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
       - run: npm ci
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: npm run test:smoke:browser
         env:
           SMOKE_BROWSER: ${{ matrix.browser }}
@@ -87,7 +94,12 @@ jobs:
 
   production-smoke:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    # Keep this image aligned with the locked Playwright version. It includes
+    # browsers and OS libraries, avoiding slow/unsupported apt installations.
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --init --ipc=host
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -100,7 +112,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: npm run smoke:static:browser
         env:
           SMOKE_BROWSER: ${{ matrix.browser }}

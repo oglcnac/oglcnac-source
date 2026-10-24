@@ -58,6 +58,26 @@ npm run smoke:static:browser
 
 The browser checks exercise all tools without permitting an API fallback.
 
+## CI browser environment
+
+All three browser workflows use Ubuntu 24.04 runners and the official
+`mcr.microsoft.com/playwright:v1.60.0-noble` test image. Browsers and their OS
+libraries are already installed in that image; jobs must not reinstall them
+through `apt`. This avoids both unsupported `ubuntu-latest` upgrades and package
+mirror stalls consuming the job's time limit. Python 3.12 is set up separately
+for the static build and archive checks.
+
+When upgrading Playwright, update `package-lock.json` and all four browser job
+image references together. Run `workflow_dispatch` for Static site quality,
+Prediction browser smoke, and HexNAcQuest browser smoke to verify Chromium,
+Firefox, and WebKit. Push checks exercise Chromium only.
+
+Each prediction reference fixture gets a fresh page and a bounded inference
+budget (two minutes, or four minutes for fixtures with more than 1,000 sites).
+Every expected row is still compared exactly. Application errors fail promptly;
+timeouts log the fixture, prediction stage, progress, and network failures.
+Production smoke checks continue to fail on HTTP errors, including model 503s.
+
 ## Roll back a Pages deployment
 
 Find the exact bad commit in `oglcnac/oglcnac`, then run:
